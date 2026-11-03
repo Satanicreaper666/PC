@@ -7,6 +7,7 @@
  * to readers: keep the two in step.
  *
  * Pages     Network first, so you always get the newest page when you are online.
+ *           The page that installs the worker is kept as soon as the worker starts.
  *           If the network is gone, or slower than SLOW_MS, the copy kept from your
  *           last visit opens instead; with no copy, the offline page (/offline/) does.
  *           Pages pinned to My desk are always kept, and fetched if they are missing;
@@ -67,9 +68,22 @@ self.addEventListener("activate", (event) => {
       await dropOldBuilds();
       if (self.registration.navigationPreload) await self.registration.navigationPreload.enable().catch(() => {});
       await self.clients.claim();
+      // The page that installed this worker loaded before the worker existed, so it was never kept.
+      // Keep it (and any other open page) now: it is usually the page the reader came for.
+      await keepOpenPages().catch(() => {});
     })()
   );
 });
+
+/** Saves every open PeopleCraft page that isn't kept yet. */
+async function keepOpenPages() {
+  const pages = await caches.open(PAGES);
+  for (const client of await self.clients.matchAll({ type: "window" })) {
+    const url = new URL(client.url);
+    if (!sameOrigin(url) || (await pages.match(keyOf(url)))) continue;
+    await keepPage(pages, url.pathname).catch(() => {});
+  }
+}
 
 /** Keeps this build and the one before it; caches from older builds are deleted. */
 async function dropOldBuilds() {
