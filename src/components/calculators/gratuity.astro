@@ -98,6 +98,7 @@ import AsAt from "./parts/AsAt.astro";
           `${plural(s.years, "year")} and ${plural(extra, "day")}: just short of ${r.minYears} completed years. This calculator follows the Code; courts differed on near-misses like ${s.years} years and ${nearMissDays} days under the old law, and the point is not settled. Check the case with HR.`
         );
     }
+    if (r.nearMiss) warnings.push(r.nearMiss);
     if (lwd < codesFrom)
       warnings.push(`The last working day is before ${shortDate(codesFrom)}, when the Labour Codes came into force. This calculator applies the Codes; the Payment of Gratuity Act, 1972 applied before then.`);
 

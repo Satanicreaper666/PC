@@ -35,6 +35,8 @@ export type GratuityRules = {
   partYearMonths: number;
   ceiling: number;
   paymentDays: number;
+  continuousServiceDays: number;
+  continuousServiceDaysShortWeek: number;
 };
 
 export type ServiceLength = { years: number; months: number; days: number };
@@ -54,7 +56,16 @@ export type GratuityResult = {
   /** Last day to pay (30 days after the last working day), when payable. */
   payBy?: string;
   reasonText: string;
+  /**
+   * Set when a permanent employee is not eligible but is within a year of the line,
+   * with at least NEAR_MISS_MONTHS of the final year served: courts have read
+   * "continuous service" generously, so a flat "no" would mislead.
+   */
+  nearMiss?: string;
 };
+
+/** From this many months into the final year, show the near-miss caution. */
+export const NEAR_MISS_MONTHS = 6;
 
 export function gratuityRules(): GratuityRules {
   return {
@@ -64,7 +75,10 @@ export function gratuityRules(): GratuityRules {
     fixedTermMinYears: statNum("gratuity.fixedTermMinYears"),
     partYearMonths: statNum("gratuity.partYearMonths"),
     ceiling: statNum("gratuity.ceiling"),
-    paymentDays: statNum("gratuity.paymentDays")
+    paymentDays: statNum("gratuity.paymentDays"),
+    continuousServiceDays: statNum("gratuity.continuousServiceDays"),
+    // s.54: 190 days below ground in a mine or where the establishment works less than six days a week.
+    continuousServiceDaysShortWeek: 190
   };
 }
 /** Kept for older imports. */
@@ -146,6 +160,11 @@ export function computeGratuity(i: GratuityInput, rules: GratuityRules = gratuit
     reasonText = `Payable: ${served} of service meets the ${minYears}-year condition.`;
   }
 
+  const nearMiss =
+    !eligible && i.type === "permanent" && service.years === minYears - 1 && service.months >= NEAR_MISS_MONTHS
+      ? `Close to the ${minYears}-year line. Under the old Payment of Gratuity Act, several High Courts counted ${minYears - 1} years plus at least ${rules.continuousServiceDays} days actually worked in the final year (${rules.continuousServiceDaysShortWeek} where the week is under six days) as ${minYears} years of continuous service. Whether that reading carries over to the Code on Social Security isn't settled. Ask HR or an adviser before giving up the claim.`
+      : undefined;
+
   return {
     status: "ok",
     service,
@@ -157,6 +176,7 @@ export function computeGratuity(i: GratuityInput, rules: GratuityRules = gratuit
     amount,
     capped,
     payBy: eligible && amount > 0 ? addDays(i.lwd, rules.paymentDays) : undefined,
-    reasonText
+    reasonText,
+    ...(nearMiss ? { nearMiss } : {})
   };
 }

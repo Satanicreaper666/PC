@@ -1,5 +1,5 @@
 import { marked } from "marked";
-import { resolveFacts } from "../data/statutory";
+import { resolveFacts } from "../data/statutory.ts";
 
 type Field = { id: string; label: string; required: boolean; type: string };
 

@@ -5,7 +5,7 @@ import { computeGratuity, gratuityRules, roundRupee, yearsForAmount } from "./gr
 const base = { wages: 60000, type: "permanent" as const, reason: "resignation" as const };
 
 test("rules come from statutory.ts", () => {
-  assert.deepEqual(gratuityRules(), { daysPerYear: 15, divisor: 26, minYears: 5, fixedTermMinYears: 1, partYearMonths: 6, ceiling: 2000000, paymentDays: 30 });
+  assert.deepEqual(gratuityRules(), { daysPerYear: 15, divisor: 26, minYears: 5, fixedTermMinYears: 1, partYearMonths: 6, ceiling: 2000000, paymentDays: 30, continuousServiceDays: 240, continuousServiceDaysShortWeek: 190 });
 });
 
 test("page example: 1 Apr 2019 to 31 Oct 2026 (7 y 7 m) at ₹60,000 → 8 years → ₹2,76,923", () => {
@@ -85,4 +85,17 @@ test("month-end joiners: anniversaries clamp to the month's last day", () => {
   const b = computeGratuity({ ...base, doj: "2021-08-31", lwd: "2027-02-28" });
   assert.deepEqual(b.service, { years: 5, months: 6, days: 1 });
   assert.equal(b.countedYears, 6);
+});
+
+test("near miss: 4 years 8 months on resignation is not payable but carries the 240-day caution", () => {
+  const r = computeGratuity({ ...base, doj: "2022-03-01", lwd: "2026-10-31" });
+  assert.equal(r.eligible, false);
+  assert.match(r.nearMiss ?? "", /240 days/);
+  assert.match(r.nearMiss ?? "", /isn't settled/);
+});
+
+test("near miss: no caution under 4 years 6 months, once eligible, or for fixed-term staff", () => {
+  assert.equal(computeGratuity({ ...base, doj: "2022-06-01", lwd: "2026-10-31" }).nearMiss, undefined); // 4 y 5 m
+  assert.equal(computeGratuity({ ...base, doj: "2021-10-01", lwd: "2026-10-31" }).nearMiss, undefined); // 5 y 1 m, payable
+  assert.equal(computeGratuity({ doj: "2026-03-01", lwd: "2026-10-31", wages: 30000, type: "fixed_term", reason: "contract_expiry" }).nearMiss, undefined);
 });
