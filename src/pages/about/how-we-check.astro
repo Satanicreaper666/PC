@@ -27,7 +27,10 @@ const trail = [
         <li><strong>The law itself:</strong> the Act or Code as published on India Code, and the rules and notifications in the Gazette of India or a state gazette.</li>
         <li><strong>Official explanations:</strong> Press Information Bureau releases, and FAQs, circulars and forms from the Ministry of Labour and Employment, EPFO, ESIC, the Income Tax Department and state labour or tax departments.</li>
         <li><strong>Court judgments</strong> where a court has settled how a rule applies.</li>
-        <li><strong>Reputable secondary sources</strong> (major law and accounting firms, PRS Legislative Research) only when the primary text isn't available, and never as the only source for a number.</li>
+        <li>
+          <strong>Reputable secondary sources</strong> (law and accounting firms, PRS Legislative Research, legal news services) when the official text isn't available online. Where a number rests
+          only on secondary sources, the page says "secondary source only" next to it, so you know to confirm it with the department.
+        </li>
       </ol>
       <p>Each chapter and tool lists its sources at the bottom of the page.</p>
     </div>
@@ -46,19 +49,28 @@ const trail = [
     </figure>
 
     <div class="prose">
-      <h2>What "Checked on" means</h2>
+      <h2>What the date on each page means</h2>
       <p>
-        The date under every chapter and tool title is the last day someone compared every fact on that page against its sources. It is not the date the page was written. If a page hasn't been checked in a
+        <strong>"Sources checked"</strong> is the last day the facts on that page were compared with the sources listed at its foot. It is not the date the page was written. If a page hasn't been checked in a
         while, treat its numbers with more care.
+      </p>
+      <p>
+        PeopleCraft is written by one person, and the first drafts were researched and written with AI assistance (see the <a href="/about/">About page</a>). Each page was then checked against its sources,
+        but no lawyer or chartered accountant has reviewed it yet. Until one does, the stamp on the page says <strong>"Expert review pending"</strong>. When a qualified reviewer signs a page off, the stamp
+        shows their name and the date instead.
       </p>
 
       <h2>How often pages are checked</h2>
-      <p>Pages are reviewed {SITE.reviewCadence}. When a rule changes, every page that depends on it is updated together.</p>
+      <p>
+        The aim is to re-check every page {SITE.reviewCadence}. Every build of the site warns when a page's date is more than 100 days old, so a page can't quietly go
+        stale.
+      </p>
 
       <h2>One number, one place</h2>
       <p>
-        Statutory figures such as the EPF wage ceiling, the ESI limit or the gratuity cap are stored once and used everywhere. When a figure changes, the calculators, the chapters and the glossary all change with
-        it, so two pages can't disagree.
+        Statutory figures such as the EPF wage ceiling, the ESI limit or the gratuity cap are stored once. Calculators read them from that one file, and chapters and the glossary show them from it. A check
+        that runs on every build fails if a page types one of these figures by hand. Worked examples and dated history ("the ceiling rose to ₹25,000 on 17 September 2026") are listed separately, and
+        are flagged for a rewrite when a figure changes.
       </p>
 
       <h2>When the law isn't settled</h2>
@@ -75,7 +87,7 @@ const trail = [
 
       <h2>Corrections</h2>
       <p>
-        If you think something is wrong, tell us through the links on the <a href="/about/">About page</a>. We check the report against the source, fix the page and update its "Checked on" date.
+        If you think something is wrong, tell us through the links on the <a href="/about/">About page</a>. We check the report against the source, fix the page and update its "Sources checked" date.
       </p>
     </div>
   </div>

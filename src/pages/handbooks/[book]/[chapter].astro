@@ -71,7 +71,7 @@ const ld = [articleLd, breadcrumbLd(Astro.site, trail), faqLd(entry.data.faq)].f
         <h1 class="display">{entry.data.title}</h1>
         <p class="lede">{entry.data.description}</p>
         <div class="meta">
-          <Checked date={entry.data.checked} sources={entry.data.sources.length} />
+          <Checked date={entry.data.checked} sources={entry.data.sources.length} reviewedBy={entry.data.reviewedBy} reviewed={entry.data.reviewed} />
           <span class="chip"><Icon name="clock" size={15} /> {minutes} min read</span>
           <span class="chip">
             <Icon name="people" size={15} /> For {audienceList(entry.data.audiences)}
@@ -165,7 +165,7 @@ const ld = [articleLd, breadcrumbLd(Astro.site, trail), faqLd(entry.data.faq)].f
         </div>
         <div class="after">
           <Faq items={entry.data.faq} />
-          <Sources items={entry.data.sources} checked={entry.data.checked} />
+          <Sources items={entry.data.sources} checked={entry.data.checked} reviewedBy={entry.data.reviewedBy} reviewed={entry.data.reviewed} />
           <Disclaimer kind="law" />
           <nav class="pager" aria-label="Chapters" data-print="hide" data-pagefind-ignore>
             {

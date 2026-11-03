@@ -82,7 +82,7 @@ const ld = [appLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean
           <p class="lede">{d.description}</p>
           <p class="use-when"><strong>Use it when</strong> {d.useWhen.replace(/^./, (c) => c.toLowerCase())}</p>
           <div class="meta">
-            <Checked date={d.checked} sources={d.sources.length || undefined} />
+            <Checked date={d.checked} sources={d.sources.length} reviewedBy={d.reviewedBy} reviewed={d.reviewed} />
             <span class="chip"><Icon name="people" size={15} /> For {audienceList(d.audiences)}</span>
             <span class="chip chip-good"><Icon name="lock" size={15} /> Works in your browser; nothing is uploaded</span>
             <PinButton item={{ href: toolUrl(entry), title: d.title, kind: kind.label, art: d.kind, code: d.code, description: d.description, meta: toolFacts(entry) }} />
@@ -120,7 +120,7 @@ const ld = [appLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean
         )
       }
       <Faq items={d.faq} />
-      <Sources items={d.sources} checked={d.checked} />
+      <Sources items={d.sources} checked={d.checked} reviewedBy={d.reviewedBy} reviewed={d.reviewed} />
       <Disclaimer kind={d.kind === "calculator" || d.kind === "app" ? "tool" : d.kind === "survey" ? "survey" : d.kind === "plan" ? "plan" : isTemplate || d.kind === "checklist" ? "template" : "law"} />
       <div data-pagefind-ignore data-print="hide"><Related items={related} /></div>
     </div>

@@ -26,6 +26,16 @@ const source = z.object({
  * Links to other library pages, written as
  * "handbooks/labour-law/03-leave-and-working-hours", "toolkit/gratuity-calculator" or "glossary/ctc".
  */
+/**
+ * A qualified reviewer's sign-off, e.g. reviewedBy: "Priya Rao, Advocate", reviewed: 2027-01-15.
+ * Leave both out until a real review has happened; the page then says "Expert review pending".
+ */
+const review = {
+  reviewedBy: z.string().min(3).optional(),
+  reviewed: z.coerce.date().optional()
+};
+const bothOrNeither = (d: { reviewedBy?: string; reviewed?: Date }) => (d.reviewedBy === undefined) === (d.reviewed === undefined);
+const reviewMsg = { message: "Set reviewedBy and reviewed together, or neither." };
 const related = z.array(z.string()).default([]);
 const faq = z.array(z.object({ q: txt, a: txt })).default([]);
 
@@ -42,6 +52,7 @@ const handbooks = defineCollection({
     audiences,
     /** Date every fact on the page was last checked against its sources. */
     checked: z.coerce.date(),
+    ...review,
     /** 2–5 short sentences for the "In short" box. */
     summary: z.array(txt).min(2).max(5),
     sources: z.array(source).default([]),
@@ -49,7 +60,7 @@ const handbooks = defineCollection({
     faq,
     keywords: z.array(z.string()).default([]),
     draft: z.boolean().default(false)
-  })
+  }).refine(bothOrNeither, reviewMsg)
 });
 
 const field = z.object({
@@ -85,6 +96,7 @@ const toolkit = defineCollection({
     /** Original PeopleCraft form code, e.g. "PC-F-03", kept for HR teams who already use it. */
     code: z.string().optional(),
     checked: z.coerce.date(),
+    ...review,
     /** One sentence: when to use it. */
     useWhen: txt,
     tips: z.array(txt).default([]),
@@ -108,7 +120,7 @@ const toolkit = defineCollection({
     faq,
     keywords: z.array(z.string()).default([]),
     draft: z.boolean().default(false)
-  })
+  }).refine(bothOrNeither, reviewMsg)
 });
 
 /** Job descriptions: src/content/jds/<slug>.md, one role each (URL: /jd-library/<slug>/). */
@@ -126,6 +138,7 @@ const jds = defineCollection({
     experience: z.string(),
     stage: stage.default("recruit"),
     checked: z.coerce.date(),
+    ...review,
     /** Two or three plain sentences: why the role exists and what success looks like. */
     summary: txt,
     responsibilities: z.array(txt).min(4),
@@ -149,7 +162,7 @@ const jds = defineCollection({
     related,
     keywords: z.array(z.string()).default([]),
     draft: z.boolean().default(false)
-  })
+  }).refine(bothOrNeither, reviewMsg)
 });
 
 const glossary = defineCollection({

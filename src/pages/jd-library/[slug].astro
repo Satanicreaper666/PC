@@ -83,7 +83,7 @@ const ld = [mainLd, breadcrumbLd(Astro.site, trail)];
             <h1 class="display">{heading}</h1>
             <p class="lede">{d.summary}</p>
             <div class="meta">
-              <Checked date={d.checked} sources={sources.length} />
+              <Checked date={d.checked} sources={sources.length} reviewedBy={d.reviewedBy} reviewed={d.reviewed} />
               <span class="chip chip-good"><Icon name="lock" size={15} /> Works in your browser; nothing is uploaded</span>
               <PinButton
                 item={{
@@ -157,7 +157,7 @@ const ld = [mainLd, breadcrumbLd(Astro.site, trail)];
       </Callout>
       <JdInterviewKit role={d.title} interview={d.interview} green={d.greenFlags} red={d.redFlags} blank={blank} />
       <JdCompetencies items={d.competencies} />
-      <Sources items={sources} checked={d.checked} />
+      <Sources items={sources} checked={d.checked} reviewedBy={d.reviewedBy} reviewed={d.reviewed} />
       <Disclaimer kind="template" />
       <div data-pagefind-ignore data-print="hide"><Related items={related} /></div>
     </div>

@@ -4,9 +4,12 @@ import { SITE } from "../../data/site";
 interface Props {
   items: { title: string; url: string; publisher?: string }[];
   checked: Date;
+  reviewedBy?: string;
+  reviewed?: Date;
 }
-const { items, checked } = Astro.props;
-const when = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(checked);
+const { items, checked, reviewedBy, reviewed } = Astro.props;
+const fmt = (d: Date) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(d);
+const when = fmt(checked);
 // "Report a correction" opens the reader's own email app with the page filled in.
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const fix = SITE.contactEmail
@@ -19,8 +22,17 @@ const fix = SITE.contactEmail
     <section class="sources" aria-labelledby="sources-title">
       <h2 id="sources-title">Sources</h2>
       <p class="intro">
-        Every rule on this page was checked against these on {when}. Laws and their rules change; if something looks out of date, the
-        official source wins.
+        {reviewedBy && reviewed ? (
+          <>
+            The rules on this page were checked against these sources on {when} and reviewed by {reviewedBy} on {fmt(reviewed)}.
+          </>
+        ) : (
+          <>
+            This page was drafted with AI assistance and its rules were checked against these sources on {when}. A review by a qualified professional is
+            still pending (<a href="/about/how-we-check/">how we check</a>).
+          </>
+        )}{" "}
+        Laws and their rules change; if something looks out of date, the official source wins.
       </p>
       <ol>
         {items.map((s) => (

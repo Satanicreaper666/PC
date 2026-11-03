@@ -1,19 +1,41 @@
 ---
 import Icon from "../ui/Icon.astro";
-/** The trust stamp: when this page's facts were last checked against its sources. */
+/**
+ * The trust stamp: when this page's facts were last compared with its sources, and
+ * whether a qualified reviewer has signed it off (see /about/how-we-check/).
+ * Pass `sources` only on content pages; without it the stamp shows the date alone.
+ */
 interface Props {
   date: Date;
   sources?: number;
+  reviewedBy?: string;
+  reviewed?: Date;
 }
-const { date, sources } = Astro.props;
-const text = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(date);
+const { date, sources, reviewedBy, reviewed } = Astro.props;
+const fmt = (d: Date) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(d);
+const isPage = sources !== undefined;
 ---
 
-<a class="stamp" href="/about/how-we-check/" title="How PeopleCraft checks facts">
+<a class="stamp" href="/about/how-we-check/" title="What this date means and how PeopleCraft checks facts">
   <Icon name="stamp" size={18} />
   <span>
-    <span class="line1">Facts checked {text}</span>
-    {sources ? <span class="line2">against {sources} {sources === 1 ? "source" : "sources"}</span> : null}
+    {
+      reviewedBy && reviewed ? (
+        <>
+          <span class="line1">Reviewed {fmt(reviewed)}</span>
+          <span class="line2">by {reviewedBy}</span>
+        </>
+      ) : (
+        <>
+          <span class="line1">Sources checked {fmt(date)}</span>
+          {isPage && (
+            <span class="line2">
+              {sources ? `${sources} ${sources === 1 ? "source" : "sources"} · ` : ""}expert review pending
+            </span>
+          )}
+        </>
+      )
+    }
   </span>
 </a>
 
