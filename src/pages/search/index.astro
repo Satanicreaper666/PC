@@ -95,7 +95,7 @@ const suggestions: { q: string; hl: string }[] = [
 </BaseLayout>
 
 <script>
-  import { loadPagefind, renderExcerpt } from "../../scripts/search";
+  import { loadPagefind, renderExcerpt, searchMerged } from "../../scripts/search";
   import { siteHref } from "../../scripts/href";
 
   type Sub = { title: string; url: string; excerpt: string };
@@ -221,7 +221,8 @@ const suggestions: { q: string; hl: string }[] = [
       status.textContent = "Search is available on the published site. Browse the handbooks or the toolkit meanwhile.";
       return;
     }
-    const [all, res] = await Promise.all([pf.search(q), section ? pf.search(q, { filters: { section } }) : null]);
+    const search = pf as unknown as Parameters<typeof searchMerged>[0];
+    const [all, res] = await Promise.all([searchMerged(search, q), section ? searchMerged(search, q, { filters: { section } }) : null]);
     if (my !== seq || !all) return;
     const current = res ?? all;
     setCounts(all.filters?.section, all.results.length);
@@ -231,7 +232,8 @@ const suggestions: { q: string; hl: string }[] = [
       empty.hidden = false;
       return;
     }
-    status.textContent = `${pending.length} ${pending.length === 1 ? "result" : "results"} for “${q}”${section ? ` in ${where(section)}` : ""}`;
+    const shownFor = current.shownFor ?? all.shownFor;
+    status.textContent = `${pending.length} ${pending.length === 1 ? "result" : "results"} for “${shownFor ?? q}”${section ? ` in ${where(section)}` : ""}${shownFor ? ` (you typed “${q}”)` : ""}`;
     await showMore();
   }
 

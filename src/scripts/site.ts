@@ -74,7 +74,8 @@ async function runSearch(q: string) {
     list.replaceChildren();
     return;
   }
-  status.textContent = results.length ? `${results.length} ${results.length === 1 ? "match" : "matches"}` : `Nothing matches “${q}”. Try a shorter word, like “leave” or “PF”.`;
+  const shown = results.shownFor ? ` for “${results.shownFor}”` : "";
+  status.textContent = results.length ? `${results.length} ${results.length === 1 ? "match" : "matches"}${shown}` : `Nothing matches “${q}”. Try a shorter word, like “leave” or “PF”.`;
   list.replaceChildren(...results.map(resultItem));
 }
 
