@@ -1,7 +1,11 @@
 /**
  * Generates the brand files in /public from code, so they can be rebuilt
  * whenever the mark or a title changes:
- *   favicon.svg, icons/*.png, og/*.png (1200×630), site.webmanifest
+ *   favicon.svg, icons/*.png, og/*.jpg (1200×630), site.webmanifest
+ *
+ * Social images are JPEGs of about 60–90 KB: WhatsApp and some other apps skip
+ * preview images over about 300 KB, and the old PNGs were 295–316 KB. Each
+ * calculator also gets its own card (og/tool-<id>.jpg) with its title.
  *
  * Run: node scripts/make-assets.cjs   (needs Playwright's Chromium)
  */
@@ -49,6 +53,23 @@ const og = [
   { file: "glossary", kicker: "Glossary", title: "Indian workplace terms, in one sentence each", sub: "CTC, F&F, LWP, UAN, gratuity, comp-off and more, each linked to the page that goes deeper." },
   ...["labour-law", "tds", "recruitment", "hr-professional"].map((id) => ({ file: id, kicker: "Handbook", ...book(id) }))
 ];
+
+/** One card per calculator, from its front matter ({{fact:…}} tokens resolved). */
+async function calculatorCards() {
+  const { resolveFacts } = await import(path.join(root, "src/data/statutory.ts"));
+  const dir = path.join(root, "src/content/toolkit");
+  return fs
+    .readdirSync(dir)
+    .map((f) => ({ id: f.replace(/\.mdx?$/, ""), text: fs.readFileSync(path.join(dir, f), "utf8") }))
+    .filter(({ text }) => /^kind:\s*calculator\s*$/m.test(text))
+    .map(({ id, text }) => {
+      const field = (k) => {
+        const m = new RegExp(`^${k}:\\s*(?:>-\\s*\\n\\s+)?["']?(.+?)["']?\\s*$`, "m").exec(text);
+        return m ? resolveFacts(m[1]) : "";
+      };
+      return { file: `tool-${id}`, kicker: "Free calculator", title: field("title"), sub: field("description") };
+    });
+}
 
 /* A large woven field that bleeds off the right edge: warp threads in neel,
    weft in a lighter neel, one turmeric warp. Alternating over/under. */
@@ -109,12 +130,12 @@ function iconHtml(size, { pad, radius, bg }) {
   const page = await browser.newPage({ deviceScaleFactor: 1 });
 
   fs.mkdirSync(path.join(pub, "og"), { recursive: true });
-  for (const o of og) {
+  for (const o of [...og, ...(await calculatorCards())]) {
     await page.setViewportSize({ width: 1200, height: 630 });
     await page.setContent(ogHtml(o), { waitUntil: "load" });
     await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: path.join(pub, "og", `${o.file}.png`) });
-    console.log("og/" + o.file + ".png");
+    await page.screenshot({ path: path.join(pub, "og", `${o.file}.jpg`), type: "jpeg", quality: 82 });
+    console.log("og/" + o.file + ".jpg");
   }
 
   fs.mkdirSync(path.join(pub, "icons"), { recursive: true });

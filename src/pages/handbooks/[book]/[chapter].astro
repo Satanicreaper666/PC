@@ -1,4 +1,6 @@
 ---
+import { SITE } from "../../../data/site";
+import { AUTHOR } from "../../../data/contact";
 import { render } from "astro:content";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/site/Breadcrumbs.astro";
@@ -43,23 +45,35 @@ const trail = [
   { name: book.short, href: bookUrl(entry.data.book) },
   { name: `Chapter ${entry.data.chapter}`, href: chapterUrl(entry) }
 ];
+const pageUrl = new URL(chapterUrl(entry), Astro.site).toString();
+const { reviewedBy, reviewed } = entry.data;
 const articleLd = {
   "@context": "https://schema.org",
   "@type": "Article",
   headline: entry.data.title,
   description: entry.data.description,
   inLanguage: "en-IN",
+  datePublished: new Date(SITE.published).toISOString(),
   dateModified: entry.data.checked.toISOString(),
-  author: { "@type": "Organization", name: "PeopleCraft", url: Astro.site?.toString() },
-  publisher: { "@type": "Organization", name: "PeopleCraft", url: Astro.site?.toString() },
+  image: new URL(`/og/${entry.data.book}.jpg`, Astro.site).toString(),
+  // A named person: readers and search engines weigh who wrote legal and money pages.
+  author: { "@type": "Person", name: AUTHOR.name, jobTitle: AUTHOR.role, url: new URL("/about/", Astro.site).toString(), sameAs: [AUTHOR.linkedin] },
+  publisher: { "@id": `${Astro.site}#org` },
   isPartOf: { "@type": "Book", name: book.title, url: new URL(bookUrl(entry.data.book), Astro.site).toString() },
-  mainEntityOfPage: new URL(chapterUrl(entry), Astro.site).toString(),
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": pageUrl,
+    ...(reviewedBy && reviewed ? { reviewedBy: { "@type": "Person", name: reviewedBy }, lastReviewed: reviewed.toISOString() } : {})
+  },
   keywords: entry.data.keywords.join(", ") || undefined
 };
+// Search results cut titles at about 60 characters: add the book only when it fits.
+const withBook = `${entry.data.title} — ${book.short} handbook`;
+const pageTitle = `${withBook} | PeopleCraft`.length <= 65 ? withBook : entry.data.title;
 const ld = [articleLd, breadcrumbLd(Astro.site, trail), faqLd(entry.data.faq)].filter(Boolean) as Record<string, unknown>[];
 ---
 
-<BaseLayout title={`${entry.data.title} — ${book.title}`} description={entry.data.description} type="article" jsonLd={ld} modified={entry.data.checked} image={`/og/${entry.data.book}.png`}>
+<BaseLayout title={pageTitle} description={entry.data.description} type="article" jsonLd={ld} modified={entry.data.checked} image={`/og/${entry.data.book}.jpg`}>
   <article data-pagefind-body data-pagefind-meta={`kind:${book.short} handbook, chapter ${entry.data.chapter}`} data-pagefind-filter="section:Handbooks">
     <header class="head band">
       <div class="wrap hero-split head-split">

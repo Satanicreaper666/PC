@@ -8,6 +8,8 @@ export const SITE = {
   contactEmail: "akashmukund1996@gmail.com",
   /** Review cadence promised on the editorial-standards page. */
   reviewCadence: "every quarter, and whenever a law or rule changes",
+  /** The day this version of the library went live (first production deploy on Vercel). */
+  published: "2026-11-03",
   year: new Date().getFullYear()
 };
 

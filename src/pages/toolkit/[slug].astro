@@ -1,4 +1,5 @@
 ---
+import { existsSync } from "node:fs";
 import { render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../components/site/Breadcrumbs.astro";
@@ -65,10 +66,12 @@ const appLd =
         inLanguage: "en-IN",
         dateModified: d.checked.toISOString()
       };
+// Calculators have their own titled share card (scripts/make-assets.cjs); everything else shares the toolkit card.
+const ogImage = existsSync(`public/og/tool-${entry.id}.jpg`) ? `/og/tool-${entry.id}.jpg` : "/og/toolkit.jpg";
 const ld = [appLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean) as Record<string, unknown>[];
 ---
 
-<BaseLayout title={d.title} description={d.description} jsonLd={ld} modified={d.checked} image="/og/toolkit.png">
+<BaseLayout title={d.title} description={d.description} jsonLd={ld} modified={d.checked} image={ogImage}>
   <article data-pagefind-body data-pagefind-meta={`kind:${kind.label}`} data-pagefind-filter="section:Toolkit">
     <header class="head band">
       <div class="wrap hero-split">

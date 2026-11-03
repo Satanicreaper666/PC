@@ -10,7 +10,7 @@ import { SITE } from "../data/site";
 interface Props {
   title: string;
   description: string;
-  /** Page-specific Open Graph image path under /public, e.g. "/og/guides.png" */
+  /** Page-specific Open Graph image path under /public, e.g. "/og/guides.jpg" */
   image?: string;
   imageAlt?: string;
   type?: "website" | "article";
@@ -25,7 +25,7 @@ interface Props {
 const {
   title,
   description,
-  image = "/og/default.png",
+  image = "/og/default.jpg",
   imageAlt = "PeopleCraft — the free HR library for India",
   type = "website",
   jsonLd = [],
