@@ -25,7 +25,7 @@ const next = chapters[i + 1];
 const done = chapters.length > 1 ? Math.round((i / (chapters.length - 1)) * 100) : 0;
 ---
 
-<aside class="bt" aria-label="Where this chapter sits in the book" data-book-thread>
+<div role="note" class="bt" aria-label="Where this chapter sits in the book" data-book-thread>
   <div class="head">
     <BookCover id={book} size="sm" class="sw" />
     <div>
@@ -67,7 +67,7 @@ const done = chapters.length > 1 ? Math.round((i / (chapters.length - 1)) * 100)
       )
     }
   </dl>
-</aside>
+</div>
 
 <script>
   import { getRead, DESK_CHANGE } from "../../scripts/desk";

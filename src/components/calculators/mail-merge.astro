@@ -67,7 +67,7 @@ const first = library.find((t) => t.id === "offer-letter") ?? library[0];
         </div>
       </div>
     </div>
-    <aside class="mm-privacy" aria-labelledby="mm-privacy-title">
+    <div role="note" class="mm-privacy" aria-labelledby="mm-privacy-title">
       <p class="mm-privacy-title" id="mm-privacy-title"><Icon name="lock" size={18} /> Your list stays on this device</p>
       <ul>
         <li>Your browser reads the file and fills in the letters. Nothing is uploaded to PeopleCraft or anyone else.</li>
@@ -77,7 +77,7 @@ const first = library.find((t) => t.id === "offer-letter") ?? library[0];
       <p class="mm-privacy-links">
         <a class="mm-linkbtn" href="#how-to-prepare-your-list"><Icon name="checklist" size={16} /> How to prepare your list</a>
       </p>
-    </aside>
+    </div>
   </section>
 
   <section class="mm-step mm-map" data-step="map" aria-labelledby="mm-map-title" hidden>

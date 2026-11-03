@@ -1,7 +1,13 @@
 ---
-/** Markdown tables in chapters render through this so wide tables scroll on phones. */
+/**
+ * Markdown tables in chapters render through this so wide tables scroll on phones.
+ * Each scroll region needs its own name (axe "landmark-unique"), so the label
+ * counts tables on the page: "Table 2 (scrolls sideways on small screens)".
+ */
+const n = ((Astro.locals as { tableCount?: number }).tableCount ?? 0) + 1;
+(Astro.locals as { tableCount?: number }).tableCount = n;
 ---
 
-<div class="table-wrap" role="region" tabindex="0" aria-label="Table (scrolls sideways on small screens)">
+<div class="table-wrap" role="region" tabindex="0" aria-label={`Table ${n} (scrolls sideways on small screens)`}>
   <table><slot /></table>
 </div>

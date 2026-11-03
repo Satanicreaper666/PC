@@ -60,7 +60,7 @@ if (doc) {
 const areas = new Set(d.questions.map((q) => q.dimension ?? "Overall")).size;
 ---
 
-<aside class="glance" aria-label="About this tool" data-print="hide">
+<div role="note" class="glance" aria-label="About this tool" data-print="hide">
   <StageThread stage={d.stage} />
   {
     hasFigure && (
@@ -99,7 +99,7 @@ const areas = new Set(d.questions.map((q) => q.dimension ?? "Overall")).size;
       </p>
     )
   }
-</aside>
+</div>
 
 <style>
   .glance {

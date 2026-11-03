@@ -25,7 +25,7 @@ const t = title ?? label[type];
 
 {
   type === "law" ? (
-    <aside class="extract" aria-label={t}>
+    <div role="note" class="extract" aria-label={t}>
       <svg class="clip" viewBox="0 0 24 56" aria-hidden="true">
         <path d="M8 40V10a6 6 0 0 1 12 0v34a8 8 0 0 1-16 0V14" />
       </svg>
@@ -36,7 +36,7 @@ const t = title ?? label[type];
       <div class="body">
         <slot />
       </div>
-    </aside>
+    </div>
   ) : (
     <StickyNote color={color[type]} title={t} tilt={type === "warning" ? 0.35 : -0.35} class="callout-note">
       <div class="body">

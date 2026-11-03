@@ -37,7 +37,7 @@ const confidenceText: Record<string, string> = {
 };
 ---
 
-<aside class="asat" aria-label="Rates and limits used">
+<div role="note" class="asat" aria-label="Rates and limits used">
   <details>
     <summary>
       <span class="when">Rates and limits as at {AS_AT_DISPLAY}</span>
@@ -69,7 +69,7 @@ const confidenceText: Record<string, string> = {
     </div>
     {note && <p class="note" set:html={note} />}
   </details>
-</aside>
+</div>
 
 <style>
   .asat {

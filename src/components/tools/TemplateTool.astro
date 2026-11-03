@@ -243,6 +243,8 @@ const autocomplete: Record<string, string> = { company: "organization", company_
       <p class="export-status" role="status" aria-live="polite" data-tpl-export-status></p>
     </div>
     <div class="sheet" role="region" aria-label="Document preview">
+      {/* Gives the document's own ### headings a parent in the page outline (letters have no ## of their own). */}
+      <h2 class="visually-hidden">{entry.data.title}: document preview</h2>
       <div class="letterhead" data-letterhead hidden>
         <img data-letterhead-img alt="Company logo" />
       </div>

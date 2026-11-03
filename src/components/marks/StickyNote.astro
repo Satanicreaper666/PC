@@ -13,11 +13,11 @@ interface Props {
 const { color = "yellow", title, tilt = -0.4, label, class: cls } = Astro.props;
 ---
 
-<aside class:list={["sticky", `sticky-${color}`, cls]} style={`--tilt:${tilt}deg`} aria-label={label ?? title} data-no-terms>
+<div role="note" class:list={["sticky", `sticky-${color}`, cls]} style={`--tilt:${tilt}deg`} aria-label={label ?? title} data-no-terms>
   <span class="tape" aria-hidden="true"></span>
   {title && <p class="sticky-title hand">{title}</p>}
   <div class="sticky-body"><slot /></div>
-</aside>
+</div>
 
 <style>
   .sticky {

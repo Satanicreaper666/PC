@@ -15,7 +15,7 @@ const hasPink = marked.some((m) => m.includes("hl-pink"));
 const hasYellow = marked.some((m) => /class="hl"/.test(m));
 ---
 
-<aside class="in-short notepaper" aria-label={title}>
+<div role="note" class="in-short notepaper" aria-label={title}>
   <p class="label hand">{title}</p>
   {
     items.length > 0 ? (
@@ -36,7 +36,7 @@ const hasYellow = marked.some((m) => /class="hl"/.test(m));
       </p>
     )
   }
-</aside>
+</div>
 
 <style>
   .in-short {
