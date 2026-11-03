@@ -19,6 +19,7 @@ import { LAYOUT, layoutChart, linePath, type Layout } from "../../lib/orgchart/l
 import { sampleOrgTable } from "../../lib/orgchart/sample.ts";
 import { chartSvg, colourOf, deptColours, esc, fit, metaLine } from "../../lib/orgchart/svg.ts";
 import { bestSheet, LoadError, readEmployeeFile, type Sheet } from "../analytics/load.ts";
+import { downloadBlob } from "../../scripts/csv.ts";
 
 const STORE_KEY = "peoplecraft-orgchart-v1";
 /** Above this many people, teams below the third level start collapsed. */
@@ -50,14 +51,7 @@ function icon(name: IconName, size = 16): Node {
   svg.setAttribute("height", String(size));
   return svg;
 }
-function download(name: string, blob: Blob) {
-  const url = URL.createObjectURL(blob);
-  const a = el("a", { attrs: { href: url, download: name } });
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-}
+const download = downloadBlob;
 const colLetter = (i: number): string => (i < 26 ? String.fromCharCode(65 + i) : colLetter(Math.floor(i / 26) - 1) + String.fromCharCode(65 + (i % 26)));
 const r1 = (v: number) => Math.round(v * 10) / 10;
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;

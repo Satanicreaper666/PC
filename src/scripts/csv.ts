@@ -1,18 +1,6 @@
-/**
- * CSV files that open cleanly in Excel and Google Sheets:
- * - UTF-8 with a byte-order mark, so ₹, é and – survive Excel on Windows;
- * - CRLF line ends and quotes only where a cell needs them;
- * - no cell that a spreadsheet would run as a formula (a leading =, +, -, @ is escaped with an apostrophe).
- */
-export function csvCell(value: unknown): string {
-  let s = value == null ? "" : String(value);
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
-export function toCsv(rows: unknown[][]): string {
-  return `﻿${rows.map((r) => r.map(csvCell).join(",")).join("\r\n")}\r\n`;
-}
+/** Saving files in the browser. The CSV writer itself is src/lib/csv.ts. */
+import { toCsv } from "../lib/csv.ts";
+export { csvCell, toCsv } from "../lib/csv.ts";
 
 /** "Engagement pulse survey" → "engagement-pulse-survey". */
 export function fileStem(text: string): string {

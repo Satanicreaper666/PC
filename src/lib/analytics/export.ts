@@ -2,28 +2,17 @@
  * CSV output: the dashboard summary (totals only, no names or individual
  * salaries) and a blank template with the columns the tool understands.
  */
+import { toCsv as writeCsv, type CsvValue } from "../csv.ts";
 import { isoDate } from "./dates.ts";
 import { GENDER_LABEL, type Gender } from "./fields.ts";
 import { dateLabel, monthLabel } from "./format.ts";
 import type { Dashboard } from "./metrics.ts";
 import type { Check } from "./quality.ts";
 
-export type CsvValue = string | number | null | undefined;
-
-/**
- * One CSV cell. Text that a spreadsheet would treat as a formula (=, +, −, @)
- * gets a leading apostrophe, because department and location names come from
- * the uploaded file.
- */
-export function csvCell(v: CsvValue): string {
-  if (v == null) return "";
-  if (typeof v === "number") return Number.isFinite(v) ? String(Math.round(v * 100) / 100) : "";
-  let s = String(v);
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
-export const toCsv = (rows: CsvValue[][]) => rows.map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
+export type { CsvValue } from "../csv.ts";
+export { csvCell } from "../csv.ts";
+/** No byte-order mark here: the page adds one when it saves the file. */
+export const toCsv = (rows: CsvValue[][]) => writeCsv(rows, { bom: false });
 
 const round1 = (n: number | null) => (n === null || !Number.isFinite(n) ? null : Math.round(n * 10) / 10);
 

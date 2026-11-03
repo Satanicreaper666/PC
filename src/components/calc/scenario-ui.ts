@@ -37,6 +37,7 @@ import {
   type Scenario,
   type ScenarioStore
 } from "../../lib/calc/scenarios";
+import { downloadBlob } from "../../scripts/csv.ts";
 
 export type ScenarioHost = {
   id: string;
@@ -178,15 +179,7 @@ function pageTitle(host: ScenarioHost): string {
   return clean(document.querySelector("h1")?.textContent) || host.resultLabel;
 }
 
-function download(name: string, text: string) {
-  const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
-  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
-  a.hidden = true;
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
-}
+const download = (name: string, text: string) => downloadBlob(name, new Blob([text], { type: "text/csv;charset=utf-8" }));
 
 /** The inputs and results on screen, as rows for a CSV file. */
 export function currentRows(host: ScenarioHost): string[][] {

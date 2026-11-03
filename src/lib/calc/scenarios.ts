@@ -11,6 +11,7 @@
  * - "Better" is marked only where a calculator says which way is better and
  *   one scenario is strictly best.
  */
+import { csvCell, toCsv as writeCsv } from "../csv.ts";
 
 export type Better = "higher" | "lower";
 
@@ -471,22 +472,9 @@ export function comparisonRows(c: Comparison, opts: { forCsv?: boolean } = {}): 
 
 /* ---------- CSV and tab-separated text ---------- */
 
-const PURE_NUMBER = /^-?\d+(\.\d+)?$/;
-
-/**
- * One CSV field (RFC 4180). Text that a spreadsheet could read as a formula
- * (starting with =, +, -, @, tab or CR) gets a leading apostrophe; plain numbers are left alone.
- */
-export function csvField(value: string): string {
-  let v = value ?? "";
-  if (/^[=+\-@\t\r]/.test(v) && !PURE_NUMBER.test(v)) v = `'${v}`;
-  return /[",\r\n]|^\s|\s$/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-}
-
-/** CSV text with Windows line endings and a byte-order mark, so Excel reads ₹ correctly. */
-export function toCsv(rows: string[][]): string {
-  return "﻿" + rows.map((r) => r.map(csvField).join(",")).join("\r\n") + "\r\n";
-}
+/** CSV for scenarios: the site's one writer (src/lib/csv.ts), under the names the calculators use. */
+export const csvField = (value: string): string => csvCell(value);
+export const toCsv = (rows: string[][]): string => writeCsv(rows);
 
 /** Tab-separated text: pastes into a spreadsheet as columns. */
 export function toTsv(rows: string[][]): string {

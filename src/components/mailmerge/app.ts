@@ -16,6 +16,7 @@ import { checkRows, problemText, summarise, unmappedRequired, type RowResult, ty
 import { sampleMergeTable, SAMPLE_ROWS } from "../../lib/mailmerge/sample.ts";
 import { longDate, readValue, type DateOrder } from "../../lib/mailmerge/values.ts";
 import { bestSheet, LoadError, readEmployeeFile, type Sheet } from "../analytics/load.ts";
+import { downloadBlob } from "../../scripts/csv.ts";
 
 /** Letters in one run. More than this makes a slow, very large Word file. */
 const MAX_ROWS = 1000;
@@ -39,14 +40,6 @@ const STATUS: Record<RowStatus, { label: string; cls: string }> = {
 };
 const pill = (status: RowStatus, text = STATUS[status].label) => el("span", { class: `mm-pill ${STATUS[status].cls}`, text });
 
-function downloadBlob(name: string, blob: Blob) {
-  const url = URL.createObjectURL(blob);
-  const a = el("a", { attrs: { href: url, download: name } });
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-}
 
 export function mountMailMerge(root: HTMLElement) {
   const q = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;

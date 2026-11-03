@@ -73,6 +73,7 @@ import Icon from "../ui/Icon.astro";
 <script>
   import { bindCalculator, inr, num, type CalcLine } from "../../scripts/calc-kit";
   import { designBands, checkPay, niceTicks, type Grade } from "../../lib/calc/salary-band-designer";
+  import { downloadCsv } from "../../scripts/csv";
 
   const root = document.querySelector<HTMLElement>('[data-calc="salary-band-designer"]')!;
   const chart = root.querySelector<HTMLElement>("[data-chart]")!;
@@ -181,12 +182,9 @@ import Icon from "../ui/Icon.astro";
   }
 
   tableArea.querySelector("[data-csv]")?.addEventListener("click", () => {
-    const head = "Grade,Minimum,Midpoint,Maximum,Spread %,Overlap with next grade %";
-    const lines = last.grades.map((g) => [g.grade, Math.round(g.min), Math.round(g.mid), Math.round(g.max), g.spreadPct.toFixed(1), g.overlapPct === null ? "" : g.overlapPct.toFixed(1)].join(","));
-    const blob = new Blob([[head, ...lines].join("\n")], { type: "text/csv" });
-    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "salary-bands.csv" });
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    const head = ["Grade", "Minimum", "Midpoint", "Maximum", "Spread %", "Overlap with next grade %"];
+    const lines = last.grades.map((g) => [g.grade, Math.round(g.min), Math.round(g.mid), Math.round(g.max), g.spreadPct.toFixed(1), g.overlapPct === null ? "" : g.overlapPct.toFixed(1)]);
+    downloadCsv("salary-bands.csv", [head, ...lines]);
   });
 
   bindCalculator("salary-band-designer", (v) => {

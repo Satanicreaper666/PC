@@ -21,6 +21,7 @@ import { buildEmployees, statusValues, type Employee, type RawTable, type ReadOp
 import { sampleTable } from "../../lib/analytics/sample.ts";
 import { ColumnChart, HBarChart, LineChart, RangeChart, type Tip } from "./charts.ts";
 import { bestSheet, LoadError, readEmployeeFile, type Sheet } from "./load.ts";
+import { downloadBlob } from "../../scripts/csv.ts";
 
 const C1 = "var(--c1)";
 const C2 = "var(--c2)";
@@ -73,14 +74,7 @@ function table(caption: string, head: string[], rows: (string | number)[][], num
   t.append(thead, tbody);
   return t;
 }
-function download(name: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
-  const a = el("a", { attrs: { href: url, download: name } });
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-}
+const download = (name: string, text: string) => downloadBlob(name, new Blob([text], { type: "text/csv;charset=utf-8" }));
 const colLetter = (i: number): string => (i < 26 ? String.fromCharCode(65 + i) : colLetter(Math.floor(i / 26) - 1) + String.fromCharCode(65 + (i % 26)));
 const avgText = num1;
 /** Rows under the header row (title rows above it don't count). */
