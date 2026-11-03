@@ -1,0 +1,580 @@
+---
+title: "Talent acquisition and the science of selection"
+description: "Design hiring that predicts performance: job analysis, EVP, sourcing, yield ratios, structured interviews, the validity research, AI screening and DPDP duties."
+kind: module
+module: 5
+block: core
+minutes: 30
+stage: recruit
+checked: 2026-11-04
+bigIdea: "Hiring is a prediction: the more structured and job-related your methods, the better the prediction and the fairer the process."
+situation: "A 1,200-person IT services company in Hyderabad must hire 300 graduates and 60 experienced engineers in the next six months. Last year's campus process, an aptitude test and a 20-minute unstructured interview, produced a batch in which three in ten had left or been let go within a year. The delivery head wants an AI tool that ranks CVs and scores video interviews, to move faster. What should the new process look like?"
+outcomes:
+  - "Turn a job analysis into competencies, knock-out criteria and interview questions"
+  - "Compare selection methods using validity evidence, and defend the mix you choose"
+  - "Calculate yield ratios and cost per hire, and use them to size and fix a hiring plan"
+  - "Design a structured interview and an assessment centre that are fair and job-related"
+  - "Evaluate the risks of AI screening and set controls that meet DPDP duties"
+summary:
+  - "Start with job analysis: the tasks, the competencies they need, and what good looks like after a year."
+  - "Structured interviews and job-knowledge tests predict best; unstructured interviews and years of experience predict poorly."
+  - "Sackett et al. (2022) revised Schmidt and Hunter (1998) downwards. Structure everything and combine job-related methods."
+  - "Yield ratios show where the funnel leaks; work backwards from hires to the applicants you need."
+  - "Test AI screening for validity and bias, keep humans reviewing decisions, and give candidates notice and another route."
+  - "Every new joiner must get an appointment letter; candidate data needs notice, purpose limits and deletion."
+schools:
+  xlri:
+    - "Talent Acquisition & Engagement (Term 1, core)"
+    - "Staffing and Employer Branding, Selection and Occupational Testing (electives)"
+  cipd:
+    - "5HR02 Talent management and workforce planning (selection methods; contracts and onboarding)"
+    - "7HR02 Resourcing and talent management to sustain success (LO2: recruitment and selection strategy)"
+    - "Profession Map specialist area: Resourcing (revised November 2024 to cover AI in recruitment and candidate experience)"
+  shrm:
+    - "Talent Acquisition (EVP, sourcing, selection methods, AI résumé screening, yield ratios, cost per hire)"
+    - "Technology Management (AI-bias awareness and data ethics)"
+  india:
+    - "Every employee must receive an appointment letter on joining, in the prescribed format (OSH Code)"
+    - "Candidate data falls under the DPDP Act, whose main duties apply from about May 2027; the IT Act's rules on sensitive data apply until then"
+    - "The Code on Wages bars discrimination on the ground of sex when recruiting for the same or similar work"
+  note: "XLRI teaches talent acquisition in the first term, CIPD weighs selection against ethics and inclusion, and SHRM tests it through metrics and judgement calls, now including AI screening."
+models:
+  - id: schmidt-hunter-validity
+    name: "Validity of selection methods (1998 review)"
+    by: "Frank Schmidt and John Hunter"
+    year: "1998"
+    idea: "Pulled together 85 years of research: work samples, cognitive tests and structured interviews predicted job performance best."
+    use: "As the historical baseline, for exams and for reading older HR writing on selection."
+    watch: "Later work argues it over-corrected for range restriction, which inflated several estimates."
+    cite: "Schmidt, F. L. and Hunter, J. E. (1998) The validity and utility of selection methods in personnel psychology. Psychological Bulletin, 124(2)."
+  - id: sackett-validity-revision
+    name: "Revised validity estimates (2022)"
+    by: "Paul Sackett, Charlene Zhang, Christopher Berry and Filip Lievens"
+    year: "2022"
+    idea: "Correcting less aggressively, most validities fall; structured interviews rank highest and cognitive tests lose their top place."
+    use: "Choosing and defending a mix of selection methods today."
+    watch: "Contested: Oh, Le and Roth (2023) argue the new corrections are too conservative."
+    cite: "Sackett, P. R., Zhang, C., Berry, C. M. and Lievens, F. (2022) Revisiting meta-analytic estimates of validity in personnel selection. Journal of Applied Psychology, 107(11)."
+  - id: campion-interview-structure
+    name: "Structure in the selection interview"
+    by: "Michael Campion, David Palmer and James Campion"
+    year: "1997"
+    idea: "Interviews predict better when the questions are job-based and the same for everyone, and answers are scored on anchored scales by trained raters."
+    use: "Designing or auditing an interview process."
+    watch: "Structure can feel rigid to interviewers, who drift back to chatting unless trained and checked."
+    cite: "Campion, M. A., Palmer, D. K. and Campion, J. E. (1997) A review of structure in the selection interview. Personnel Psychology, 50(3)."
+  - id: bray-assessment-centre
+    name: "Assessment centre"
+    by: "Douglas Bray and colleagues (AT&T Management Progress Study)"
+    year: "1956; reported 1966"
+    idea: "Trained assessors rate candidates on defined competencies across several exercises, then pool their judgements."
+    use: "Selecting or developing managers when several competencies matter and the stakes justify the cost."
+    watch: "Costly, and ratings often reflect the exercise more than the competency it was meant to measure."
+    cite: "Bray, D. W. and Grant, D. L. (1966) The assessment center in the measurement of potential for business management. Psychological Monographs, 80(17)."
+  - id: gilliland-applicant-reactions
+    name: "Fairness of selection systems"
+    by: "Stephen Gilliland"
+    year: "1993"
+    idea: "Candidates judge a process by justice rules: job-relatedness, a chance to perform, consistency, feedback, honesty and respect."
+    use: "Designing candidate experience and explaining rejections."
+    watch: "Reactions shape brand and offer acceptance more than they predict later job performance."
+    cite: "Gilliland, S. W. (1993) The perceived fairness of selection systems: an organizational justice perspective. Academy of Management Review, 18(4)."
+  - id: schneider-attraction-selection-attrition
+    name: "Attraction–selection–attrition"
+    by: "Benjamin Schneider"
+    year: "1987"
+    idea: "People are drawn to, chosen by and stay in organisations that resemble them, so firms drift towards sameness."
+    use: "Spotting how 'culture fit' hiring narrows the range of people and ideas."
+    watch: "A tendency, not a law; inclusive sourcing and structured selection can counter it."
+    cite: "Schneider, B. (1987) The people make the place. Personnel Psychology, 40(3)."
+  - id: wanous-realistic-job-preview
+    name: "Realistic job preview"
+    by: "John Wanous"
+    year: "1973"
+    idea: "Showing candidates the hard parts of a job as well as the good ones reduces early turnover."
+    use: "High-attrition roles such as campus, support and frontline hiring."
+    watch: "Average effects are small; it helps most when candidates have other options."
+    cite: "Premack, S. L. and Wanous, J. P. (1985) A meta-analysis of realistic job preview experiments. Journal of Applied Psychology, 70(4)."
+  - id: ambler-barrow-employer-brand
+    name: "The employer brand"
+    by: "Tim Ambler and Simon Barrow"
+    year: "1996"
+    idea: "Employment is a package of functional, economic and psychological benefits that can be described and managed like a brand."
+    use: "Writing an employee value proposition (EVP) that is true to the job."
+    watch: "Brand promises the job doesn't keep raise early attrition and damage trust."
+    cite: "Ambler, T. and Barrow, S. (1996) The employer brand. Journal of Brand Management, 4(3)."
+quiz:
+  - id: ta-validity-top
+    type: knowledge
+    q: "In Sackett and colleagues' 2022 re-analysis, which method had the highest average validity for predicting job performance?"
+    options:
+      - "General mental ability (aptitude) tests"
+      - "Structured interviews"
+      - "Unstructured interviews"
+      - "Years of job experience"
+    answer: 1
+    feedback:
+      - "Cognitive tests fell from .51 to .31 in the re-analysis: still useful, but no longer the top predictor."
+      - "Correct. Structured interviews averaged about .42, the highest mean in the 2022 estimates."
+      - "Unstructured interviews fell to about .19, less than half the structured figure."
+      - "Years of experience predicted very little, about .07."
+    why: "Job-specific, structured methods rank highest in the 2022 estimates; general predictors and unstructured judgement rank lower."
+  - id: ta-yield-backwards
+    type: knowledge
+    q: "Your past yield ratios are: applicants to shortlist 20%, shortlist to offer 25%, and offer to joining 80%. How many applicants do you need for 4 joiners?"
+    options:
+      - "20"
+      - "80"
+      - "100"
+      - "125"
+    answer: 2
+    feedback:
+      - "This uses only the first ratio; every later stage loses people too."
+      - "This forgets that one in five accepted offers doesn't join."
+      - "Correct. 4 ÷ 0.8 = 5 offers; 5 ÷ 0.25 = 20 shortlisted; 20 ÷ 0.2 = 100 applicants."
+      - "This applies the joining ratio twice."
+    why: "Work backwards from the hires you need, dividing by each stage's yield ratio in turn."
+  - id: ta-interview-structure
+    type: knowledge
+    q: "Which change most improves the validity of an interview?"
+    options:
+      - "Letting each interviewer choose questions that suit the candidate"
+      - "Same job-based questions for all, scored on anchored rating scales"
+      - "A panel discussion straight after the interview, before anyone scores"
+      - "Adding two more senior interviewers to the panel"
+    answer: 1
+    feedback:
+      - "Different questions for different people make answers impossible to compare."
+      - "Correct. Consistent, job-related questions and anchored scoring are the core of interview structure."
+      - "Discussing before scoring lets the first or loudest view anchor everyone else."
+      - "More interviewers add cost; without structure they add little accuracy."
+    why: "Structure has two parts: what you ask (job-based, consistent) and how you score (anchored scales, independent ratings)."
+  - id: ta-candidate-data
+    type: knowledge
+    q: "A vacancy has closed. What should happen to the personal data of the 180 candidates who weren't selected?"
+    options:
+      - "Keep it all indefinitely, in case a similar role opens later"
+      - "Delete it, unless the candidate agreed to a talent pool or a law requires it"
+      - "Share it with a partner company hiring for similar roles"
+      - "Keep the CVs on file but delete the interview notes"
+    answer: 1
+    feedback:
+      - "Keeping data 'just in case' goes against the DPDP Act's limits on purpose and storage."
+      - "Correct. Erase it when the purpose ends, keep it only with consent or a legal reason, and say so in your notice."
+      - "Using data for another purpose needs the candidate's consent."
+      - "CVs are personal data too; the same rule applies to both."
+    why: "Use data collected for a vacancy for that vacancy, keep it only as long as needed, then erase it. The DPDP Act's main duties apply from about May 2027; good practice can start now."
+  - id: ta-cognitive-tests
+    type: knowledge
+    q: "Which statement about cognitive ability (aptitude) tests is best supported by current evidence?"
+    options:
+      - "They are the single best predictor and can decide shortlists on their own"
+      - "They predict moderately and can widen group gaps, so combine them with other methods"
+      - "They have no measurable link with later job performance"
+      - "They are banned for private employers under Indian law"
+    answer: 1
+    feedback:
+      - "That was the older reading; the 2022 re-analysis places them below several structured methods."
+      - "Correct. Validity is moderate (about .31), and group differences make them risky as the only filter."
+      - "They do predict performance, just less than was once thought."
+      - "No Indian law bans them; the issue is valid and fair use."
+    why: "Use cognitive tests as one input among several job-related methods, and check pass rates by group."
+  - id: ta-referrals
+    type: judgement
+    q: "You are the talent acquisition lead at a 300-person fintech in Bengaluru. Referrals bring 60% of hires, and the engineering team comes almost entirely from three colleges. What do you do?"
+    options:
+      - "Stop the referral programme"
+      - "Keep referrals, but track pass-through rates and one-year results by source and group, widen sourcing, and put every candidate through the same structured assessment"
+      - "Set a quota for hires from outside referrals"
+      - "Leave it alone, because referred hires stay longer"
+    answer: 1
+    feedback:
+      - "Referrals are often a strong source; scrapping them throws away a good channel."
+      - "Best. You keep what works, measure quality and fairness, widen the pool and assess everyone the same way."
+      - "A quota treats the symptom without finding where the funnel narrows."
+      - "Retention matters, but a narrow pool limits talent and invites similarity bias."
+    why: "Diagnose with funnel data by source and group, widen the pool and standardise assessment before changing channels."
+  - id: ta-ai-vendor
+    type: judgement
+    level: advanced
+    q: "You are the CHRO of a 5,000-person global capability centre in Pune whose parent company is in Germany. A vendor offers an AI tool that ranks CVs and scores video interviews. What do you require before any pilot?"
+    options:
+      - "A demo that shows faster shortlisting on sample CVs"
+      - "Evidence that it predicts performance in your roles, adverse-impact testing on your own data, human review of rejections, notice to candidates with another route, DPDP-compliant data terms and a check against the EU AI Act"
+      - "A discount and a free trial period"
+      - "Sign-off from IT on data security"
+    answer: 1
+    feedback:
+      - "Speed isn't validity; a fast tool can be fast at the wrong thing."
+      - "Best. You test validity and fairness, keep people accountable, protect candidates' data and cover the EU rules that can reach a GCC."
+      - "Price comes after you know the tool works and is lawful."
+      - "Security matters but says nothing about validity or bias."
+    why: "Treat AI screening as a selection method: prove it is valid and fair, keep human oversight, and meet every regime you are exposed to."
+  - id: ta-skip-process
+    type: judgement
+    q: "A hiring manager wants to skip the structured interview for a former colleague 'everyone knows is great'. As the HR business partner, what do you do?"
+    options:
+      - "Agree, because speed matters and the manager knows the person"
+      - "Run the same work sample and structured interview, explaining that it protects the hire, the manager and the fairness of the process"
+      - "Refuse to process the hire at all"
+      - "Let the manager interview the candidate alone"
+    answer: 1
+    feedback:
+      - "Exceptions for people we know are exactly where similarity bias gets in."
+      - "Best. Consistency protects everyone, and a strong candidate will do well anyway."
+      - "Blocking the hire isn't proportionate; the candidate may be excellent."
+      - "A one-to-one, unstructured conversation is the least valid option."
+    why: "Apply the same process to every candidate, and explain the reason rather than just citing policy."
+  - id: ta-joining-drop
+    type: judgement
+    q: "You are the HR business partner for sales hiring in Chennai. The share of accepted offers that actually join has fallen from 80% to 55% in two quarters. What do you do first?"
+    options:
+      - "Raise offer salaries by 15%"
+      - "Find out where and why people drop out: time from interview to offer, counter-offers, notice periods and contact during notice; then fix the biggest causes"
+      - "Make more offers to cover the expected drop-outs"
+      - "Add a penalty to the offer letter for not joining"
+    answer: 1
+    feedback:
+      - "Money may not be the cause; diagnose before you spend."
+      - "Best. You trace the drop to its causes, from the funnel data and from candidates, before acting."
+      - "Over-offering hides the problem and can leave you with too many joiners."
+      - "A penalty is hard to enforce and damages your employer brand."
+    why: "Treat a falling yield ratio as a symptom: find the stage and the cause, then fix that."
+  - id: ta-written-validity
+    type: written
+    level: advanced
+    q: "Critically evaluate the claim that 'structured interviews are the best selection method'. Refer to Schmidt and Hunter (1998) and Sackett et al. (2022). (About 200 words.)"
+    why: "Model answer: The claim has strong support. Schmidt and Hunter's 1998 review placed structured interviews among the most valid methods (.51), alongside cognitive tests and work samples. Sackett and colleagues' 2022 re-analysis corrected less for range restriction, which lowered most estimates, but structured interviews kept the highest mean validity (.42), while cognitive tests fell to .31 and unstructured interviews to .19. Structure works because every candidate faces the same job-based questions, and trained raters score answers independently against anchored scales. For an Indian IT services firm, this means replacing a short unstructured chat with behavioural and situational questions drawn from a job analysis. There are limits. 'Best' depends on the role: a job-knowledge test or work sample may predict as well for technical work, and every method's validity varies widely across studies. The 2022 corrections are also disputed: Oh, Le and Roth (2023) argue they are too conservative. Structured interviews cost interviewer time and need training to stay structured. A balanced conclusion is that structured interviews are the strongest single method on current evidence, but a combination of job-related methods, such as a work sample plus a structured interview, is the better design."
+books:
+  - author: "Robert Gatewood, Hubert Feild and Murray Barrick"
+    title: "Human Resource Selection"
+    why: "The standard selection text: job analysis, reliability, validity and how each method is built and tested. Used in XLRI's talent acquisition course."
+  - author: "Herbert Heneman, Timothy Judge and John Kammeyer-Mueller"
+    title: "Staffing Organizations"
+    why: "Covers the whole staffing system, from planning and sourcing to selection decisions and offers, with a strong measurement thread."
+  - author: "Iris Bohnet"
+    title: "What Works: Gender Equality by Design"
+    year: "2016"
+    why: "Shows, with research, how structured interviews and better process design reduce bias, rather than training people out of it."
+sources:
+  - { title: "XLRI Admission Prospectus 2027 (PGDM HRM core courses)", url: "https://cloud-server.xlri.ac.in/file/6ae1febe65cd3e58180bb565", publisher: "XLRI – Xavier School of Management" }
+  - { title: "CIPD Level 5 Associate Diploma in People Management, specification v2.6", url: "https://www.cipd.org/globalassets/media/marketing/quals/2026/l5-associate-diploma-in-people-management-2.6.pdf", publisher: "CIPD" }
+  - { title: "SHRM Body of Applied Skills and Knowledge (BASK), 2026 edition", url: "https://www.shrm.org/content/dam/en/shrm/credentials/shrm-certification/bask/shrm-bask.pdf", publisher: "SHRM" }
+  - { title: "The Occupational Safety, Health and Working Conditions Code, 2020", url: "https://www.indiacode.nic.in/bitstream/123456789/22041/1/2020-37.pdf", publisher: "Government of India" }
+  - { title: "The Code on Wages, 2019", url: "https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf", publisher: "Government of India" }
+  - { title: "Digital Personal Data Protection Rules, 2025: explainer", url: "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/nov/doc20251117695301.pdf", publisher: "Press Information Bureau" }
+  - { title: "India's DPDP Act: phased rollout and key compliance milestones", url: "https://www.azbpartners.com/bank/indias-digital-personal-data-protection-act-phased-rollout-and-key-compliance-milestones/", publisher: "AZB & Partners" }
+  - { title: "Schmidt and Hunter (1998) The validity and utility of selection methods in personnel psychology", url: "https://doi.org/10.1037/0033-2909.124.2.262", publisher: "Psychological Bulletin" }
+  - { title: "Sackett, Zhang, Berry and Lievens (2022) Revisiting meta-analytic estimates of validity in personnel selection", url: "https://doi.org/10.1037/apl0000994", publisher: "Journal of Applied Psychology" }
+  - { title: "Campion, Palmer and Campion (1997) A review of structure in the selection interview", url: "https://doi.org/10.1111/j.1744-6570.1997.tb00709.x", publisher: "Personnel Psychology" }
+  - { title: "Bray and Grant (1966) The assessment center in the measurement of potential for business management", url: "https://doi.org/10.1037/h0093895", publisher: "Psychological Monographs" }
+  - { title: "Gilliland (1993) The perceived fairness of selection systems", url: "https://doi.org/10.5465/amr.1993.9402210155", publisher: "Academy of Management Review" }
+  - { title: "Schneider (1987) The people make the place", url: "https://doi.org/10.1111/j.1744-6570.1987.tb00609.x", publisher: "Personnel Psychology" }
+  - { title: "Premack and Wanous (1985) A meta-analysis of realistic job preview experiments", url: "https://doi.org/10.1037/0021-9010.70.4.706", publisher: "Journal of Applied Psychology" }
+  - { title: "The State of AI in HR 2026", url: "https://www.shrm.org/topics-tools/research/state-of-ai-hr-2026", publisher: "SHRM" }
+  - { title: "AI tools show biases in ranking job applicants' names (Oct 2024)", url: "https://www.washington.edu/news/2024/10/31/ai-bias-resume-screening-race-gender/", publisher: "University of Washington" }
+  - { title: "AI bias lawsuit against Workday: conditional certification of age claim", url: "https://www.proskauer.com/blog/ai-bias-lawsuit-against-workday-reaches-next-stage-as-court-grants-conditional-certification-of-adea-claim", publisher: "Proskauer" }
+  - { title: "EU AI Act omnibus agreement: postponed high-risk deadlines", url: "https://www.gibsondunn.com/eu-ai-act-omnibus-agreement-postponed-high-risk-deadlines-and-other-key-changes/", publisher: "Gibson Dunn" }
+related:
+  - handbooks/recruitment/05-structured-interviews
+  - handbooks/recruitment/03-sourcing
+  - handbooks/recruitment/09-metrics-mistakes-and-checklists
+  - handbooks/recruitment/06-offers-and-negotiation
+  - toolkit/interview-evaluation-form
+  - toolkit/cost-per-hire-calculator
+  - toolkit/offer-letter
+  - learn/04-workforce-planning-and-org-design
+faq:
+  - q: What is the most accurate way to select employees?
+    a: On current evidence, structured interviews and job-knowledge tests predict job performance best, with scored biodata and work samples close behind. Combining two or three job-related methods works better than any one alone; unstructured interviews and years of experience predict poorly.
+  - q: How do you calculate the yield ratio in recruitment?
+    a: Divide the number of people who reach the next stage by the number who entered the stage, and multiply by 100. For example, 40 shortlisted from 200 applicants is a yield ratio of 20%.
+  - q: Is an appointment letter mandatory in India?
+    a: Yes. Since the OSH Code came into force on 21 November 2025, every employer must give every employee an appointment letter in the prescribed format.
+  - q: Can we use AI to screen CVs in India?
+    a: No Indian law bans it, but data protection and anti-discrimination law apply to what it does. Test the tool for validity and bias on your own data, keep a person reviewing decisions, and tell candidates how their data is used.
+keywords: [selection methods validity, structured interview vs unstructured interview, recruitment yield ratio, cost per hire formula, schmidt and hunter 1998, ai in recruitment risks, assessment centre in hr, appointment letter mandatory india]
+draft: false
+---
+
+## Ask what your old process predicted
+
+Every hiring method is a bet that something you can see before the job predicts what you'll see in it. The Hyderabad company bet on an aptitude test and a 20-minute conversation. Three in ten of last year's batch had left or been let go within a year, so the bet didn't pay.
+
+Before buying a faster tool, ask what the current process measures. An aptitude test measures general reasoning. A short unstructured interview mostly measures whether the interviewer liked the candidate. Neither looks at what a new engineer actually does in the first year: write and debug code, learn a client's systems, and work in a team to deadlines. A faster version of the same process would make the same mistakes faster.
+
+Talent acquisition is a system, and quality depends on every stage.
+
+<Figure title="Hiring as a system" caption="Follow the stages in order; quality of hire, checked at 6 and 12 months, tells you which stage to fix.">
+  <Flow
+    steps={[
+      { who: "HR and hiring manager", title: "Analyse the job", detail: "Tasks, competencies, what good looks like" },
+      { who: "Talent acquisition", title: "Attract and source", detail: "EVP, channels, a realistic preview" },
+      { who: "Talent acquisition", title: "Screen", detail: "Knock-out criteria, applied the same way" },
+      { who: "Trained assessors", title: "Assess", detail: "Work sample and structured interview" },
+      { who: "Hiring manager and HR", title: "Decide and offer", detail: "Scores first, discussion second" }
+    ]}
+    outcomes={[
+      { title: "Quality of hire", detail: "Performance and retention against the job analysis", tone: "good" }
+    ]}
+  />
+</Figure>
+
+For HR, the discipline is to define success first, measure it after a year, and trace failures back to the stage that caused them.
+
+## Define the job before you search
+
+**Job analysis** is the foundation of everything that follows, and it is what makes a selection decision defensible. Common methods:
+
+- **Interviews and observation** with job holders and their managers.
+- **Critical incidents:** managers describe real examples of very good and very poor performance, which become interview questions and rating anchors.
+- **Task inventories and questionnaires,** such as the Position Analysis Questionnaire, with O*NET as a reference library of job descriptions.
+
+The output is a short list of tasks and the competencies they need, split into knock-out criteria and desirable ones. Lyle and Signe Spencer's competency iceberg (1993) is a useful picture: some competencies are easy to see and train, while others sit deeper and are worth selecting for.
+
+<Figure title="The competency iceberg" caption="Read top to bottom: skills and knowledge are easy to test and to train later; traits and motives are hard to see and hard to change, so select for them.">
+  <Iceberg
+    aboveLabel="Easy to see, test and train"
+    belowLabel="Hard to see, slow to change"
+    above={[
+      { label: "Knowledge", note: "e.g. a programming language" },
+      { label: "Skills", note: "e.g. debugging, writing clear tests" }
+    ]}
+    below={[
+      { label: "Self-concept and values", note: "e.g. pride in quality" },
+      { label: "Traits", note: "e.g. persistence, conscientiousness" },
+      { label: "Motives", note: "e.g. drive to learn and achieve" }
+    ]}
+  />
+</Figure>
+
+Then decide what you offer. An **employee value proposition (EVP)** is the honest answer to "why work here?": the work, the growth, the pay and the people. Ambler and Barrow argued in 1996 that employment can be managed like a brand. Wanous's **realistic job preview** adds a warning: tell candidates the hard parts too, such as night shifts, client pressure or a bench period, because people who join with accurate expectations leave less.
+
+Choose sourcing channels by role. Referrals are fast and referred hires often stay longer, but they recruit people like your current staff. Benjamin Schneider's attraction–selection–attrition idea explains why firms drift towards sameness. See [writing job descriptions](/handbooks/recruitment/writing-job-descriptions/), [sourcing](/handbooks/recruitment/sourcing/) and [employer branding on a small budget](/handbooks/recruitment/employer-branding-on-a-small-budget/).
+
+## How well do selection methods predict performance?
+
+**Validity** is the correlation between scores at hiring and performance later. Zero means the method predicts no better than chance; one would be perfect. In selection research, around .40 is strong and around .20 is weak. A validity of .40 doesn't mean 40% of decisions are right; it measures how closely scores and later performance move together.
+
+In 1998, Frank Schmidt and John Hunter combined 85 years of studies into one table, and it shaped HR textbooks for two decades. In 2022, Paul Sackett and colleagues showed that earlier reviews had over-corrected for **range restriction**, the fact that studies only see the performance of people who were hired. Correcting less aggressively, most estimates fell, and the ranking changed.
+
+<Figure title="How well each method predicts job performance" caption="Compare the columns: higher numbers predict better. Most 2022 estimates are lower, and the order changes." wide>
+  <Compare
+    columns={["Schmidt and Hunter (1998)", "Sackett et al. (2022)"]}
+    highlight={1}
+    rows={[
+      { label: "Structured interview", values: [".51", ".42 (highest)"] },
+      { label: "Job-knowledge test", values: [".48", ".40"] },
+      { label: "Biodata (scored life-history questions)", values: [".35", ".38"] },
+      { label: "Work sample test", values: [".54", ".33"] },
+      { label: "Cognitive ability (aptitude) test", values: [".51", ".31"] },
+      { label: "Integrity test", values: [".41", ".31"] },
+      { label: "Assessment centre", values: [".37", ".29"] },
+      { label: "Conscientiousness questionnaire", values: [".31", ".19"] },
+      { label: "Unstructured interview", values: [".38", ".19"] },
+      { label: "Years of job experience", values: [".18", ".07"] }
+    ]}
+  />
+</Figure>
+
+What this means for HR:
+
+- **Structured, job-specific methods lead.** Structured interviews and job-knowledge tests sit at the top, with scored biodata and work samples close behind.
+- **Cognitive tests still help, but less than was claimed.** Because they can show larger gaps between groups, use them as one input, not as the only filter.
+- **Unstructured interviews and years of experience predict poorly.** Neither should decide a hire.
+- **Combine methods,** and check them against your own results, because validity varies widely from study to study.
+
+<Callout type="note" title="At strategic level (SHRM-SCP, CIPD Level 7)">
+Utility analysis turns validity into money: a more valid method, used on many hires in a role where performance varies a lot, can be worth far more than it costs. Weigh that against the diversity–validity dilemma, in which some valid methods widen group gaps. A strategic answer designs the whole system: which methods, in what order, with what checks on fairness.
+</Callout>
+
+## Measure the funnel: yield ratios and cost per hire
+
+A hiring funnel narrows at every stage. The **yield ratio** of a stage is the share of people who move on to the next one. Yield ratios do two jobs. Worked backwards from the hires you need, they tell you how many applicants to attract. Compared over time and between groups, they show where the process leaks or where it may be unfair.
+
+<Figure title="Example: the funnel for 60 experienced engineers" caption="Read from the widest stage down: each figure is the number who reached that stage, and its percentage of the stage above is that stage's yield ratio. Example numbers only." wide>
+  <Funnel
+    stages={[
+      { label: "Applied", value: 2000, display: "2,000", note: "Example: portals, referrals, agencies" },
+      { label: "Shortlisted after screening", value: 500, display: "500", note: "Knock-out criteria applied the same way" },
+      { label: "Passed the work sample", value: 200, display: "200", note: "A 90-minute coding task" },
+      { label: "Offered after the panel", value: 80, display: "80", note: "Structured interview, scored independently" },
+      { label: "Joined", value: 60, display: "60", note: "After notice periods of up to 90 days" }
+    ]}
+  />
+</Figure>
+
+**Cost per hire** is total hiring costs for a period, external and internal, divided by the people who joined in that period. Counting your own team's time matters: leave it out and in-house hiring looks free.
+
+<Worked title="Worked example: yield ratios and cost per hire for the Hyderabad engineers">
+
+All figures are an illustrative example for the six months in which the company hired 60 experienced engineers.
+
+**Step 1: yield ratios.** From the funnel: shortlist 500 ÷ 2,000 = 25%; work sample 200 ÷ 500 = 40%; offer 80 ÷ 200 = 40%; joining 60 ÷ 80 = 75%. Overall, 60 ÷ 2,000 = 3% of applicants joined.
+
+**Step 2: plan the next round.** Next half-year needs 60 joiners again. Suppose faster offers and better contact during notice periods lift joining from 75% to 85%. Working backwards:
+
+| Stage | People needed | Calculation |
+| --- | --- | --- |
+| Offers | 71 | 60 ÷ 0.85 |
+| Pass the work sample | 178 | 71 ÷ 0.40 |
+| Shortlisted | 445 | 178 ÷ 0.40 |
+| Applicants | 1,780 | 445 ÷ 0.25 |
+
+Fixing a late stage saves effort at every stage above it: about 220 applications, 55 work samples and 22 panel interviews.
+
+**Step 3: add up the costs.**
+
+External costs, **₹38,80,000**:
+
+- Agency fees: 12 hires × ₹1,50,000 = ₹18,00,000
+- Referral bonuses: 20 hires × ₹50,000 = ₹10,00,000
+- Job portals and advertising: ₹6,00,000
+- Online assessment platform: ₹3,00,000
+- Background checks: 60 × ₹3,000 = ₹1,80,000
+
+Internal costs, **₹25,05,000**:
+
+- Recruiters: 3 × ₹9 lakh CTC × 6 of 12 months × 80% of their time = ₹10,80,000
+- Interviewers: 850 hours × ₹1,500 an hour = ₹12,75,000
+- Applicant tracking system, share for the period: ₹1,50,000
+
+Total hiring costs: **₹63,85,000**.
+
+Interviewer hours: 500 work samples reviewed at 30 minutes each (250 hours), plus 200 panel interviews with two interviewers for 90 minutes (600 hours). The hourly cost is an annual CTC of ₹30 lakh ÷ about 2,000 working hours.
+
+**Step 4: the result.** Cost per hire = ₹63,85,000 ÷ 60 = **₹1,06,417**. The 60 hires have an average CTC of ₹18 lakh, ₹10.8 crore in all, so the recruiting cost ratio is ₹63.85 lakh ÷ ₹10.8 crore, about **5.9%**.
+
+**What to do with it.** Interviewer time is the largest hidden cost, so a sharper screen that sends fewer people to the panel saves real money. Before cutting agency or referral spend, compare each channel's one-year retention and performance, not just its cost. The [cost per hire calculator](/toolkit/cost-per-hire-calculator/) does this arithmetic for you.
+
+</Worked>
+
+## Structure the interview, and treat candidates fairly
+
+Michael Campion and colleagues reviewed the research on interview structure in 1997. Structure has two halves: **what you ask** (job-based questions, the same for everyone) and **how you score** (anchored scales, independent ratings, trained interviewers). Most of the gain in validity comes from doing both.
+
+<Figure title="Building a structured interview" caption="Work through the steps in order; skipping the anchors or scoring after discussion undoes most of the benefit.">
+  <Steps
+    items={[
+      { title: "Start from the job analysis", body: "Pick the four to six competencies that matter most in the first year." },
+      { title: "Write the questions", body: "Behavioural ('Tell me about a time you…') and situational ('What would you do if…'), the same for every candidate." },
+      { title: "Anchor the scores", body: "Describe what a weak, adequate and strong answer sounds like for each question." },
+      { title: "Brief the panel", body: "Agree who asks what, how to probe without leading, and which questions are never asked." },
+      { title: "Score before you talk", body: "Each interviewer scores alone; then the panel discusses only the differences." },
+      { title: "Check the results", body: "Compare scores with performance at 6 and 12 months, and pass rates across groups." }
+    ]}
+  />
+</Figure>
+
+**Assessment centres** go further. Trained assessors watch candidates across several exercises, such as an in-tray task, a group discussion, a role-play and a presentation, and rate each competency more than once before pooling their judgements. Its business use grew out of AT&T's management studies from 1956. It costs more than an interview, so keep it for managerial roles where several competencies matter. Many Indian employers run the same design as a "development centre" to guide promotions and development plans.
+
+**Candidate experience** is part of selection, not an extra. Stephen Gilliland showed that candidates judge a process by rules of fairness: is it related to the job, do I get a chance to show what I can do, is everyone treated the same, am I told the outcome honestly and respectfully? In India, where 60- to 90-day notice periods and counter-offers are common, a process that feels slow or disrespectful also loses people between offer and joining. See [structured interviews](/handbooks/recruitment/structured-interviews/), [screening and shortlisting](/handbooks/recruitment/screening-and-shortlisting/) and the [interview evaluation form](/toolkit/interview-evaluation-form/).
+
+## AI screening: test it before you trust it
+
+AI now drafts job ads, ranks CVs, schedules interviews and scores video or voice interviews. Recruiting is the most common use of AI in HR in SHRM's 2026 survey. The promise is speed and consistency. The risk is that a tool learns the patterns in past decisions, including their biases, and repeats them at scale.
+
+The warning signs are well documented:
+
+- In a 2024 University of Washington study of more than three million comparisons, three large language models ranking résumés preferred white-associated names 85% of the time and female-associated names only 11% of the time.
+- Amazon dropped an experimental CV-ranking tool after it learned to mark down CVs that mentioned women's activities (reported in 2018).
+- In May 2025, a US court let an age-discrimination claim against an HR-technology vendor, *Mobley v. Workday*, proceed as a nationwide collective action. Vendors as well as employers can now be in the frame.
+
+Regulation is catching up. The EU AI Act treats AI used to recruit or select people as **high-risk**; after amendments in 2026, the duties on employers using such systems apply from 2 December 2027. Indian capability centres whose tools affect people in the EU may be caught. India has no AI-specific law, but the DPDP Act and anti-discrimination laws apply to what a tool does.
+
+<Figure title="Before you let an AI tool screen candidates" caption="Answer each question in order; any 'no' means fix that first, not pilot anyway.">
+  <DecisionTree
+    node={{
+      q: "Is there evidence it predicts performance in your roles?",
+      detail: "Validation on jobs like yours, not just a vendor demo",
+      no: { result: "Don't use it to decide", detail: "Use it, at most, for scheduling or FAQs", tone: "bad" },
+      yes: {
+        q: "Have you tested pass rates by group on your own data?",
+        no: { result: "Test for adverse impact first", tone: "accent" },
+        yes: {
+          q: "Does a person review rejections, with a route to ask for one?",
+          no: { result: "Add human review and an appeal route", tone: "accent" },
+          yes: { result: "Pilot it", detail: "Tell candidates, keep logs, re-check every quarter", tone: "good" }
+        }
+      }
+    }}
+  />
+</Figure>
+
+Write the controls into the vendor contract: audit rights, limits on how candidate data is used, and a duty to share bias-test results.
+
+## Where experts disagree
+
+- **The numbers themselves.** Oh, Le and Roth (2023) argue that Sackett's corrections are too cautious and understate validity; Sackett and colleagues replied the same year. Treat it as a live debate about method. The practical message survives either way: structure everything, combine job-related methods, and never let an unstructured interview decide.
+- **Validity against diversity.** Some of the more valid tools, cognitive tests in particular, can produce larger gaps between groups. Researchers call this the diversity–validity dilemma. Combining methods and weighting them with care can narrow the gap, usually at some cost in accuracy; there is no free answer.
+- **Fit or sameness?** Hiring for "culture fit" can mean shared values, or it can mean people like us. Schneider's attraction–selection–attrition idea predicts the second. Many employers now ask whether a candidate adds something the team lacks.
+- **Gut feel against structure.** Managers trust their own judgement of people and resist structured tools, even though the evidence favours structure. AI adds a new version of the argument: early field studies of AI-led interviews report better results, but most are working papers or vendor-funded, and bias and explainability remain open questions.
+
+A good answer cites the evidence, shows how it applies to the role in the case, names the fairness trade-off, and proposes a design that balances them.
+
+## In India
+
+- **Appointment letters.** The OSH Code requires every employer to give every employee an appointment letter, in the format the rules prescribe. Staff already employed when the Code started on 21 November 2025 were to get one by about 20 February 2026. An offer letter doesn't replace it. Cover the designation, nature of employment (permanent or fixed-term), date of joining, wages and their components, and the social security that applies. State formats may differ. See [offers and negotiation](/handbooks/recruitment/offers-and-negotiation/), the [offer letter](/toolkit/offer-letter/) and the [appointment letter](/toolkit/appointment-letter/).
+- **Candidate data under the DPDP Act.** Most of the Act's duties start in about May 2027. Until then, the IT Act's rules require written consent before collecting sensitive personal data such as health, biometric or financial information. It isn't settled that the Act's "employment" ground covers people who aren't yet employees, so give candidates a clear notice and take consent for the application, any talent pool and background checks. Collect only what you need, protect it, and delete it when the vacancy closes. Failing to protect personal data can attract a penalty of up to ₹250 crore. See [handling candidate data with care](/handbooks/recruitment/screening-and-shortlisting/).
+- **Equal treatment.** The Code on Wages bars discrimination on the ground of sex when recruiting for the same or similar work. The Rights of Persons with Disabilities Act 2016 requires every establishment to have an equal opportunity policy; offer reasonable adjustments to tests and interviews as a matter of course. Never ask about caste, religion, marriage plans or pregnancy.
+- **Offer to joining.** Long notice periods, counter-offers and notice buy-outs make the gap between offer and day one the riskiest stage in Indian hiring. Keep in touch during the notice period and track your joining rate by source. See [onboarding from offer to day 90](/handbooks/recruitment/onboarding-day-1-to-90/).
+
+## Practise the situation
+
+<Scenario
+  title="Redesigning campus and lateral hiring in Hyderabad"
+  start="open"
+  nodes={{
+    open: {
+      text: "You're the head of talent acquisition at the Hyderabad IT services company. The delivery head wants the AI tool that ranks CVs and scores video interviews live in four weeks, before campus season. What do you do?",
+      choices: [
+        { label: "Sign the vendor and go live for this season", to: "rushed" },
+        { label: "Keep the current process and add a second unstructured interview", to: "more" },
+        { label: "Redesign first: job analysis, a work sample and structured interviews; use AI only for scheduling for now", to: "redesign" }
+      ]
+    },
+    rushed: {
+      text: "Shortlisting is faster. Three months later, candidates from two partner colleges, many of them women, are passing the video screen at well under half the rate of others, and nobody can explain why. The client asks how you hire.",
+      outcome: "poor",
+      debrief: "An unvalidated tool was used to decide. Without adverse-impact testing, human review and candidate notice, speed came at the cost of fairness, legal risk and trust."
+    },
+    more: {
+      text: "Two conversations take twice the time and still don't look at the work. First-year exits stay near three in ten.",
+      outcome: "poor",
+      debrief: "Adding more unstructured judgement adds little validity. The Sackett estimates put unstructured interviews at about .19."
+    },
+    redesign: {
+      text: "With delivery managers you build a short coding work sample and a structured interview with anchored scores. Hiring managers complain that it takes longer. What now?",
+      choices: [
+        { label: "Let senior managers skip the scoring sheets when they're confident", to: "skip" },
+        { label: "Train interviewers, shorten the work sample and share early pass-through data with managers", to: "data" }
+      ]
+    },
+    skip: {
+      text: "Half the panels stop scoring. Decisions drift back to gut feel, and you can no longer compare candidates or check fairness.",
+      outcome: "mixed",
+      debrief: "Structure only works if it is used. Skipped anchors and unscored interviews remove most of the gain in validity and the audit trail."
+    },
+    data: {
+      text: "Interview time falls by a third. After three months, though, women pass the work sample at about 60% of the men's rate. What do you do?",
+      choices: [
+        { label: "Investigate the work sample: content, time limits and conditions; adjust, re-test and keep monitoring", to: "fix" },
+        { label: "Drop the work sample and go back to interviews only", to: "drop" }
+      ]
+    },
+    fix: {
+      text: "You find a time limit that penalised candidates on slower college networks and two questions that relied on a niche framework. After changes, pass rates converge, and the first cohort's six-month ratings are the best in three years.",
+      outcome: "good",
+      debrief: "You based methods on job analysis, used structure and a work sample, and treated a gap in pass rates as a signal to investigate. That is valid, fair selection in practice."
+    },
+    drop: {
+      text: "The gap in pass rates disappears, but so does your best predictor of coding performance. First-year exits creep back up.",
+      outcome: "mixed",
+      debrief: "Dropping a valid method trades accuracy for an easy fix. The better move is to find and fix the source of the gap, which keeps both validity and fairness."
+    }
+  }}
+/>
+
+<Callout type="tip" title="Try it at work (about 30 minutes)">
+Take one role you hire for often. Pull the last quarter's numbers and work out the yield ratio at each stage, overall and for women and men separately. Then list what each stage actually measures, and mark it against the role's top four competencies. Where a stage measures nothing on the list, or where one group's pass rate is far below another's, you have found the stage to redesign first.
+</Callout>

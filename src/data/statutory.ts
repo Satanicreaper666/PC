@@ -143,7 +143,7 @@ export const STAT: Record<string, StatFact> = {
   }),
   "wages.monthlyPayDay": fact({
     value: 7,
-    display: "before the 7th of the next month",
+    display: "by the 7th of the next month",
     label: "Latest day to pay monthly-rated wages",
     law: "Code on Wages, 2019 s.17(1)(iv)",
     source: S.wagesCode,

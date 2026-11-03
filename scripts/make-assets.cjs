@@ -4,6 +4,8 @@
  *   favicon.svg, icons/*.png, og/*.png (1200×630), site.webmanifest
  *
  * Run: node scripts/make-assets.cjs   (needs Playwright's Chromium)
+ * Only some social images: node scripts/make-assets.cjs learn glossary
+ * (names are og/<name>.png; the favicon, icons and manifest are then left as they are).
  */
 const fs = require("node:fs");
 const path = require("node:path");
@@ -29,9 +31,12 @@ function weave({ warp = "#2F3786", weft = "#949EE2", accent = "#EFAB22", gap = "
   return `<g stroke="${gap}" stroke-width="1.3" paint-order="stroke">${wefts}${warps}${over}</g>`;
 }
 
+/* Names given on the command line limit the run to those social images. */
+const only = process.argv.slice(2);
+
 /* Favicon: the mark on a white rounded tile so it reads in light and dark tab bars. */
 const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#FFFFFF"/><g transform="translate(3 3) scale(0.8125)">${weave()}</g></svg>`;
-fs.writeFileSync(path.join(pub, "favicon.svg"), faviconSvg);
+if (!only.length) fs.writeFileSync(path.join(pub, "favicon.svg"), faviconSvg);
 
 /* ---------- OG images ---------- */
 const booksSrc = fs.readFileSync(path.join(root, "src/data/books.ts"), "utf8");
@@ -47,6 +52,7 @@ const og = [
   { file: "toolkit", kicker: "Toolkit", title: "HR tools that work in your browser", sub: "Calculators, letters, forms, policies and checklists, from hiring to exit. Nothing you type leaves your device." },
   { file: "jd-library", kicker: "JD library", title: "Job descriptions, ready to adapt", sub: "Fill in your company's details, download a Word file, and interview with questions that show what a strong answer looks like." },
   { file: "glossary", kicker: "Glossary", title: "Indian workplace terms, in one sentence each", sub: "CTC, F&F, LWP, UAN, gratuity, comp-off and more, each linked to the page that goes deeper." },
+  { file: "learn", kicker: "PeopleCraft Learn", title: "Learn HR, one module at a time", sub: "A free course built from what XLRI, CIPD and SHRM teach, with Indian law and practice. Diagrams, practice and cases. No sign-up." },
   ...["labour-law", "tds", "recruitment", "hr-professional"].map((id) => ({ file: id, kicker: "Handbook", ...book(id) }))
 ];
 
@@ -109,12 +115,19 @@ function iconHtml(size, { pad, radius, bg }) {
   const page = await browser.newPage({ deviceScaleFactor: 1 });
 
   fs.mkdirSync(path.join(pub, "og"), { recursive: true });
+  const unknown = only.filter((name) => !og.some((o) => o.file === name));
+  if (unknown.length) throw new Error(`No social image called ${unknown.join(", ")}`);
   for (const o of og) {
+    if (only.length && !only.includes(o.file)) continue;
     await page.setViewportSize({ width: 1200, height: 630 });
     await page.setContent(ogHtml(o), { waitUntil: "load" });
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: path.join(pub, "og", `${o.file}.png`) });
     console.log("og/" + o.file + ".png");
+  }
+  if (only.length) {
+    await browser.close();
+    return;
   }
 
   fs.mkdirSync(path.join(pub, "icons"), { recursive: true });

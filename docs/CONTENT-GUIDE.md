@@ -1,6 +1,6 @@
 # PeopleCraft content guide
 
-PeopleCraft is a **free, public HR library for India**: four handbooks, a toolkit (calculators, letters, forms, policies, checklists, surveys, plans), a people-analytics tool and a glossary. No sign-up, no tracking, English (India). Readers: HR professionals, founders and small businesses, employees, students and job seekers.
+PeopleCraft is a **free, public HR library for India**: four handbooks, a free HR course (PeopleCraft Learn, at `/learn/`; writers also read `docs/LEARN-GUIDE.md`), a toolkit (calculators, letters, forms, policies, checklists, surveys, plans), a people-analytics tool and a glossary. No sign-up, no tracking, English (India). Readers: HR professionals, founders and small businesses, employees, students and job seekers.
 
 This guide is the contract for everyone writing or rebuilding pages. Read it fully before you start.
 

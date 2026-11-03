@@ -1,0 +1,152 @@
+---
+/**
+ * A worked example: the problem, the steps, the answer, in Markdown (tables too).
+ * <Worked title="Worked example: will doubling the bonus work?">…markdown…</Worked>
+ *
+ * On the desk it is a sheet torn from a graph-paper pad: squared paper for working
+ * things out, with "Worked example" pencilled at the top, because pencil means
+ * provisional (docs/ART-DIRECTION.md, "Marks and stationery"): the figures are an
+ * illustration, not a measurement. Tables sit on white and scroll sideways on phones.
+ */
+import { uid } from "./uid";
+interface Props {
+  title?: string;
+}
+const { title } = Astro.props;
+const id = uid("wk-");
+// Writers often start the title with "Worked example:"; the pencilled tag already says it.
+const bare = (title ?? "").replace(/^\s*worked example\s*[:.–—-]?\s*/i, "").trim();
+const heading = bare ? bare.charAt(0).toUpperCase() + bare.slice(1) : "";
+---
+
+<div class="worked" data-learn="worked">
+  <p class="wk-tag pencil" aria-hidden="true">Worked example</p>
+  {
+    heading && (
+      <h3 class="wk-title" id={id}>
+        <span class="visually-hidden">Worked example: </span>
+        {heading}
+      </h3>
+    )
+  }
+  {!heading && <p class="visually-hidden">Worked example</p>}
+  <div class="wk-body">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .worked {
+    --sq: 0.75rem;
+    position: relative;
+    margin-block: 2rem;
+    padding: 1.6rem clamp(1rem, 0.6rem + 1.6vw, 1.75rem) 1.5rem;
+    border-radius: 2px 2px 4px 4px;
+    background-color: #fcfcff;
+    /* Engineering pad: fine squares, a stronger line every five. */
+    background-image:
+      linear-gradient(rgb(76 86 190 / 0.13) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(76 86 190 / 0.13) 1px, transparent 1px),
+      linear-gradient(rgb(76 86 190 / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(76 86 190 / 0.06) 1px, transparent 1px);
+    background-size:
+      calc(var(--sq) * 5) calc(var(--sq) * 5),
+      calc(var(--sq) * 5) calc(var(--sq) * 5),
+      var(--sq) var(--sq),
+      var(--sq) var(--sq);
+    background-position: -1px -1px;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07),
+      4px 14px 26px -16px rgb(17 20 58 / 0.32);
+  }
+  /* Torn from the pad: a row of perforations along the top. */
+  .worked::before {
+    content: "";
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    top: 0.45rem;
+    height: 4px;
+    background: radial-gradient(circle, rgb(17 20 58 / 0.18) 1.3px, transparent 1.8px) 0 50% / 10px 4px repeat-x;
+  }
+  .wk-tag {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    font-size: 1.35rem;
+    line-height: 1;
+    transform: rotate(-3deg);
+  }
+  .worked .wk-title {
+    margin: 0.35rem 7.5rem 0 0;
+    font-size: var(--fs-lg);
+    line-height: 1.2;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .wk-body {
+    margin-top: 0.9rem;
+    font-size: var(--fs-base);
+    line-height: 1.65;
+  }
+  .wk-body > :global(* + *) {
+    margin-top: 0.9em;
+  }
+  .wk-body :global(p strong) {
+    font-weight: 680;
+  }
+  /* Tables: white paper laid on the pad. They use the full width and wrap their cells; only a
+     table too wide even then scrolls, and then a shadow at the cut edge shows there is more. */
+  .wk-body :global(.table-wrap) {
+    max-width: 100%;
+    min-width: 0;
+    background:
+      linear-gradient(90deg, var(--paper) 30%, rgb(255 255 255 / 0)) left / 1.5rem 100% no-repeat local,
+      linear-gradient(270deg, var(--paper) 30%, rgb(255 255 255 / 0)) right / 1.5rem 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgb(17 20 58 / 0.22), transparent) left / 0.75rem 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgb(17 20 58 / 0.22), transparent) right / 0.75rem 100% no-repeat scroll,
+      var(--paper);
+    box-shadow: 1px 1.5px 0 rgb(17 20 58 / 0.06);
+  }
+  .wk-body :global(table) {
+    width: 100%;
+    table-layout: auto;
+  }
+  /* Long words may break, short ones never: the narrowest a column gets is its longest word. */
+  .wk-body :global(:is(th, td)) {
+    overflow-wrap: break-word;
+  }
+  @media (max-width: 34rem) {
+    .wk-body :global(:is(th, td)) {
+      padding: 0.5rem 0.55rem;
+      font-size: var(--fs-xs);
+    }
+  }
+  .wk-body :global(:where(ul, ol):not([class])) {
+    padding-left: 1.3em;
+  }
+  @media (max-width: 30rem) {
+    .wk-tag {
+      position: static;
+      display: block;
+      margin: -0.4rem 0 0.4rem;
+    }
+    .worked .wk-title {
+      margin-right: 0;
+    }
+  }
+  @media print {
+    .worked {
+      box-shadow: none;
+      border: 1px solid #999;
+      background-image: none;
+      break-inside: avoid;
+    }
+    .worked::before {
+      display: none;
+    }
+    .wk-body :global(.table-wrap) {
+      background: none;
+    }
+  }
+</style>

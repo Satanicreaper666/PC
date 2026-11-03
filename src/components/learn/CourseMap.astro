@@ -1,0 +1,657 @@
+---
+/**
+ * The course loom: PeopleCraft Learn as one piece of woven cloth.
+ *
+ * Each block of the course is a band of cloth, woven in its own structure and
+ * dyed a shade deeper than the one before, the way indigo deepens with every dip.
+ * Each module is a knot on its band: a sewn-on label in the full map, a single
+ * knot in the compact one. The turmeric knot is where to start.
+ *
+ *   <CourseMap />                                      the hub: every title, block blurbs, a legend
+ *   <CourseMap variant="compact" headingLevel={0} />   the home page: numbers on the cloth, titles on hover
+ *
+ * Underneath it is a plain nested ordered list (blocks, then modules), so it reads
+ * in order with a screen reader and without CSS. The cloth is a CSS background, so
+ * it never shows up as content. Modules that aren't written yet show as "Coming soon",
+ * never as links. src/scripts/learn-start.ts moves the start knot when the
+ * "Where to start" check recommends a module.
+ */
+import { warpOver, type WeaveStructure } from "../../lib/weave";
+import { coursePlan, count } from "../../lib/learn";
+import type { LearnBlockId } from "../../data/learn";
+
+interface Props {
+  variant?: "full" | "compact";
+  /** Heading level for block titles; 0 for no headings (the home page). */
+  headingLevel?: 0 | 2 | 3 | 4;
+  /** Module number marked "Start here". Defaults to the first module that is ready. */
+  start?: number;
+  /** Prefix for the anchors: #m-4 for a module, #core for a block (module pages link to /learn/#<block>). */
+  idPrefix?: string;
+  label?: string;
+  class?: string;
+}
+const { variant = "full", headingLevel = 3, idPrefix = "", label = "The course: blocks and modules in order", class: cls } = Astro.props;
+const full = variant === "full";
+const plan = await coursePlan();
+const modules = plan.flatMap((b) => b.modules);
+const firstReady = modules.find((m) => m.ready);
+const start = Astro.props.start ?? firstReady?.n ?? 1;
+const ready = modules.filter((m) => m.ready).length;
+
+/* Indigo, dipped six times: each block a shade deeper, each in a different weave. */
+const CLOTH: Record<LearnBlockId, { structure: WeaveStructure; warp: string; weft: string; gap: string }> = {
+  foundations: { structure: "plain", warp: "#BCC3EE", weft: "#DDE1F7", gap: "#F5F6FA" },
+  core: { structure: "twill", warp: "#949EE2", weft: "#BCC3EE", gap: "#EEF0FB" },
+  relations: { structure: "basket", warp: "#6B76D2", weft: "#949EE2", gap: "#DDE1F7" },
+  strategy: { structure: "herringbone", warp: "#4C56BE", weft: "#6B76D2", gap: "#2F3786" },
+  frontier: { structure: "twill", warp: "#2F3786", weft: "#3B44A6", gap: "#1B1F4C" },
+  credentials: { structure: "plain", warp: "#1B1F4C", weft: "#252B68", gap: "#11143A" }
+};
+const PERIOD: Record<WeaveStructure, [number, number]> = { plain: [2, 2], twill: [4, 4], basket: [4, 4], herringbone: [8, 4] };
+
+/** One repeat of the cloth as an SVG tile, for a CSS background. Threads run past the tile edge so tiles meet without seams. */
+function tile(id: LearnBlockId, cell: number) {
+  const c = CLOTH[id];
+  const [cols, rows] = PERIOD[c.structure];
+  const t = Math.round(cell * 0.62 * 10) / 10;
+  const off = (cell - t) / 2;
+  const W = cols * cell;
+  const H = rows * cell;
+  const r = (x: number, y: number, w: number, h: number, f: string) => `<rect x='${+x.toFixed(2)}' y='${+y.toFixed(2)}' width='${+w.toFixed(2)}' height='${+h.toFixed(2)}' fill='${f}'/>`;
+  let body = "";
+  for (let y = 0; y < rows; y++) body += r(-cell, y * cell + off, W + 2 * cell, t, c.weft);
+  for (let x = 0; x < cols; x++) body += r(x * cell + off, -cell, t, H + 2 * cell, c.warp);
+  for (let y = 0; y < rows; y++)
+    for (let x = 0; x < cols; x++) if (!warpOver(c.structure, y, x)) body += r(x * cell + off - off * 0.9, y * cell + off, t + off * 1.8, t, c.weft);
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${W}' height='${H}'><rect width='${W}' height='${H}' fill='${c.gap}'/><g stroke='${c.gap}' stroke-width='${+Math.max(1, off).toFixed(2)}' paint-order='stroke'>${body}</g></svg>`;
+  const uri = `data:image/svg+xml,${svg.replace(/%/g, "%25").replace(/#/g, "%23").replace(/</g, "%3C").replace(/>/g, "%3E")}`;
+  return `--gap:${c.gap};--cloth:url("${uri}");--tile:${W}px ${H}px`;
+}
+const cell = full ? 11 : 8;
+const H = headingLevel ? (`h${headingLevel}` as "h2" | "h3" | "h4") : "p";
+const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+---
+
+<div class:list={["cmap", `cmap-${variant}`, cls]} data-cmap={variant}>
+  <ol class="cm-blocks" role="list" aria-label={label}>
+    {
+      plan.map((b) => (
+        <li class="cm-block" id={`${idPrefix}${b.id}`} style={tile(b.id, cell)}>
+          <div class="cm-head">
+            <span class="cm-swatch" aria-hidden="true">
+              <span>{b.letter}</span>
+            </span>
+            <H class="cm-bt">{b.title}</H>
+            <p class="cm-meta">
+              Block {b.letter}, {lower(b.weeks)}
+              {full && <>, {count(b.modules.length, "module")}</>}
+            </p>
+            {full && <p class="cm-blurb">{b.blurb}</p>}
+          </div>
+          <div class="cm-cloth">
+            <ol class="cm-mods" start={b.modules[0]?.n} role="list">
+              {b.modules.map((m) => (
+                <li class:list={["cm-mod", m.ready ? "is-ready" : "is-soon"]} id={`${idPrefix}m-${m.n}`} data-n={m.n} data-cm-mod={m.n} data-start={m.n === start ? "" : undefined} data-cm-title={m.title} data-cm-status={m.ready ? `${m.minutes} min` : "Coming soon"}>
+                  {m.ready ? (
+                    <a class="cm-link" href={m.href}>
+                      <span class="visually-hidden">Module {m.n}: </span>
+                      <span class="cm-t">{m.title}</span>
+                    </a>
+                  ) : (
+                    <span class="cm-t">
+                      <span class="visually-hidden">Module {m.n}: </span>
+                      {m.title}
+                    </span>
+                  )}
+                  <span class="cm-s">
+                    <mark class="hl hl-green cm-here" hidden={m.n !== start}>
+                      Start here
+                    </mark>
+                    <span class="cm-st">{m.ready ? `${m.minutes} min` : "Coming soon"}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+  {
+    full ? (
+      <ul class="cm-key" aria-label="How to read the map">
+        <li>
+          <span class="k k-ready" aria-hidden="true" />
+          Sewn on: ready to study{ready < modules.length && ` (${ready} of ${modules.length})`}
+        </li>
+        {ready < modules.length && (
+          <li>
+            <span class="k k-soon" aria-hidden="true" />
+            Outlined: coming soon
+          </li>
+        )}
+        <li>
+          <span class="k k-start" aria-hidden="true" />
+          Turmeric knot: where to start
+        </li>
+        <li>
+          <span class="k k-dye" aria-hidden="true" />
+          The cloth deepens, block by block
+        </li>
+      </ul>
+    ) : (
+      <p class="cm-dock" data-cm-dock aria-hidden="true">
+        {firstReady ? (
+          <>
+            <strong>Start here:</strong> Module {firstReady.n}, {firstReady.title}
+          </>
+        ) : (
+          <>The first modules are being written.</>
+        )}
+      </p>
+    )
+  }
+</div>
+
+<script>
+  // Compact map: the knot under the pointer or focus names its module on the line below.
+  // A visual aid only (aria-hidden): every link already carries the module's full name.
+  document.querySelectorAll<HTMLElement>('[data-cmap="compact"]').forEach((map) => {
+    const dock = map.querySelector<HTMLElement>("[data-cm-dock]");
+    if (!dock) return;
+    const initial = dock.innerHTML;
+    const show = (li: HTMLElement) => {
+      const strong = document.createElement("strong");
+      strong.textContent = `Module ${li.dataset.n}:`;
+      dock.replaceChildren(strong, ` ${li.dataset.cmTitle ?? ""} `, Object.assign(document.createElement("span"), { className: "cm-dock-st", textContent: li.dataset.cmStatus ?? "" }));
+    };
+    map.querySelectorAll<HTMLElement>("[data-cm-mod]").forEach((li) => {
+      li.addEventListener("pointerenter", () => show(li));
+      li.addEventListener("focusin", () => show(li));
+    });
+    map.addEventListener("pointerleave", () => (dock.innerHTML = initial));
+    map.addEventListener("focusout", (e) => {
+      if (!map.contains(e.relatedTarget as Node | null)) dock.innerHTML = initial;
+    });
+  });
+</script>
+
+<style>
+  .cmap {
+    --knot: 2rem;
+  }
+  .cm-blocks,
+  .cm-mods {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ---------- One band per block: the words on paper, the modules on cloth ---------- */
+  .cm-block {
+    display: grid;
+    grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .cm-head {
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    column-gap: 0.75rem;
+    align-content: start;
+    padding: 1.15rem 0 1.25rem;
+    border-top: 1px solid var(--line);
+  }
+  .cm-block:first-child .cm-head {
+    border-top-color: transparent;
+  }
+  .cm-head > :not(.cm-swatch) {
+    grid-column: 2;
+  }
+  /* A swatch of the band's own cloth, with the block letter on a paper disc. */
+  .cm-swatch {
+    grid-row: 1 / span 3;
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 4px;
+    background-color: var(--gap);
+    background-image: var(--cloth);
+    background-size: var(--tile);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.12),
+      1px 1.5px 0 rgb(17 20 58 / 0.14);
+  }
+  .cm-swatch span {
+    display: grid;
+    place-items: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--neel-800);
+    font-size: var(--fs-xs);
+    font-weight: 750;
+    line-height: 1;
+    box-shadow: 0.5px 1px 0 rgb(17 20 58 / 0.25);
+  }
+  .cm-bt {
+    font-size: var(--fs-md);
+    font-weight: 680;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .cm-meta {
+    margin-top: 0.2rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .cm-blurb {
+    margin-top: 0.45rem;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+
+  /* The cloth: one continuous piece down the right, its band changing at each block. */
+  .cm-cloth {
+    position: relative;
+    padding: 1rem 1.1rem;
+    background-color: var(--gap);
+    background-image: var(--cloth);
+    background-size: var(--tile);
+  }
+  .cm-block:first-child .cm-cloth {
+    border-radius: 6px 6px 0 0;
+  }
+  /* Cut, not finished: the warp runs out past the last row as a fringe. */
+  .cm-block:last-child .cm-cloth {
+    margin-bottom: 0.9rem;
+  }
+  .cm-block:last-child .cm-cloth::after {
+    content: "";
+    position: absolute;
+    left: 0.4rem;
+    right: 0.4rem;
+    top: 100%;
+    height: 0.8rem;
+    background: repeating-linear-gradient(90deg, #1b1f4c 0 4px, transparent 4px 11px);
+    -webkit-mask: linear-gradient(#000 40%, transparent);
+    mask: linear-gradient(#000 40%, transparent);
+  }
+  .cm-mods {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* ---------- A module: a label sewn onto the cloth, with its knot ---------- */
+  .cm-mod {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--knot) minmax(0, 1fr);
+    column-gap: 0.65rem;
+    align-content: start;
+    min-height: 5.25rem;
+    padding: 0.75rem 0.85rem 0.7rem 0.7rem;
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.3;
+    scroll-margin-top: calc(var(--header-h) + 7rem);
+  }
+  .cm-mod::before {
+    content: attr(data-n);
+    content: attr(data-n) / "";
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: var(--knot);
+    height: var(--knot);
+    border-radius: 50%;
+    border: 2px solid var(--neel-700);
+    background: var(--paper);
+    color: var(--neel-800);
+    font-size: var(--fs-xs);
+    font-weight: 720;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .cm-mod > * {
+    grid-column: 2;
+  }
+  /* Ready: sewn on, with a running stitch inside the edge, and lifted off the cloth. */
+  .cm-mod.is-ready {
+    box-shadow:
+      1.5px 2.5px 0 rgb(17 20 58 / 0.22),
+      4px 8px 14px -6px rgb(17 20 58 / 0.4);
+    outline: 1.5px dashed var(--neel-300);
+    outline-offset: -5px;
+    transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease);
+  }
+  .cm-mod.is-ready:hover,
+  .cm-mod.is-ready:focus-within {
+    transform: translate(-1px, -2px);
+    box-shadow:
+      2.5px 4px 0 rgb(17 20 58 / 0.2),
+      6px 12px 18px -6px rgb(17 20 58 / 0.42);
+  }
+  /* Coming soon: only the outline of the label that will go here. */
+  .cm-mod.is-soon {
+    background: var(--canvas);
+    box-shadow: inset 0 0 0 1.5px var(--neel-300);
+    outline: 1.5px dashed var(--neel-400);
+    outline-offset: -5px;
+  }
+  .cm-mod.is-soon::before {
+    border-style: dashed;
+    border-color: var(--neel-400);
+    background: transparent;
+    color: var(--ink-3);
+  }
+  .cm-t {
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+  .is-soon .cm-t {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .cm-link {
+    color: inherit;
+    text-decoration: none;
+    border-radius: 2px;
+  }
+  /* The whole label is the link. */
+  .cm-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+  }
+  .cm-link:hover .cm-t {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  .cm-link:focus-visible {
+    outline: none;
+  }
+  /* A dark ring inside a white halo: visible on the palest and the deepest cloth alike. */
+  .cm-link:focus-visible::after {
+    outline: 2.5px solid var(--neel-800);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 7px var(--paper);
+  }
+  .cm-s {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.15rem 0.5rem;
+    margin-top: 0.3rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .cm-here {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  /* Start here: the one turmeric thing on the cloth. */
+  .cm-mod[data-start]::before {
+    background: var(--accent);
+    border-color: var(--haldi-700);
+    border-style: solid;
+    color: var(--neel-950);
+    box-shadow: 0 0 0 3px var(--paper);
+  }
+  .cm-mod.just-picked::before {
+    animation: cm-pick 650ms var(--ease-out) both;
+  }
+  @keyframes cm-pick {
+    0% {
+      transform: scale(0.55);
+    }
+    60% {
+      transform: scale(1.18);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cm-mod.just-picked::before {
+      animation: none;
+    }
+    .cm-mod.is-ready {
+      transition: none;
+    }
+  }
+
+  /* ---------- The key under the full map ---------- */
+  .cm-key {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.6rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .cm-key li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .k {
+    flex: none;
+    width: 1.6rem;
+    height: 1.1rem;
+    border-radius: 3px;
+  }
+  .k-ready {
+    background: var(--paper);
+    outline: 1.5px dashed var(--neel-300);
+    outline-offset: -3.5px;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.12),
+      1.5px 2px 0 rgb(17 20 58 / 0.2);
+  }
+  .k-soon {
+    background: var(--canvas);
+    box-shadow: inset 0 0 0 1.5px var(--neel-300);
+    outline: 1.5px dashed var(--neel-400);
+    outline-offset: -3.5px;
+  }
+  .k-start {
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--haldi-700);
+  }
+  .k-dye {
+    width: 3.2rem;
+    background: linear-gradient(90deg, #dde1f7, #949ee2 30%, #4c56be 62%, #11143a);
+  }
+
+  /* ---------- Narrower screens ---------- */
+  @media (max-width: 1000px) {
+    .cm-mods {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 760px) {
+    .cm-block {
+      grid-template-columns: 1fr;
+    }
+    .cm-head {
+      padding: 1.25rem 0 0.8rem;
+    }
+    .cm-cloth {
+      border-radius: 6px;
+      margin-bottom: 0.35rem;
+    }
+    .cm-block:last-child .cm-cloth {
+      margin-bottom: 0.9rem;
+    }
+  }
+  @media (max-width: 520px) {
+    .cm-mods {
+      grid-template-columns: 1fr;
+      gap: 0.6rem;
+    }
+    .cm-mod {
+      min-height: 0;
+    }
+    .cm-cloth {
+      padding: 0.8rem;
+    }
+  }
+
+  /* ---------- Compact: the home page's swatch of the course ---------- */
+  .cmap-compact {
+    --knot: 2.15rem;
+  }
+  .cmap-compact .cm-block {
+    grid-template-columns: minmax(8.5rem, 12rem) minmax(0, 1fr);
+    column-gap: 1rem;
+    align-items: stretch;
+  }
+  .cmap-compact .cm-head {
+    grid-template-columns: 1.7rem minmax(0, 1fr);
+    column-gap: 0.55rem;
+    align-content: center;
+    padding: 0.5rem 0;
+    border-top: 0;
+  }
+  .cmap-compact .cm-swatch {
+    width: 1.7rem;
+    height: 1.7rem;
+    grid-row: 1 / span 2;
+  }
+  .cmap-compact .cm-swatch span {
+    width: 1.15rem;
+    height: 1.15rem;
+    font-size: 0.6875rem;
+  }
+  .cmap-compact .cm-bt {
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    line-height: 1.2;
+  }
+  .cmap-compact .cm-meta {
+    margin-top: 0.05rem;
+    font-weight: 560;
+  }
+  .cmap-compact .cm-cloth {
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    align-items: center;
+  }
+  .cmap-compact .cm-mods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.6rem;
+  }
+  /* Each module is just its knot: the number on paper, the title for screen readers and the dock. */
+  .cmap-compact .cm-mod {
+    display: block;
+    width: var(--knot);
+    height: var(--knot);
+    min-height: 0;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: none;
+    outline: 0;
+  }
+  .cmap-compact .cm-mod::before {
+    width: var(--knot);
+    height: var(--knot);
+    box-shadow: 0 0 0 2.5px var(--gap), 1.5px 2.5px 0 2.5px rgb(17 20 58 / 0.18);
+  }
+  .cmap-compact .cm-mod.is-soon::before {
+    background: var(--canvas);
+    border-color: var(--neel-600);
+    color: var(--ink-2);
+    box-shadow: 0 0 0 2.5px var(--gap);
+  }
+  .cmap-compact .cm-mod[data-start]::before {
+    box-shadow: 0 0 0 2.5px var(--gap), 1.5px 2.5px 0 2.5px rgb(17 20 58 / 0.25);
+  }
+  .cmap-compact .cm-mod.is-ready:hover,
+  .cmap-compact .cm-mod.is-ready:focus-within {
+    transform: translateY(-2px);
+    box-shadow: none;
+  }
+  .cmap-compact .cm-t,
+  .cmap-compact .cm-s {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .cmap-compact .cm-link::after {
+    border-radius: 50%;
+  }
+  .cmap-compact .cm-block:first-child .cm-cloth {
+    border-radius: 5px 5px 0 0;
+  }
+  .cmap-compact .cm-block:last-child .cm-cloth {
+    margin-bottom: 0.8rem;
+  }
+  .cm-dock {
+    margin-top: 0.4rem;
+    min-height: 3rem;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .cm-dock :global(strong) {
+    color: var(--ink);
+    font-weight: 650;
+  }
+  .cm-dock :global(.cm-dock-st) {
+    color: var(--ink-3);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  @media (max-width: 520px) {
+    .cmap-compact {
+      --knot: 2rem;
+    }
+    .cmap-compact .cm-block {
+      grid-template-columns: 1fr;
+    }
+    .cmap-compact .cm-head {
+      padding: 0.7rem 0 0.4rem;
+    }
+    .cmap-compact .cm-cloth {
+      border-radius: 5px;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .cm-mod,
+    .cm-mod::before {
+      border: 1px solid CanvasText;
+    }
+  }
+  @media print {
+    .cm-cloth,
+    .cm-swatch {
+      background: none !important;
+    }
+    .cm-mod {
+      box-shadow: none !important;
+      outline: 1px solid #999 !important;
+    }
+  }
+</style>

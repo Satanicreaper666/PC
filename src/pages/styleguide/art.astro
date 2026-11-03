@@ -20,7 +20,7 @@ const groups = [
   { title: "Kinds of tool", names: ["calculator", "letter", "form", "policy", "checklist", "survey", "plan", "app"] },
   { title: "Who it's for", names: ["hr", "founders", "employees", "students"] },
   { title: "Handbooks", names: ["labour-law", "tds", "recruitment", "hr-professional"] },
-  { title: "Library items", names: ["jd", "glossary"] }
+  { title: "Library items", names: ["jd", "glossary", "learn"] }
 ];
 const listed = groups.flatMap((g) => g.names);
 const missing = ICON_NAMES.filter((n) => !listed.includes(n));
@@ -118,6 +118,7 @@ const moments: Record<string, string> = {
         <li><ItemCard href="#h-place" art="calculator" kind="Calculator" title="Gratuity calculator" description="What is due when someone leaves after five years or more." meta="Works as you type" /></li>
         <li><ItemCard href="#h-place" art="jd" kind="Job description" title="HR executive" description="Day-to-day HR operations for a team of 50 to 200." meta="Junior, 1–3 years" /></li>
         <li><ItemCard href="#h-place" art="glossary" kind="Glossary" title="Earned leave" description="Paid leave an employee builds up by working." /></li>
+        <li><ItemCard href="#h-place" art="learn" kind="Learn module" title="People at work" description="Why people give their best or hold back, and what HR can change." meta="Module 2, 25 min" /></li>
       </ul>
       <ul class="stage-tiles">
         {

@@ -1,0 +1,299 @@
+---
+/**
+ * What shows above the waterline, and the bigger mass below it that drives it:
+ * symptoms and causes, Schein's levels of culture, the competency iceberg.
+ * <Iceberg aboveLabel="What the plant head sees" belowLabel="What HR needs to test"
+ *   above={[{ label: "14% night-shift absence", note: "against 5% on days" }]}
+ *   below={[{ label: "Getting there and back", note: "shift timings vs the last bus" }, …]} />
+ *
+ * Paper cut-outs on the left, the words on the right, one waterline across both. The part
+ * under water is always drawn at least 1.8 times the height of the tip, so the hidden part
+ * is the bigger one whatever the lists hold. When it scrolls into view the waterline
+ * draws across and the hidden mass surfaces beneath it, once.
+ */
+type Item = { label: string; note?: string };
+interface Props {
+  above: Item[];
+  below: Item[];
+  aboveLabel?: string;
+  belowLabel?: string;
+  label?: string;
+}
+const { above, below, aboveLabel = "What you see", belowLabel = "What drives it", label } = Astro.props;
+const many = below.length >= 4;
+// Two outlines each: a broad one for wide figures and a slimmer, taller one for phones.
+const TIP = {
+  wide: "16,100 22,70 31,46 40,22 49,4 56,14 63,30 72,50 80,74 86,100",
+  narrow: "10,100 16,72 26,46 38,20 50,3 58,14 68,34 78,54 86,76 92,100"
+};
+const BODY = {
+  wide: "6,0 94,0 99,18 96,42 91,64 80,83 63,97 42,99 23,90 10,72 3,46 1,22",
+  narrow: "4,0 96,0 100,16 96,38 99,60 91,80 74,95 50,100 27,96 10,84 2,64 5,40 0,18"
+};
+---
+
+<div class:list={["ice", { many }]} data-diagram="iceberg" data-draw role="group" aria-label={label ?? `Iceberg: ${aboveLabel} above the waterline, ${belowLabel} below it`}>
+  <div class="ice-grid">
+  <div class="ice-art ice-art-tip" aria-hidden="true">
+    <svg class="ice-svg wide" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><polygon points={TIP.wide} /></svg>
+    <svg class="ice-svg narrow" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><polygon points={TIP.narrow} /></svg>
+  </div>
+  <div class="ice-zone ice-above">
+    <p class="ice-zl">{aboveLabel}<span class="visually-hidden"> (above the waterline)</span></p>
+    <ul class="ice-items" role="list">
+      {
+        above.map((x) => (
+          <li>
+            <span class="ice-l">{x.label}</span>
+            {x.note && <span class="ice-n" set:html={x.note} />}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="ice-water" aria-hidden="true">
+    <svg class="ice-wave" viewBox="0 0 120 8" preserveAspectRatio="none" focusable="false">
+      <path d="M0 4 C 10 0.5, 20 0.5, 30 4 S 50 7.5, 60 4 S 80 0.5, 90 4 S 110 7.5, 120 4" />
+    </svg>
+    <span class="ice-wl">Waterline</span>
+  </div>
+
+  <div class="ice-art ice-art-body" aria-hidden="true">
+    <svg class="ice-svg wide" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><polygon points={BODY.wide} /></svg>
+    <svg class="ice-svg narrow" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><polygon points={BODY.narrow} /></svg>
+  </div>
+  <div class="ice-zone ice-below">
+    <p class="ice-zl">{belowLabel}<span class="visually-hidden"> (below the waterline)</span></p>
+    <ul class="ice-items" role="list">
+      {
+        below.map((x) => (
+          <li>
+            <span class="ice-l">{x.label}</span>
+            {x.note && <span class="ice-n" set:html={x.note} />}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+  </div>
+</div>
+
+<style>
+  .ice {
+    container-type: inline-size;
+  }
+  .ice-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
+    /* The hidden part is always at least 1.8 times the tip. */
+    grid-template-rows: minmax(min-content, 1fr) 0 minmax(min-content, 1.8fr);
+    column-gap: 1.25rem;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .ice-art-tip {
+    grid-area: 1 / 1;
+    padding: 0.4rem 0 0;
+  }
+  .ice-above {
+    grid-area: 1 / 2;
+  }
+  .ice-water {
+    grid-area: 3 / 1 / 4 / 3;
+  }
+  .ice-art-body {
+    grid-area: 3 / 1;
+    padding: 0 0 0.6rem;
+  }
+  .ice-below {
+    grid-area: 3 / 2;
+  }
+  .ice-art {
+    position: relative;
+    z-index: 1;
+    min-height: 3rem;
+  }
+  .ice-svg {
+    position: absolute;
+    inset: inherit;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  /* The tip sits on the waterline and never grows into a spire, however long the list beside it. */
+  .ice-art-tip .ice-svg {
+    top: auto;
+    bottom: 0;
+    height: min(calc(100% - 0.4rem), 8.5rem);
+    filter: var(--paper-2);
+  }
+  .ice-art-body .ice-svg {
+    height: calc(100% - 0.6rem);
+    filter: var(--paper-1);
+  }
+  .ice-svg.narrow {
+    display: none;
+  }
+  .ice-svg polygon {
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    stroke-width: 1.25;
+  }
+  .ice-art-tip polygon {
+    fill: var(--paper);
+    stroke: var(--neel-400);
+  }
+  .ice-art-body polygon {
+    fill: #f6f7fd;
+    stroke: var(--neel-400);
+    stroke-dasharray: 5 4;
+  }
+
+  /* Water: pale indigo paper with a wavy cut along the top. */
+  .ice-water {
+    position: relative;
+    background: var(--neel-100);
+    border-radius: 0 0 var(--r-lg) var(--r-lg);
+  }
+  .ice-wave {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -6px;
+    width: 100%;
+    height: 12px;
+    overflow: visible;
+  }
+  .ice-wave path {
+    fill: none;
+    stroke: var(--neel-500);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+  }
+  .ice-wl {
+    position: absolute;
+    right: 0.6rem;
+    top: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 620;
+    color: var(--neel-700);
+  }
+
+  .ice-zone {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    align-content: end;
+    gap: 0.5rem;
+    padding: 0.75rem 0.75rem 1rem 0;
+    min-width: 0;
+  }
+  .ice-below {
+    align-content: start;
+    padding-top: 1.6rem;
+    padding-bottom: 1.25rem;
+  }
+  .ice-zl {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--ink-2);
+    line-height: 1.3;
+  }
+  .ice-below .ice-zl {
+    color: var(--neel-800);
+  }
+  .ice-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .many .ice-below .ice-items {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.25rem;
+  }
+  .ice-items li {
+    display: grid;
+    align-content: start;
+    gap: 0.05rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--neel-300);
+  }
+  .ice-below .ice-items li {
+    border-left-color: var(--neel-500);
+  }
+  .ice-l {
+    font-weight: 650;
+    font-size: var(--fs-sm);
+    line-height: 1.3;
+  }
+  .ice-n {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+  .ice-below .ice-n {
+    color: var(--ink-2);
+  }
+
+  @container (max-width: 34rem) {
+    .ice-grid {
+      grid-template-columns: minmax(0, 31%) minmax(0, 1fr);
+      column-gap: 0.9rem;
+    }
+    .many .ice-below .ice-items {
+      grid-template-columns: 1fr;
+    }
+    .ice-svg.wide {
+      display: none;
+    }
+    .ice-svg.narrow {
+      display: block;
+    }
+  }
+
+  /* Once, when scrolled to: the waterline draws across, then the hidden mass surfaces. Words never move. */
+  :global(html.js-anim) .ice:not(:global(.draw)):not(:global(.drawn)) :is(.ice-wave, .ice-art-body) {
+    opacity: 0;
+  }
+  .ice:global(.draw) .ice-wave {
+    animation: ice-line 0.9s var(--ease-draw) both;
+    transform-origin: left;
+  }
+  .ice:global(.draw) .ice-art-body {
+    animation: ice-surface 0.8s var(--ease-out) 0.6s both;
+  }
+  @keyframes ice-line {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes ice-surface {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @media print {
+    .ice-grid {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      break-inside: avoid;
+    }
+    .ice .ice-wave,
+    .ice .ice-art-body {
+      opacity: 1 !important;
+      animation: none !important;
+    }
+    .ice-svg {
+      filter: none !important;
+    }
+  }
+</style>

@@ -1,0 +1,488 @@
+---
+/**
+ * A branching workplace case, read like a story: one moment at a time, a choice, what
+ * happens next, and an ending with a debrief.
+ * <Scenario title="The night-shift absence problem" start="open"
+ *   nodes={{ open: { text: "…", choices: [{ label: "…", to: "diagnose" }] }, diagnose: { text: "…", outcome: "good", debrief: "…" } }} />
+ *
+ * Each node is a page from the case file. Its folder tab says where you are ("Decision 2",
+ * "How it ended"); choices are paper slips to pick from, not form controls. An ending
+ * shows its tone with a pen mark AND words: "Strong outcome", "Partial outcome" or "Poor
+ * outcome". Under the card, "Your path" keeps the thread of choices made, with "Go back a
+ * step" and "Start again"; moving on puts focus on the new page's words.
+ *
+ * Without JavaScript every node is a section with an id, every choice a link to the next
+ * section, and every ending links back to the start. src/scripts/learn-scenario.ts does the rest.
+ */
+import Icon from "../ui/Icon.astro";
+import PenTick from "../marks/PenTick.astro";
+import PenCross from "../marks/PenCross.astro";
+import { slugify, uid } from "./uid";
+
+type Tone = "good" | "mixed" | "poor";
+type Node = { text: string; choices?: { label: string; to: string }[]; outcome?: Tone; debrief?: string };
+interface Props {
+  title: string;
+  start: string;
+  nodes: Record<string, Node>;
+}
+const { title, start, nodes } = Astro.props;
+const id = `sc-${slugify(title) || "case"}`;
+const headId = uid("sch-");
+const keys = Object.keys(nodes);
+const order = nodes[start] ? [start, ...keys.filter((k) => k !== start)] : keys;
+const TONE: Record<Tone, string> = { good: "Strong outcome", mixed: "Partial outcome", poor: "Poor outcome" };
+const endings = keys.filter((k) => nodes[k].outcome).length;
+
+// How deep each node sits (shortest route from the start), for the no-JS step labels.
+const depth = new Map<string, number>([[start, 1]]);
+const queue = [start];
+while (queue.length) {
+  const k = queue.shift()!;
+  for (const c of nodes[k]?.choices ?? []) {
+    if (nodes[c.to] && !depth.has(c.to)) {
+      depth.set(c.to, depth.get(k)! + 1);
+      queue.push(c.to);
+    }
+  }
+}
+const stepLabel = (k: string) => (nodes[k].outcome ? "How it ended" : `Decision ${depth.get(k) ?? 1}`);
+const missing = keys.flatMap((k) => (nodes[k].choices ?? []).filter((c) => !nodes[c.to]).map((c) => `${k} -> ${c.to}`));
+if (missing.length) console.warn(`[Scenario "${title}"] choices point to nodes that don't exist: ${missing.join(", ")}`);
+---
+
+<div class="sc" id={id} data-scenario data-start={start} data-endings={endings} data-no-terms>
+  <header class="sc-head">
+    <p class="sc-kind">A case to work through</p>
+    <h3 class="sc-title" id={headId}>{title}</h3>
+    <p class="sc-intro">Read what happens, then choose what you would do. Every path ends with a debrief that names the models at work.</p>
+    <p class="sc-found" data-sc-found hidden></p>
+  </header>
+
+  <div class="sc-stage">
+    {
+      order.map((k) => {
+        const n = nodes[k];
+        return (
+          <div class:list={["sc-node", { "sc-end": !!n.outcome }]} id={`${id}-${k}`} data-node={k} role="group" aria-labelledby={`${id}-${k}-step`}>
+            <p class="sc-tab" id={`${id}-${k}-step`} data-sc-step>
+              {stepLabel(k)}
+            </p>
+            <div class="sc-page">
+              <div class="sc-read" tabindex="-1" data-sc-read>
+                <p class="sc-text">{n.text}</p>
+              </div>
+              {n.choices && n.choices.length > 0 && (
+                <div class="sc-choices">
+                  <p class="sc-ask">What do you do?</p>
+                  <ul class="sc-opts" role="list">
+                    {n.choices.map((c) =>
+                      nodes[c.to] ? (
+                        <li>
+                          <a class="sc-choice" href={`#${id}-${c.to}`} data-to={c.to}>
+                            <span class="sc-choice-t">{c.label}</span>
+                            <Icon name="arrow-right" size={18} class="sc-go" />
+                          </a>
+                        </li>
+                      ) : (
+                        <li>
+                          <span class="sc-choice is-broken">{c.label}</span>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              )}
+              {n.outcome && (
+                <div class:list={["sc-out", `tone-${n.outcome}`]}>
+                  <p class="sc-out-h">
+                    <span class="sc-mark" aria-hidden="true">
+                      {n.outcome === "good" && <PenTick class="sc-pen" />}
+                      {n.outcome === "poor" && <PenCross class="sc-pen" />}
+                      {n.outcome === "mixed" && (
+                        <svg class="pen sc-pen" viewBox="0 0 24 24" data-mark>
+                          <path class="pen-stroke" pathLength="1" d="M3.5 13.2c1.6 1.2 3.2 3 4.6 5.3.3.5.9.5 1.2 0C11.9 13 15.6 8.1 20.8 4.2" />
+                          <path class="pen-stroke" pathLength="1" d="M9.2 7.6c2 1.6 3.9 3.5 5.6 5.7" />
+                        </svg>
+                      )}
+                    </span>
+                    <span class="sc-out-t">{TONE[n.outcome]}</span>
+                  </p>
+                  {n.debrief && (
+                    <p class="sc-debrief">
+                      <span class="sc-debrief-k">Debrief</span> {n.debrief}
+                    </p>
+                  )}
+                  <p class="sc-again-nojs" data-sc-nojs>
+                    <a href={`#${id}-${start}`}>Back to the start of the case</a>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })
+    }
+  </div>
+
+  <div class="sc-foot" data-sc-foot hidden>
+    <div class="sc-path">
+      <p class="sc-path-h" id={`${id}-path`}>Your path</p>
+      <ol class="sc-trail" data-sc-trail aria-labelledby={`${id}-path`}></ol>
+      <p class="sc-path-empty" data-sc-empty>Your choices will appear here as you make them.</p>
+    </div>
+    <div class="sc-actions">
+      <button type="button" class="btn btn-ghost btn-sm" data-sc-back disabled>
+        <Icon name="arrow-left" size={16} /> Go back a step
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" data-sc-restart>
+        <Icon name="refresh" size={16} /> Start again
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import "../../scripts/learn-scenario";
+</script>
+
+<style>
+  .sc {
+    margin-block: 2rem;
+  }
+  .sc-head {
+    display: grid;
+    gap: 0.3rem;
+    margin-bottom: 1.4rem;
+  }
+  .sc-kind {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .sc .sc-title {
+    margin: 0;
+    font-size: var(--fs-lg);
+    line-height: 1.2;
+  }
+  .sc-intro {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    max-width: 60ch;
+  }
+  .sc-found {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-2);
+  }
+
+  /* ---------- A page from the case file ---------- */
+  .sc-node {
+    position: relative;
+    padding-top: 1.85rem;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .sc-node + .sc-node {
+    margin-top: 1.5rem;
+  }
+  .sc:global([data-ready]) .sc-node + .sc-node {
+    margin-top: 0;
+  }
+  /* The folder tab: where you are in the case. */
+  .sc-tab {
+    position: absolute;
+    top: 0;
+    left: 1.1rem;
+    height: 1.95rem;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    border-radius: 8px 8px 0 0;
+    background: var(--neel-100);
+    color: var(--neel-800);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
+  }
+  .sc-end .sc-tab {
+    background: var(--neel-700);
+    color: #fff;
+  }
+  .sc-page {
+    position: relative;
+    padding: 1.35rem clamp(1rem, 0.6rem + 1.8vw, 1.75rem) 1.5rem;
+    border-radius: 3px 10px 4px 4px;
+    background: var(--paper);
+    border-top: 3px solid var(--neel-100);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.09),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.08),
+      6px 16px 30px -18px rgb(17 20 58 / 0.4);
+  }
+  .sc-end .sc-page {
+    border-top-color: var(--neel-700);
+  }
+  .sc-read {
+    border-radius: 4px;
+  }
+  .sc-read:focus {
+    outline: none;
+  }
+  .sc-read:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 6px;
+  }
+  .sc-text {
+    font-size: var(--fs-md);
+    line-height: 1.6;
+    color: var(--ink);
+    text-wrap: pretty;
+  }
+
+  /* ---------- Choices: paper slips, not form controls ---------- */
+  .sc-choices {
+    margin-top: 1.3rem;
+  }
+  .sc-ask {
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .sc-opts {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .sc-choice {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem 0.75rem 1.1rem;
+    border: 0;
+    border-radius: 2px 6px 6px 2px;
+    background: #fbfbfe;
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--fs-base);
+    font-weight: 560;
+    line-height: 1.45;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.16),
+      1px 1.5px 0 rgb(17 20 58 / 0.1);
+    transition:
+      transform 160ms var(--ease-out),
+      box-shadow 160ms var(--ease-out),
+      background-color 160ms;
+  }
+  /* The slip's torn left edge, in turmeric: this is where you act. */
+  .sc-choice::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 2px 0 0 2px;
+    background: var(--haldi-400);
+  }
+  .sc-choice:hover {
+    background: var(--paper);
+    transform: translateY(-1.5px);
+    box-shadow:
+      0 0 0 1px rgb(59 68 166 / 0.45),
+      2px 4px 10px -4px rgb(17 20 58 / 0.3);
+  }
+  .sc-choice:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .sc-choice :global(.sc-go) {
+    color: var(--neel-600);
+    transition: transform 160ms var(--ease-out);
+  }
+  .sc-choice:hover :global(.sc-go) {
+    transform: translateX(2px);
+  }
+  .sc-choice.is-broken {
+    cursor: default;
+    color: var(--ink-3);
+  }
+
+  /* ---------- Endings ---------- */
+  .sc-out {
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem 1rem;
+    border-radius: var(--r);
+    border-left: 4px solid currentColor;
+  }
+  .tone-good {
+    background: var(--good-soft);
+    color: var(--good);
+  }
+  .tone-mixed {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .tone-poor {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .sc-out-h {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: var(--fs-md);
+    font-weight: 750;
+  }
+  .sc-mark {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: 0 0 0 1.5px currentColor;
+  }
+  .sc-mark :global(.sc-pen) {
+    width: 1.5rem;
+    height: 1.5rem;
+    stroke-width: 2.8;
+  }
+  .tone-mixed .sc-mark :global(.sc-pen) {
+    stroke: var(--warn);
+  }
+  .sc-debrief {
+    margin-top: 0.5rem;
+    color: var(--ink);
+    font-size: var(--fs-base);
+    line-height: 1.6;
+  }
+  .sc-debrief-k {
+    font-weight: 750;
+    margin-right: 0.3rem;
+  }
+  .sc-again-nojs {
+    margin-top: 0.6rem;
+    font-size: var(--fs-sm);
+  }
+  .sc-again-nojs a {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* ---------- Your path ---------- */
+  .sc-foot {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem 1.5rem;
+    align-items: start;
+    margin-top: 1.25rem;
+    padding: 0 0.25rem;
+  }
+  .sc-path-h {
+    font-weight: 700;
+    font-size: var(--fs-sm);
+  }
+  .sc-path-empty {
+    margin-top: 0.25rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  /* The thread of choices made, a knot for each. */
+  .sc-trail {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+    position: relative;
+  }
+  .sc-trail:empty {
+    display: none;
+  }
+  .sc-trail::before {
+    content: "";
+    position: absolute;
+    left: 0.45rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background: var(--neel-200);
+  }
+  .sc-trail :global(li) {
+    position: relative;
+    padding-left: 1.6rem;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .sc-trail :global(li::before) {
+    content: "";
+    position: absolute;
+    left: 0.15rem;
+    top: 0.3rem;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--neel-600);
+  }
+  .sc-trail :global(.sc-trail-n) {
+    font-weight: 700;
+    color: var(--ink);
+    margin-right: 0.3rem;
+  }
+  .sc-trail :global(li.is-end) {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .sc-trail :global(li.is-end::before) {
+    background: var(--accent);
+    border-color: var(--haldi-700);
+  }
+  .sc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+  @media (max-width: 40rem) {
+    .sc-foot {
+      grid-template-columns: 1fr;
+    }
+    .sc-actions {
+      justify-content: flex-start;
+    }
+  }
+  @media print {
+    .sc .sc-node[hidden] {
+      display: block !important;
+    }
+    .sc-foot,
+    .sc-found,
+    .sc-again-nojs {
+      display: none !important;
+    }
+    .sc-page {
+      box-shadow: none;
+      border: 1px solid #999;
+    }
+    .sc-node {
+      break-inside: avoid;
+      margin-top: 1rem !important;
+    }
+    .sc-choice {
+      box-shadow: none;
+      border: 1px solid #bbb;
+    }
+  }
+</style>

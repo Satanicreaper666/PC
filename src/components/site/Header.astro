@@ -7,8 +7,10 @@ import { NAV } from "../../data/site";
 import { AUDIENCES, AUDIENCE_INFO } from "../../data/taxonomy";
 
 const path = Astro.url.pathname;
+// Learn (the course) sits beside the handbooks it builds on.
+const nav = [NAV[0], { href: "/learn/", label: "Learn" }, ...NAV.slice(1)];
 // Only the most specific matching item is current ("People analytics", not also "Toolkit").
-const current = [...NAV].filter((n) => path === n.href || path.startsWith(n.href)).sort((a, b) => b.href.length - a.href.length)[0]?.href;
+const current = nav.filter((n) => path === n.href || path.startsWith(n.href)).sort((a, b) => b.href.length - a.href.length)[0]?.href;
 const isCurrent = (href: string) => href === current;
 const onDesk = path === "/desk/";
 ---
@@ -22,7 +24,7 @@ const onDesk = path === "/desk/";
     <nav class="primary" aria-label="Library">
       <ul>
         {
-          NAV.map((item) => (
+          nav.map((item) => (
             <li>
               <a href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
                 {item.label}
@@ -63,7 +65,7 @@ const onDesk = path === "/desk/";
     <nav class="wrap mobile-nav" aria-label="Library">
       <ul class="mobile-primary">
         {
-          NAV.map((item) => (
+          nav.map((item) => (
             <li>
               <a href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
                 {item.label}
@@ -149,6 +151,7 @@ const onDesk = path === "/desk/";
     font-weight: 560;
     font-size: var(--fs-sm);
     text-decoration: none;
+    white-space: nowrap;
     transition: color 150ms, background-color 150ms;
   }
   .primary a:hover {
@@ -388,7 +391,9 @@ const onDesk = path === "/desk/";
     }
   }
 
-  @media (max-width: 1080px) {
+  /* Six sections in the nav: the search box and desk label fold into icons below 1240px, and the
+     menu takes over below 980px, so the nav never wraps. */
+  @media (max-width: 1240px) {
     .search-trigger {
       min-width: 0;
     }
@@ -419,7 +424,7 @@ const onDesk = path === "/desk/";
       font-size: 0.6875rem;
     }
   }
-  @media (max-width: 860px) {
+  @media (max-width: 980px) {
     .primary,
     .start {
       display: none;

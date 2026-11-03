@@ -1,5 +1,5 @@
 /**
- * The 24 spot icons, cut on one 48 × 48 board (docs/ART-DIRECTION.md, "Icons").
+ * The 25 spot icons, cut on one 48 × 48 board (docs/ART-DIRECTION.md, "Icons").
  *
  * Every icon is two or three layers of paper:
  *   p1   a coloured base piece, glued flat, that gives the silhouette its mass
@@ -280,6 +280,20 @@ export const ICONS: Record<string, () => string> = {
       g("p1", fill(P.ink, "M24 15.5C19 12.5 11.5 11.8 4.5 13V39.5C11.5 38.5 19 39.4 24 42C29 39.4 36.5 38.5 43.5 39.5V13C36.5 11.8 29 12.5 24 15.5Z")) +
       g("p2", fill(P.white, "M23.4 13.2C18.6 10 12.5 9.3 7 10.2V36.2C12.5 35.4 18.6 36.3 23.4 39.2Z") + fill(P.white, "M24.6 13.2C29.4 10 35.5 9.3 41 10.2V36.2C35.5 35.4 29.4 36.3 24.6 39.2Z") + ruled("M10.5 17C13.8 16.7 16.8 17.2 19.8 18.6M10.5 22C13.8 21.7 16.8 22.2 19.8 23.6M10.5 27C13.2 26.8 15.6 27.1 17.6 27.9M28.2 18.6C31.2 17.2 34.2 16.7 37.5 17M28.2 23.6C31.2 22.2 34.2 21.7 37.5 22", 1.5)) +
       g("p2 s", lit("M30.5 12.2H35V44.5L32.75 41.8L30.5 44.5Z"))
+    );
+  },
+
+  // Learn: the course loom. Warp on the frame, the cloth woven so far, and the
+  // turmeric shuttle carrying the next thread across: one module at a time.
+  learn() {
+    const warp = [14, 19.5, 25, 30.5];
+    const rows = [25.8, 29.8, 33.8];
+    // Plain weave, as in the mark: the warp comes back over the weft at alternate crossings.
+    const over = rows.flatMap((y, r) => warp.map((x, c) => ((r + c) % 2 ? "" : rect(P.mid, x - 1.3, y - 0.3, 2.6, 3.6)))).join("");
+    return (
+      g("p1", strip(P.deep, 3, "M8 4.5V43.5M37 4.5V43.5") + rect(P.ink, 5.5, 6, 34, 3.6, 1.4) + rect(P.ink, 5.5, 37.4, 34, 3.6, 1.4)) +
+      g("p2", strip(P.mid, 2.6, warp.map((x) => `M${n(x)} 9.6V37.4`).join("")) + `<g stroke="${P.white}" stroke-width="1" paint-order="stroke">${rows.map((y) => rect(P.ink, 10.4, y, 23.8, 3, 0.4)).join("")}${over}</g>`) +
+      g("p2 s", strip(P.haldi, 1.4, "M10.6 19.4C8.4 21.2 8.6 24 10.6 25.6") + tilt(-4, 24, 18, lit("M8.6 18.6C14 15.4 31 15.2 39 17.8C31 20.8 14 21.8 8.6 18.6Z") + strip(P.deep, 1.1, "M20 18.4H27.6")))
     );
   }
 };

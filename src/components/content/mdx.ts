@@ -18,8 +18,26 @@ import Matrix from "../diagrams/Matrix.astro";
 import Cycle from "../diagrams/Cycle.astro";
 import KeyNumbers from "../diagrams/KeyNumbers.astro";
 import Compare from "../diagrams/Compare.astro";
+import Pyramid from "../diagrams/Pyramid.astro";
+import Iceberg from "../diagrams/Iceberg.astro";
+import Spectrum from "../diagrams/Spectrum.astro";
+import Funnel from "../diagrams/Funnel.astro";
+import Venn from "../diagrams/Venn.astro";
+import Worked from "../learn/Worked.astro";
+import ModelCard from "../learn/ModelCard.astro";
+import Quiz from "../learn/Quiz.astro";
+import Scenario from "../learn/Scenario.astro";
 
 export const mdxComponents = {
+  Pyramid,
+  Iceberg,
+  Spectrum,
+  Funnel,
+  Venn,
+  Worked,
+  ModelCard,
+  Quiz,
+  Scenario,
   Callout,
   Figure,
   Steps,

@@ -1,0 +1,109 @@
+---
+/**
+ * "The situation": the module's opening case, as the cover of a case file.
+ * <Situation text={entry.data.situation} practiseHref="#practise-the-situation" />
+ *
+ * The folder tab carries the heading; the page holds the case. The same case-file paper,
+ * with the same tab, comes back in "Practise the situation" (Scenario.astro), where the
+ * file is opened one page at a time. It says plainly that the case is fictional.
+ */
+interface Props {
+  text: string;
+  /** Link to where the module practises this case, if it does. */
+  practiseHref?: string;
+  title?: string;
+  id?: string;
+}
+const { text, practiseHref, title = "The situation", id = "the-situation" } = Astro.props;
+---
+
+<section class="sit" id={id} aria-labelledby={`${id}-h`}>
+  <h2 class="sit-tab" id={`${id}-h`}>{title}</h2>
+  <div class="sit-page">
+    <p class="sit-text">{text}</p>
+    <p class="sit-foot">
+      <span>A fictional case, set in India.</span>
+      {
+        practiseHref && (
+          <a href={practiseHref} data-print="hide">
+            Work through it at the end of the module
+          </a>
+        )
+      }
+    </p>
+  </div>
+</section>
+
+<style>
+  .sit {
+    position: relative;
+    padding-top: 2.05rem;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  /* The folder tab. */
+  .sit .sit-tab {
+    position: absolute;
+    top: 0;
+    left: 1.1rem;
+    height: 2.15rem;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0 1.1rem;
+    border-radius: 9px 9px 0 0;
+    background: var(--neel-100);
+    color: var(--neel-800);
+    font-size: var(--fs-sm);
+    font-weight: 720;
+    letter-spacing: 0;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
+  }
+  .sit-page {
+    padding: 1.4rem clamp(1.1rem, 0.6rem + 2vw, 2rem) 1.25rem;
+    border-radius: 3px 10px 4px 4px;
+    border-top: 3px solid var(--neel-100);
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.09),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.08),
+      6px 16px 30px -18px rgb(17 20 58 / 0.4);
+  }
+  .sit-text {
+    font-size: var(--fs-md);
+    line-height: 1.62;
+    color: var(--ink);
+  }
+  .sit-foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.35rem 1rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--line-strong);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .sit-foot a {
+    color: var(--primary);
+    font-weight: 620;
+    text-underline-offset: 3px;
+  }
+  @media print {
+    .sit-page {
+      box-shadow: none;
+      border: 1px solid #999;
+    }
+    .sit .sit-tab {
+      position: static;
+      height: auto;
+      padding: 0;
+      background: none;
+      font-size: 13pt;
+      margin-bottom: 0.4rem;
+    }
+    .sit {
+      padding-top: 0;
+    }
+  }
+</style>

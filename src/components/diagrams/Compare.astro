@@ -9,6 +9,9 @@
  * "Income-tax Act, 1961" against "…, 2025"), its values are struck through in red pen as
  * superseded and the new heading is highlighted orange (new under the 2025–26 rules).
  * Otherwise the heading is yellow and nothing is struck.
+ *
+ * At 640px and below each row is a card (see the media query). The explicit table roles keep
+ * the table semantics for screen readers once the rows are no longer laid out as a table.
  */
 interface Props {
   columns: string[];
@@ -39,14 +42,14 @@ const superseded = (r: { values: string[] }, i: number) => i === old && plain(r.
 ---
 
 <div class:list={["cmp-wrap", { "has-old": old >= 0 }]} role="region" tabindex="0" aria-label={regionLabel}>
-  <table class="cmp">
+  <table class="cmp" role="table">
     {caption && <caption class="visually-hidden">{caption}</caption>}
-    <thead>
-      <tr>
-        <td></td>
+    <thead role="rowgroup">
+      <tr role="row">
+        <td role="cell"></td>
         {
           columns.map((c, i) => (
-            <th scope="col" class:list={{ pick: i === highlight, was: i === old }}>
+            <th scope="col" role="columnheader" class:list={{ pick: i === highlight, was: i === old }}>
               {i === highlight ? (
                 <span class:list={["hl", { "hl-orange": old >= 0 }]} data-mark>{c}</span>
               ) : (
@@ -58,13 +61,13 @@ const superseded = (r: { values: string[] }, i: number) => i === old && plain(r.
         }
       </tr>
     </thead>
-    <tbody>
+    <tbody role="rowgroup">
       {
         rows.map((r) => (
-          <tr>
-            <th scope="row">{r.label}</th>
+          <tr role="row">
+            <th scope="row" role="rowheader">{r.label}</th>
             {r.values.map((v, i) => (
-              <td class:list={{ pick: i === highlight, was: i === old }}>{superseded(r, i) ? <span class="struck" data-mark set:html={v} /> : <Fragment set:html={v} />}</td>
+              <td role="cell" data-col={columns[i]} class:list={{ pick: i === highlight, was: i === old }}>{superseded(r, i) ? <span class="struck" data-mark set:html={v} /> : <Fragment set:html={v} />}</td>
             ))}
           </tr>
         ))
@@ -111,17 +114,6 @@ const superseded = (r: { values: string[] }, i: number) => i === old && plain(r.
     min-width: 10rem;
     vertical-align: top;
   }
-  @media (max-width: 560px) {
-    tbody th {
-      min-width: 0;
-      width: 34%;
-      font-size: var(--fs-sm);
-    }
-    thead th,
-    tbody td {
-      padding-inline: 0.6rem;
-    }
-  }
   tbody td {
     padding: 0.7rem 0.9rem;
     border-bottom: 1px solid var(--line);
@@ -152,6 +144,75 @@ const superseded = (r: { values: string[] }, i: number) => i === old && plain(r.
   }
   tbody tr:last-child :is(th, td) {
     border-bottom: 0;
+  }
+  /* Phones (640px and below): each row becomes a card. The row label is its heading, and each
+     value carries its column name as a small label, so nothing scrolls sideways. */
+  @media (max-width: 40rem) {
+    .cmp-wrap {
+      position: relative;
+      overflow: visible;
+    }
+    .cmp,
+    .cmp tbody,
+    .cmp tbody tr,
+    .cmp tbody th,
+    .cmp tbody td {
+      display: block;
+    }
+    /* The column headings move into each card; screen readers still get them from the table. */
+    .cmp thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .cmp tbody tr {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: var(--paper);
+      overflow: hidden;
+    }
+    .cmp tbody tr + tr {
+      margin-top: 0.75rem;
+    }
+    .cmp tbody th,
+    .cmp tbody tr:last-child th {
+      min-width: 0;
+      padding: 0.65rem 0.9rem;
+      color: var(--ink);
+      font-weight: 650;
+      border-bottom: 1px solid var(--line-strong);
+    }
+    .cmp tbody td {
+      padding: 0.6rem 0.9rem;
+    }
+    .cmp tbody tr td:not(:last-child) {
+      border-bottom: 1px solid var(--line);
+    }
+    .cmp tbody td:last-child {
+      border-bottom: 0;
+    }
+    .cmp tbody td::before {
+      content: attr(data-col);
+      content: attr(data-col) / "";
+      display: block;
+      width: fit-content;
+      margin-bottom: 0.15rem;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--ink-3);
+    }
+    /* The column to use keeps its highlighter, now on its label. */
+    .cmp tbody td.pick::before {
+      color: var(--ink);
+      padding: 0 0.25em;
+      margin-inline: -0.25em;
+      border-radius: 0.3em 0.12em 0.36em 0.1em;
+      background: var(--pick);
+    }
   }
   @media print {
     .struck {

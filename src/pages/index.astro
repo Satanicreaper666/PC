@@ -10,6 +10,8 @@ import Scene from "../components/art/Scene.astro";
 import PenTick from "../components/marks/PenTick.astro";
 import PenUnderline from "../components/marks/PenUnderline.astro";
 import MarginNote from "../components/marks/MarginNote.astro";
+import CourseMap from "../components/learn/CourseMap.astro";
+import { coursePlan } from "../lib/learn";
 import { PATHS } from "../data/paths";
 import { STAGES, STAGE_INFO, AUDIENCES, AUDIENCE_INFO, TOOL_KIND_INFO } from "../data/taxonomy";
 import { BOOKS, BOOK_IDS } from "../data/books";
@@ -81,6 +83,10 @@ const pathSize = Object.fromEntries(
   )
 );
 const latestCheck = [...chapters.map((c) => c.data.checked), ...tools.map((t) => t.data.checked)].sort((a, b) => b.getTime() - a.getTime())[0] ?? new Date();
+// Learn: the course plan, and the first module that's ready to start with.
+const learnPlan = await coursePlan();
+const learnAll = learnPlan.flatMap((b) => b.modules);
+const learnFirst = learnAll.find((m) => m.ready);
 const bookStats = BOOK_IDS.map((id) => {
   const list = chapters.filter((c) => c.data.book === id);
   return { id, count: list.length, minutes: list.reduce((a, c) => a + readingMinutes(c.body), 0), first: list[0] };
@@ -187,6 +193,23 @@ const bookStats = BOOK_IDS.map((id) => {
           })
         }
       </ul>
+    </div>
+  </section>
+
+  <!-- Learn: the course -->
+  <section class="section learn" aria-labelledby="learn-title">
+    <div class="wrap learn-grid">
+      <div class="learn-copy">
+        <h2 id="learn-title">A free HR course, <mark class="hl hl-green" data-mark>one module at a time</mark></h2>
+        <p class="lede">
+          Built from what XLRI, CIPD and SHRM teach, with Indian law and practice. {learnPlan.length} blocks and {learnAll.length} modules, from business acumen to exam preparation, each about 20 to 30 minutes.
+        </p>
+        <div class="learn-cta">
+          <a class="btn" href={learnFirst?.href ?? "/learn/"}>Start the course</a>
+          <a class="link" href="/learn/#where-to-start">Find where to start</a>
+        </div>
+      </div>
+      <CourseMap variant="compact" headingLevel={0} idPrefix="home-" label={`PeopleCraft Learn: ${learnPlan.length} blocks, ${learnAll.length} modules`} />
     </div>
   </section>
 
@@ -531,6 +554,41 @@ const bookStats = BOOK_IDS.map((id) => {
   }
   .book:hover .book-d {
     color: var(--ink);
+  }
+
+  /* Learn: the words on the left, a swatch of the course on the right */
+  .learn {
+    padding-top: 0;
+  }
+  .learn-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.15fr);
+    gap: 2rem 4rem;
+    align-items: center;
+    padding-top: var(--section);
+    border-top: 1px solid var(--line);
+  }
+  .learn h2 {
+    font-size: clamp(1.9rem, 1.4rem + 1.9vw, 2.9rem);
+    line-height: 1.08;
+    font-stretch: 106%;
+    letter-spacing: -0.02em;
+    max-width: 18ch;
+  }
+  .learn .lede {
+    margin-top: 0.75rem;
+  }
+  .learn-cta {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+  }
+  @media (max-width: 900px) {
+    .learn-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   /* Tools */

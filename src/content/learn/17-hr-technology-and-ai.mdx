@@ -1,0 +1,543 @@
+---
+title: "HR technology, AI and the future of work"
+description: "Build an HR tech stack, rank AI use cases by value and risk, meet the EU AI Act and DPDP dates, and read the evidence on skills-based, hybrid and gig work."
+kind: module
+module: 17
+block: frontier
+minutes: 30
+stage: lead
+checked: 2026-11-04
+bigIdea: "Buy tools last: decide the work, the decision rights and the safeguards first, because AI amplifies whatever process and data you already have."
+situation: "A 2,500-person technology centre in Bengaluru, run by a European bank, hires 600 engineers a year and also screens candidates for roles in the bank's EU offices. A vendor offers an AI tool that ranks CVs and scores recorded video interviews, promising to halve time-to-hire. The discount expires at month-end and the talent head is keen. Should the HR head sign, and on what conditions?"
+outcomes:
+  - "Map an HR technology stack and judge where a new tool fits, or doesn't"
+  - "Place AI use cases on a value–risk grid and set the human checks each one needs"
+  - "Apply the EU AI Act, New York City's Local Law 144, Colorado's new law and India's DPDP Act to an HR tool"
+  - "Build a business case and risk assessment for an AI screening tool, including an adverse-impact test"
+  - "Evaluate the evidence on skills-based hiring, hybrid work and gig work before copying a trend"
+summary:
+  - "Fix process and data before buying tools: the core HR record is the system every other tool depends on."
+  - "Rank AI uses by value and risk. Drafting and policy answers are low risk; screening, ratings and monitoring are high risk."
+  - "Key dates: EU emotion-recognition ban since Feb 2025; Colorado from 1 Jan 2027; DPDP core duties May 2027; EU high-risk from 2 Dec 2027."
+  - "A responsible-AI policy names an owner for each tool, tests for bias, tells people, keeps logs and offers a human route to appeal."
+  - "Skills-based hiring changed fewer than 1 in 700 US hires; where firms really changed practice, non-degree hires stayed longer."
+  - "In a randomised trial, hybrid work cut quits by a third without hurting performance. Gig workers now have social security rights under the Code."
+schools:
+  xlri:
+    - "Data, Analytics, and Artificial Intelligence (Term 2, core)"
+    - "Managing Technology & Enterprise Systems (Term 3, core)"
+    - "Digital HRM; Human Resource Information Systems; Future of Work and Workplace (electives)"
+  cipd:
+    - "Profession Map core knowledge: Technology and people, with responsible-AI standards since 2023"
+    - "7OS03 Technology enhanced learning (data and AI in learning)"
+    - "7CO01 Work and working lives in a changing business environment (technology and the future of work)"
+  shrm:
+    - "Technology Management (AI policies, AI-bias awareness, self-service)"
+    - "Talent Acquisition (AI résumé screening and skills matching, added in 2026)"
+    - "Workforce Management (gig, remote and other non-traditional staffing)"
+  india:
+    - "The DPDP Act's core duties start on 13 May 2027. Employment uses can rest on section 7, but security, retention and breach duties still apply"
+    - "The Code on Social Security makes aggregators fund social security for gig and platform workers; Karnataka has its own 2025 Act"
+  note: "SHRM tests AI through Technology Management judgement and frames it as AI plus human intelligence. CIPD stresses responsible, people-centred adoption. XLRI teaches it through analytics and digital-HR courses."
+models:
+  - id: technology-acceptance-model
+    name: "Technology acceptance model (TAM)"
+    by: "Fred Davis"
+    year: "1989"
+    idea: "People adopt a system when they believe it is useful and easy to use."
+    use: "Planning a rollout: working out why a self-service portal goes unused, and what to fix first."
+    watch: "Explains stated intentions better than lasting use, and leaves out social pressure and support, which UTAUT adds."
+    cite: "Davis, F. D. (1989) Perceived usefulness, perceived ease of use, and user acceptance of information technology. MIS Quarterly, 13(3)."
+  - id: utaut-model
+    name: "Unified theory of acceptance and use of technology (UTAUT)"
+    by: "Viswanath Venkatesh, Michael Morris, Gordon Davis and Fred Davis"
+    year: "2003"
+    idea: "Use depends on expected performance, expected effort, social influence and the support available, shaped by age, gender, experience and choice."
+    use: "Designing change for a new HR system or AI tool: managers as role models, training, and help at hand."
+    watch: "Many variables; it predicts intentions in surveys better than behaviour in messy, mandatory rollouts."
+    cite: "Venkatesh, V., Morris, M. G., Davis, G. B. and Davis, F. D. (2003) User acceptance of information technology: toward a unified view. MIS Quarterly, 27(3)."
+  - id: task-based-automation
+    name: "Task-based view of automation"
+    by: "David Autor, Frank Levy and Richard Murnane"
+    year: "2003"
+    idea: "Technology replaces routine tasks and complements non-routine ones, so jobs change task by task rather than disappearing whole."
+    use: "Workforce planning for AI: break roles into tasks before forecasting which jobs shrink or grow."
+    watch: "Generative AI reaches non-routine cognitive tasks that the original model treated as safe from automation."
+    cite: "Autor, D. H., Levy, F. and Murnane, R. J. (2003) The skill content of recent technological change: an empirical exploration. Quarterly Journal of Economics, 118(4)."
+  - id: generative-ai-at-work
+    name: "Generative AI at work"
+    by: "Erik Brynjolfsson, Danielle Li and Lindsey Raymond"
+    year: "2023; 2025"
+    idea: "An AI assistant raised support agents' resolutions per hour by about 14%, with the largest gains for the least experienced."
+    use: "Targeting AI copilots at onboarding and novices, while protecting how future experts are developed."
+    watch: "One firm and one task; top performers gained little, and the results may not transfer to other work."
+    cite: "Brynjolfsson, E., Li, D. and Raymond, L. R. (2025) Generative AI at work. Quarterly Journal of Economics; first issued as NBER Working Paper 31161 (2023)."
+  - id: algorithmic-management
+    name: "Algorithmic management"
+    by: "Katherine Kellogg, Melissa Valentine and Angèle Christin"
+    year: "2020"
+    idea: "Algorithms now direct, evaluate and discipline workers, and workers respond by resisting, gaming or organising against them."
+    use: "Reviewing gig, warehouse, field-sales or contact-centre systems that allocate work or score people."
+    watch: "Draws mostly on platform and gig settings; effects in office and professional jobs are less studied."
+    cite: "Kellogg, K. C., Valentine, M. A. and Christin, A. (2020) Algorithms at work: the new contested terrain of control. Academy of Management Annals, 14(1)."
+  - id: e-hrm-types-lepak-snell
+    name: "Operational, relational and transformational e-HRM"
+    by: "David Lepak and Scott Snell"
+    year: "1998"
+    idea: "HR technology can automate transactions, connect people with services and each other, or support strategic change."
+    use: "Writing a business case for HR technology that goes beyond cost savings."
+    watch: "Evidence shows mainly efficiency gains; strategic transformation is rarely demonstrated (Marler and Fisher, 2013)."
+    cite: "Lepak, D. P. and Snell, S. A. (1998) Virtual HR: strategic human resource management in the 21st century. Human Resource Management Review, 8(3)."
+quiz:
+  - id: ht-system-of-record
+    type: knowledge
+    q: "A company is deciding where to start an HR technology clean-up. Which system is the 'system of record' that most other HR tools depend on?"
+    options:
+      - "The applicant tracking system"
+      - "The core HR and payroll system that holds the employee master record"
+      - "The learning management system"
+      - "The people-analytics dashboard"
+    answer: 1
+    feedback:
+      - "The ATS holds candidates, not the employee record that payroll, leave and analytics draw on."
+      - "Correct. Core HR and payroll hold the single employee record; if it is wrong, every tool built on it is wrong too."
+      - "The LMS draws on the employee record; it doesn't own it."
+      - "Dashboards report data held elsewhere, so they are only as good as the system of record."
+    why: "Fix the system of record and its data ownership first. Analytics and AI amplify whatever the core record contains."
+  - id: ht-eu-high-risk
+    type: knowledge
+    q: "Which HR use of AI does the EU AI Act class as high-risk?"
+    options:
+      - "A chatbot that answers leave-policy questions"
+      - "A tool that filters job applications and evaluates candidates"
+      - "A writing assistant used to tidy up a job advert"
+      - "A spreadsheet macro that calculates overtime pay"
+    answer: 1
+    feedback:
+      - "A chatbot must tell people they are dealing with AI, but answering policy questions is not a high-risk use."
+      - "Correct. Annex III lists AI for recruitment and selection, including filtering applications and evaluating candidates, as high-risk."
+      - "Polishing text doesn't shape decisions about people. Targeting adverts at particular groups would be a different matter."
+      - "A fixed calculation isn't an AI system shaping decisions about people."
+    why: "Employment AI is high-risk when it shapes decisions on hiring, promotion, termination, task allocation or the monitoring of people."
+  - id: ht-output-used-in-eu
+    type: knowledge
+    q: "A Bengaluru technology centre uses an AI tool to shortlist candidates for roles based in Frankfurt. When do the EU AI Act's high-risk duties apply to this use?"
+    options:
+      - "Never, because the centre is in India"
+      - "From 2 December 2027, because the tool's output is used in the EU"
+      - "Since 2 February 2025, along with the banned practices"
+      - "Only if the vendor is based in the EU"
+    answer: 1
+    feedback:
+      - "The Act reaches providers and deployers outside the EU when a system's output is used in the EU."
+      - "Correct. The Digital Omnibus moved high-risk duties for employment AI to 2 December 2027, and this output is used for EU jobs."
+      - "February 2025 brought the bans, such as emotion recognition at work, not the high-risk duties."
+      - "Where the vendor sits doesn't decide it; where the output is used does."
+    why: "It isn't where your office is, it's where the output is used. Design to the strictest regime your decisions touch."
+  - id: ht-four-fifths
+    type: knowledge
+    q: "In a pilot, an AI tool shortlists 40% of men and 28% of women who apply. What does the four-fifths rule suggest?"
+    options:
+      - "No concern, because both groups were shortlisted"
+      - "Possible adverse impact: 28 ÷ 40 = 0.70, below 0.80, so investigate before any live use"
+      - "The tool is unlawful and must be scrapped"
+      - "It is a US test, so the result can be ignored in India"
+    answer: 1
+    feedback:
+      - "Shortlisting some women doesn't show that the rates are fair."
+      - "Correct. A ratio below 0.80 is a red flag that calls for investigation of what drives the gap."
+      - "The rule flags a gap to investigate; on its own it doesn't prove the tool is unlawful."
+      - "Indian law bars gender discrimination in recruitment, and the ratio is a sensible first screen anywhere."
+    why: "Divide the lower selection rate by the higher one. Below 0.80, find the features driving the gap before the tool touches real decisions."
+  - id: ht-skills-evidence
+    type: knowledge
+    q: "A CHRO announces: 'We removed degree requirements from 200 job ads, so we are now skills-based.' Which conclusion does the evidence support?"
+    options:
+      - "The change will, by itself, widen who gets hired"
+      - "Changing ads rarely changes hiring; assessment and selection must change too, and firms that did so saw non-degree hires stay longer"
+      - "Non-degree hires leave sooner, so degree filters cut attrition"
+      - "Skills-based hiring only works in technology roles"
+    answer: 1
+    feedback:
+      - "In the US study, many firms dropped degree requirements in name only and went on hiring the same people."
+      - "Correct. Fewer than 1 in 700 US hires changed, but firms that really changed practice retained their non-degree hires better."
+      - "The evidence points the other way: at committed firms, non-degree hires had higher retention."
+      - "The study covered many occupations; the barrier is practice, not sector."
+    why: "Skills-based hiring changes assessment, selection and pay, not just job-ad wording. Track quality of hire and retention, not ads."
+  - id: ht-public-chatbot
+    type: judgement
+    q: "You are the HR manager at a 700-person manufacturer in Pune. You find that recruiters have been pasting candidates' CVs, including phone numbers and current salaries, into a free public AI chatbot to write summaries. What is the best action?"
+    options:
+      - "Ban all AI tools at once and issue warning letters to the recruiters"
+      - "Stop the practice now, find out what data went where, provide an approved tool or a redacted workflow, and add the rule to a short AI-use policy with training"
+      - "Let it continue, because summaries save time and CVs aren't sensitive"
+      - "Ask IT to block the website quietly and say nothing to the team"
+    answer: 1
+    feedback:
+      - "Stopping the practice is right, but a blanket ban and warnings punish a gap in policy and training that the company created."
+      - "Best. You contain the risk, size it, give people a safe way to keep the benefit, and set a clear rule they are trained on."
+      - "Candidates' personal data falls under the DPDP Act, and public tools may keep or reuse what is pasted in."
+      - "Blocking one site moves the habit to another. Without a policy and training, the risk returns."
+    why: "Shadow AI is a policy and training gap. Contain it, assess it, give people an approved route, and train them, in proportion to the harm."
+  - id: ht-vendor-terms
+    type: judgement
+    level: advanced
+    q: "You head HR at the Bengaluru centre in this module's situation. The vendor won't share adverse-impact results or explain how its ranking works, citing trade secrets, but offers 20% off if you sign this month. What do you recommend?"
+    options:
+      - "Sign for the discount: the legal risk sits with the vendor"
+      - "Don't sign on these terms; require bias-audit results, an explanation of the main factors, logs, audit rights and data terms, and run a shadow pilot before any live use"
+      - "Sign, but use it only for India roles so that EU rules don't apply"
+      - "Build our own model from the last five years of hiring decisions instead"
+    answer: 1
+    feedback:
+      - "Employers stay accountable for hiring decisions, and a US court has let an age-discrimination claim proceed against an HR-tech vendor as well. Liability doesn't simply transfer."
+      - "Best. You set the conditions any high-risk tool must meet and test it on your own data before it affects a real candidate."
+      - "Indian law still bars gender discrimination in hiring, the DPDP Act still applies, and an unexplained ranking is a quality risk anywhere."
+      - "A model trained on past decisions learns past bias; a large online retailer scrapped such a tool after it penalised women."
+    why: "At strategic level, buy AI on evidence and contract terms, not discounts. No adverse-impact data and no explanation means no live use."
+  - id: ht-home-monitoring
+    type: judgement
+    q: "A business head at a 3,000-person BPO in Noida wants keystroke and webcam monitoring for all home-working agents, with automatic warnings when idle time passes 15 minutes. What is the best HR response?"
+    options:
+      - "Implement it; the company owns the laptops"
+      - "Refuse outright; monitoring is never acceptable"
+      - "Ask what problem it should solve, then propose proportionate, transparent measures such as output metrics and team-level data, with clear notice, consultation and human review before any warning"
+      - "Pilot it quietly in one team to see whether productivity rises"
+    answer: 2
+    feedback:
+      - "Owning the device doesn't make any level of surveillance proportionate; excessive monitoring damages trust and invites legal risk."
+      - "Some monitoring is legitimate, for security or service quality. A flat refusal leaves the real problem unsolved."
+      - "Best. You start from the business problem, choose the least intrusive measure that works, tell people, and keep a person between data and discipline."
+      - "Secret monitoring breaks trust, and automatic warnings with no human review invite unfair discipline."
+    why: "Monitoring must be necessary, proportionate, transparent and reviewed by a person before it affects anyone's job."
+  - id: ht-office-mandate
+    type: judgement
+    level: advanced
+    q: "You are the HR business partner for a 400-person product team in Bengaluru. The CEO wants five office days a week from next quarter to improve collaboration. Attrition risk is highest among women and long-distance commuters. What do you recommend?"
+    options:
+      - "Implement the mandate and link variable pay to attendance to make it stick"
+      - "Share the evidence that hybrid work cut quits by a third with no loss of performance in a randomised trial, propose team anchor days for collaboration, and agree measures for a six-month review, including attrition by gender and commute distance"
+      - "Tell the CEO that a five-day mandate is unlawful"
+      - "Let every employee decide where to work"
+    answer: 1
+    feedback:
+      - "Tying pay to attendance without evidence that attendance drives performance risks losing the people you most need."
+      - "Best. You serve the CEO's real goal, collaboration, with evidence, a targeted design and measures agreed in advance."
+      - "Indian law gives no general right to work from home; office attendance is mostly a matter of contract and policy."
+      - "Full individual choice can undercut the collaboration the CEO rightly wants."
+    why: "Meet the business goal with the least costly design the evidence supports, and agree in advance how you will judge it."
+  - id: ht-written-governance
+    type: written
+    level: advanced
+    q: "Recommend and justify how an Indian GCC should govern AI tools used in hiring before the EU AI Act's high-risk duties apply in December 2027. (About 200 words.)"
+    why: "Model answer: I recommend a risk-tiered governance framework, built now rather than in late 2027. First, create an AI register listing every hiring tool, its purpose, owner, vendor, data and the decisions it shapes. Tools that filter, rank or evaluate candidates are high-risk under Annex III of the EU AI Act, and the Act reaches the GCC wherever outputs are used for EU roles. Second, test before use: run each tool in shadow mode and apply an adverse-impact test such as the four-fifths rule. Evidence that language models favour some names over others (University of Washington, 2024) shows bias is a live risk. Third, set the controls the law will require: trained reviewers with authority to override, logs kept for at least six months, notice to candidates and a route to human review. Fourth, write duties into vendor contracts, since a US court has let claims proceed against an HR-tech vendor as well as employers. The same framework meets India's DPDP duties from May 2027 and the Code on Wages ban on gender discrimination in hiring. The limitation is cost and speed; the justification is that designing once to the strictest regime is cheaper than retrofitting under deadline pressure."
+books:
+  - author: "Michael J. Kavanagh, Mohan Thite and Richard D. Johnson (eds)"
+    title: "Human Resource Information Systems: Basics, Applications, and Future Directions"
+    edition: "5th"
+    why: "The standard HRIS text: system choices, implementation, data and security, with chapters on analytics and emerging technology."
+  - author: "Ajay Agrawal, Joshua Gans and Avi Goldfarb"
+    title: "Prediction Machines"
+    year: "2018"
+    why: "Explains AI as cheap prediction, which makes human judgement more valuable: a sharp lens for deciding what HR should automate."
+  - author: "Daron Acemoglu and Simon Johnson"
+    title: "Power and Progress"
+    year: "2023"
+    why: "Argues that whether technology displaces or empowers workers is a choice, not destiny: useful background for automation debates."
+sources:
+  - { title: "Regulation (EU) 2024/1689, the Artificial Intelligence Act", url: "https://eur-lex.europa.eu/eli/reg/2024/1689/oj", publisher: "EUR-Lex" }
+  - { title: "The Digital Personal Data Protection Act, 2023", url: "https://www.indiacode.nic.in/bitstream/123456789/22037/2/a2023-22.pdf", publisher: "India Code" }
+  - { title: "Government notifies the Digital Personal Data Protection Rules, 2025", url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2190014&reg=3&lang=2", publisher: "Press Information Bureau, 14 November 2025" }
+  - { title: "Code on Social Security: factsheet on gig and platform workers", url: "https://pib.gov.in/FactsheetDetails.aspx?Id=150554", publisher: "Press Information Bureau" }
+  - { title: "India's gig economy to have 23.5 million workers by 2029-30: NITI Aayog", url: "https://indbiz.gov.in/indias-gig-economy-to-have-23-5-million-workers-by-2029-30-niti-aayog/", publisher: "IndBiz, Ministry of External Affairs" }
+  - { title: "XLRI Admission Prospectus 2027 (PGDM HRM core and electives)", url: "https://cloud-server.xlri.ac.in/file/6ae1febe65cd3e58180bb565", publisher: "XLRI – Xavier School of Management" }
+  - { title: "CIPD Level 7 Advanced Diploma in Strategic People Management, specification v1.7", url: "https://www.cipd.org/globalassets/media/marketing/quals/2026/l7-advanced-diploma-in-strategic-people-management-1.7.pdf", publisher: "CIPD" }
+  - { title: "SHRM Body of Applied Skills and Knowledge (BASK), 2026 edition", url: "https://www.shrm.org/content/dam/en/shrm/credentials/shrm-certification/bask/shrm-bask.pdf", publisher: "SHRM" }
+  - { title: "The Digital Omnibus on AI enters into force today (27 July 2026)", url: "https://www.lewissilkin.com/insights/2026/07/27/the-digital-omnibus-on-ai-enters-into-force-today-102nedo", publisher: "Lewis Silkin" }
+  - { title: "Critical audit of NYC AI hiring law signals increased risk for employers (January 2026)", url: "https://www.dlapiper.com/en/insights/publications/2026/01/critical-audit-of-nyc-ai-hiring-law-signals-increased-risk-for-employers", publisher: "DLA Piper" }
+  - { title: "Colorado repeals and replaces its landmark AI statute", url: "https://www.eckertseamans.com/legal-updates/colorado-repeals-and-replaces-its-landmark-ai-statute-what-businesses-need-to-know", publisher: "Eckert Seamans" }
+  - { title: "MeitY releases India AI Governance Guidelines (November 2025)", url: "https://www.azbpartners.com/bank/meity-releases-india-ai-governance-guidelines-with-deliberate-focus-on-enabling-innovation-over-restraint/", publisher: "AZB & Partners" }
+  - { title: "State of AI in HR 2026", url: "https://www.shrm.org/topics-tools/research/state-of-ai-hr-2026", publisher: "SHRM" }
+  - { title: "2026 Work Trend Index", url: "https://microsoft.com/en-us/worklab/work-trend-index/agents-human-agency-and-the-opportunity-for-every-organization", publisher: "Microsoft" }
+  - { title: "Brynjolfsson, Li and Raymond, Generative AI at work (Working Paper 31161)", url: "https://www.nber.org/papers/w31161", publisher: "National Bureau of Economic Research" }
+  - { title: "AI tools show biases in ranking job applicants' names (October 2024)", url: "https://www.washington.edu/news/2024/10/31/ai-bias-resume-screening-race-gender/", publisher: "University of Washington" }
+  - { title: "AI bias lawsuit against Workday reaches next stage as court grants conditional certification", url: "https://www.proskauer.com/blog/ai-bias-lawsuit-against-workday-reaches-next-stage-as-court-grants-conditional-certification-of-adea-claim", publisher: "Proskauer" }
+  - { title: "Skills-based hiring: the long road from pronouncements to practice (February 2024)", url: "https://pw.hks.harvard.edu/post/skills-based-hiring-the-long-road-from-pronouncements-to-practice", publisher: "Harvard Project on Workforce" }
+  - { title: "Skills-based hiring (March 2025)", url: "https://economicgraph.linkedin.com/content/dam/me/economicgraph/en-us/PDF/skills-based-hiring-march-2025.pdf", publisher: "LinkedIn Economic Graph" }
+  - { title: "Stanford randomised trial: hybrid work cuts attrition with no harm to performance (June 2024)", url: "https://fortune.com/2024/06/18/stanford-nick-bloom-hybrid-work-cuts-attrition-no-negative-impact-promoted", publisher: "Fortune" }
+  - { title: "Karnataka gig workers Act explained", url: "https://www.business-standard.com/india-news/karnataka-gig-workers-act-explained-benefits-high-court-platforms-126070800776_1.html", publisher: "Business Standard" }
+  - { title: "Davis (1989) Perceived usefulness, perceived ease of use, and user acceptance of information technology", url: "https://doi.org/10.2307/249008", publisher: "MIS Quarterly" }
+  - { title: "Autor, Levy and Murnane (2003) The skill content of recent technological change", url: "https://doi.org/10.1162/003355303322552801", publisher: "Quarterly Journal of Economics" }
+related:
+  - handbooks/hr-professional/05-digital-agility-and-ai
+  - handbooks/hr-professional/04-people-analytics-and-data-literacy
+  - handbooks/recruitment/04-screening-and-shortlisting
+  - toolkit/people-analytics
+  - glossary/dpdp-act
+  - glossary/gig-worker
+  - glossary/hris
+  - learn/05-talent-acquisition
+faq:
+  - q: Is AI hiring software legal in India?
+    a: There is no AI-specific law yet. The DPDP Act governs candidates' personal data, with core duties from May 2027. Whatever tool you use, the Code on Wages bars gender discrimination in recruitment, the Transgender Persons Act bars discrimination in employment, and the RPwD Act requires an equal opportunity policy.
+  - q: When does the EU AI Act apply to HR tools?
+    a: Bans such as emotion recognition at work have applied since 2 February 2025. High-risk duties for hiring, promotion and monitoring tools apply from 2 December 2027, after the Digital Omnibus delay.
+  - q: What is the four-fifths rule in hiring?
+    a: A screening test for adverse impact. Divide the lower group's selection rate by the higher group's; a ratio below 0.80 suggests possible bias that you should investigate.
+  - q: Does hybrid work reduce productivity?
+    a: In a large randomised trial, two home days a week cut quits by about a third with no change in performance reviews or promotions over two years. Results in other settings may differ.
+keywords: [ai in hr india, eu ai act hr high risk, dpdp act employee data, ai hiring bias four fifths rule, hr technology stack, responsible ai policy for hr, skills based hiring evidence, gig workers code on social security]
+draft: false
+---
+
+## Start with the stack, not the tool
+
+The Bengaluru centre already runs a core HR suite, an applicant tracking system (ATS), a learning platform and a dozen spreadsheets that fill the gaps. The vendor's screening tool would sit on top of the ATS. Whatever it promises, it can only be as good as the data and process beneath it.
+
+An HR technology stack has layers, and data flows up through them.
+
+<Figure title="How the HR technology stack fits together" caption="Follow the arrows: each layer draws on the one before it, so the outcome depends on the core record and the rules around it." wide>
+  <Flow
+    steps={[
+      { who: "System of record", title: "Core HR and payroll", detail: "One employee record; statutory payroll" },
+      { who: "Lifecycle tools", title: "Hiring, performance, pay, learning", detail: "ATS, goals, compensation, LMS" },
+      { who: "Service layer", title: "Self-service and case management", detail: "Portals, chatbots, ticket queues" },
+      { who: "Insight layer", title: "Analytics and skills intelligence", detail: "Dashboards, skills inference, planning" },
+      { who: "Control layer", title: "AI agents and governance", detail: "Register, logs, human review" }
+    ]}
+    outcomes={[
+      { title: "Clean data, clear owners", detail: "AI speeds up good decisions", tone: "good" },
+      { title: "Messy data, no owner", detail: "AI makes mistakes faster", tone: "bad" }
+    ]}
+  />
+</Figure>
+
+Three choices shape every stack:
+
+- **Suite or best-of-breed.** A single suite integrates more easily; specialist tools may do one job better but need integration work. AI features are pulling buyers back towards suites, with more risk of lock-in.
+- **One record, one architecture.** Decide who owns each data field, and keep one job and skills architecture, or every tool will disagree.
+- **Indian localisation.** Statutory payroll (PF, ESI, professional tax, labour welfare fund, TDS), Labour Code registers, multi-state rules, and mobile, local-language access for frontline staff are where imported systems most often fall short.
+
+Buying is the easy part; use is the hard part. The **technology acceptance model** (Davis, 1989) says people adopt a system they find useful and easy, and **UTAUT** (Venkatesh and colleagues, 2003) adds social influence and support. That is why managers who visibly use a tool matter so much. For the business case, Lepak and Snell's three types help: *operational* gains (cheaper transactions), *relational* gains (better service) and *transformational* gains (better decisions). Expect the first and prove the third. The [digital agility chapter](/handbooks/hr-professional/digital-agility-and-ai/) has a buyer's checklist. Before you buy an analytics layer, see what your existing exports already tell you: the [people analytics tool](/toolkit/people-analytics/) works out headcount, attrition and tenure from a spreadsheet in your browser.
+
+## Where AI earns its place, and where it needs a human
+
+The centre's recruiters already use generative AI to draft job adverts and summarise interview notes. The vendor's tool is different in kind: it ranks and scores people. The line between helping a person write and shaping a decision about a person is the line to manage.
+
+Two waves are arriving together. *Generative AI* drafts, summarises and answers questions. *Agentic AI* plans and carries out multi-step tasks across systems, with a person signing off at set points. The evidence on value is real but uneven:
+
+- SHRM's *State of AI in HR 2026* found 39% of organisations using AI in HR, most often in recruiting. Most users reported efficiency gains, but about half saw no better decisions, and just under half had a formal AI policy.
+- In a large customer-support operation, an AI assistant raised issues resolved per hour by about 14%, with the biggest gains for new agents (Brynjolfsson, Li and Raymond). That speeds up onboarding, but if juniors skip the formative tasks, the pipeline of future experts can thin out.
+- Microsoft's 2026 Work Trend Index attributes about two-thirds of AI's measured impact to organisational factors, such as culture, managers and work design, rather than to individual users.
+
+<Figure title="AI uses in HR by value and risk" caption="Find a use by its value (up the side) and its risk to people's rights and fairness (along the bottom). The grid tells you how much governance it needs before use." wide>
+  <Matrix
+    yLabel="Value to the business"
+    xLabel="Risk to people's rights and fairness"
+    rows={["Higher value", "Lower value"]}
+    cols={["Lower risk", "Higher risk"]}
+    cells={[
+      [
+        { title: "Scale it, with checks", note: "Letters, job ads, policy Q&A, survey themes", tone: "good" },
+        { title: "Govern before use", note: "CV ranking, ratings, job matching, monitoring", tone: "accent" }
+      ],
+      [
+        { title: "Let teams try it", note: "Meeting notes, slide drafts, quiz questions", tone: "neutral" },
+        { title: "Don't do it", note: "Emotion analysis, keystroke scores, unmasking comments", tone: "bad" }
+      ]
+    ]}
+  />
+</Figure>
+
+Human review only protects people if the reviewer has the time, the information and the authority to disagree. A recruiter approving 300 rankings an hour is not oversight. A recruiter checking the borderline cases, with the reasons on screen, is.
+
+## The rules are arriving on fixed dates
+
+The vendor's tool would screen candidates for jobs in India and in the bank's EU offices. That brings several regimes into play at once, each with its own date.
+
+<Figure title="AI rules that affect HR, 2023 to 2027" caption="Read in date order. The highlighted date is when EU high-risk duties start for hiring and workforce AI; the span marks the preparation window that opened with the EU delay." wide>
+  <Timeline
+    items={[
+      { when: "Jul 2023", label: "New York City Local Law 144", note: "Bias audits and notice for hiring tools" },
+      { when: "Feb 2025", label: "EU bans emotion recognition at work", note: "AI-literacy duty starts too" },
+      { when: "Nov 2025", label: "India: DPDP Rules and AI guidelines", note: "Principles, not an AI law" },
+      { when: "Jul 2026", label: "EU Digital Omnibus in force", note: "Delays the high-risk duties" },
+      { when: "1 Jan 2027", label: "Colorado's replacement law", note: "Notice, reasons, human review on request" },
+      { when: "13 May 2027", label: "DPDP core duties apply", note: "Security, breach reporting, erasure, rights" },
+      { when: "2 Dec 2027", label: "EU high-risk duties for employment AI", note: "Oversight, logs, informing workers", accent: true }
+    ]}
+    spans={[{ from: 3, to: 6, label: "Preparation window" }]}
+  />
+</Figure>
+
+What each regime asks of an employer:
+
+- **EU AI Act.** Since February 2025 it has banned emotion recognition at work, except for medical or safety reasons. From 2 December 2027, AI used to recruit, select, promote, dismiss, allocate tasks or monitor workers is high-risk. Employers must follow the provider's instructions, assign trained human oversight, monitor the system, keep logs for at least six months, and inform workers' representatives and affected workers. The Act reaches organisations outside the EU when a system's output is used in the EU, so an Indian centre screening for EU roles is in scope. Fines reach €35 million or 7% of turnover for banned practices.
+- **New York City Local Law 144.** Since July 2023, automated tools used to hire or promote for New York City jobs need an annual independent bias audit, a public summary and notice to candidates. A December 2025 state audit found enforcement weak, and the city agreed to tighten it.
+- **Colorado.** The state's 2024 AI Act was delayed, stayed in court and then replaced by a narrower law from 1 January 2027. It requires notice, an explanation of adverse decisions within 30 days, a chance to correct data, and human review on request.
+- **India.** There is no AI Act. MeitY's AI Governance Guidelines (November 2025) set principles only. The binding rules for HR are the DPDP Act and Rules, whose core duties start on 13 May 2027, and existing anti-discrimination law.
+
+<Callout type="note" title="At strategic level (SHRM-SCP, CIPD Level 7)">
+Design to the strictest regime you are exposed to. For most Indian GCCs that means EU rules for any work whose output is used in the EU, the DPDP Act for every Indian candidate and employee, and US state rules where the parent hires. One governance framework built to that standard costs less than three retrofits.
+</Callout>
+
+## Govern the risks before you buy
+
+Most AI failures in HR are governance failures. Nobody tested the tool on the company's own data, nobody owned it, and nobody could explain a decision when a candidate asked.
+
+| Risk | How it shows up in HR | Typical controls |
+| --- | --- | --- |
+| Bias | Rankings that penalise career gaps, colleges or PIN codes | Adverse-impact tests, independent audit, human review, an alternative route |
+| Privacy | Collecting too much; reusing HR data to train models | Purpose limits, retention schedule, processor contracts |
+| Explainability | Rejected candidates can't find out why | Reason codes, an appeal route, decision records |
+| Surveillance | Keystroke scores, webcam checks, emotion analytics | Proportionality test, consultation, transparency |
+| Vendor opacity | A model changes without notice, or can't be audited | Audit rights, logs, change notice, re-testing |
+
+The bias risk is not hypothetical. Across more than 3 million comparisons, three large language models preferred white-associated names 85% of the time (University of Washington, 2024). In *Mobley v. Workday*, a US court in May 2025 let a nationwide age-discrimination claim proceed against an HR-tech vendor, not only against employers.
+
+<Figure title="A responsible-AI policy for HR in eight steps" caption="Work through the steps in order when you adopt a tool, then repeat steps 3, 7 and 8 at least once a year.">
+  <Steps
+    items={[
+      { title: "Register every tool", body: "Purpose, owner, vendor, data used and the decisions it shapes." },
+      { title: "Classify the risk", body: "Anything affecting hiring, pay, promotion, discipline or monitoring is high risk." },
+      { title: "Test before and during use", body: "Shadow pilots and adverse-impact checks, repeated after model changes." },
+      { title: "Tell people", body: "Notify candidates and staff when AI shapes a decision about them." },
+      { title: "Keep a person accountable", body: "A named reviewer with time and authority to override." },
+      { title: "Protect the data", body: "Purpose limits, no personal data in public tools, retention rules, DPDP-ready contracts." },
+      { title: "Explain and allow appeal", body: "Reason codes, a human route to contest, and logs kept." },
+      { title: "Train and review", body: "AI literacy for HR and managers, recorded; vendor audit rights used." }
+    ]}
+  />
+</Figure>
+
+<Worked title="Worked example: the business case and risk assessment for the screening tool">
+
+All figures are an illustrative example.
+
+**Step 1: the baseline.** The centre screens 48,000 applications a year (40,000 for India roles, 8,000 for EU roles). Recruiters spend about 4 minutes per CV, so 48,000 × 4 ÷ 60 = **3,200 hours**. At a loaded cost of ₹900 an hour, first screening costs **₹28.8 lakh** a year. Time-to-hire averages 50 days, of which first screening takes 7.
+
+**Step 2: the costs.**
+
+| Cost | Year 1 | Later years |
+| --- | --- | --- |
+| Licence | ₹40 lakh | ₹40 lakh |
+| Integration and set-up | ₹12 lakh | – |
+| Bias audit and legal review | ₹10 lakh | ₹6 lakh |
+| Human review, 1 minute per CV | ₹7.2 lakh | ₹7.2 lakh |
+| **Total** | **₹69.2 lakh** | **₹53.2 lakh** |
+
+**Step 3: the benefits.** The hard saving is the 3,200 screening hours, **₹28.8 lakh**: less than the cost in every year. The case therefore rests on speed. The tool can only shorten the screening stage, from 7 days to about 2. That is 5 days faster, not the 25 days the vendor's "halve time-to-hire" implies. If finance agrees that an empty engineering seat costs ₹2,500 a day, then 600 hires × 5 days × ₹2,500 = **₹75 lakh**. Total benefit ₹103.8 lakh against ₹53.2 lakh of running cost, but only if that vacancy cost holds.
+
+**Step 4: the risks.**
+
+| Risk | Rating | Control before go-live |
+| --- | --- | --- |
+| Bias against women or older candidates | High | Shadow pilot with adverse-impact test; yearly audit |
+| Video scoring of "enthusiasm" from faces | High | Switch it off in the contract: the science is contested, and the EU bans emotion recognition in the workplace |
+| EU high-risk duties for EU roles, 2 Dec 2027 | Certain | Oversight, logs for 6 months or more, candidate notice |
+| DPDP duties for Indian candidates, May 2027 | Certain | Purpose limits, retention schedule, processor contract |
+| No explanation for rejections | High | Reason codes and human review on request |
+
+**Step 5: the pilot result.** In an 8-week shadow pilot on 5,000 applications, the tool shortlists 40% of men and 28% of women. The impact ratio is 28 ÷ 40 = **0.70**, below the 0.80 four-fifths threshold. The vendor traces it to a penalty on career gaps, which falls hardest on women returning after maternity leave.
+
+**Step 6: the decision.** Don't sign this month. Sign only with audit results, an explanation of the main factors, emotion scoring removed, logs, change notice and DPDP-ready data terms. Go live only for roles where the re-tested ratio clears 0.80 for every group you can lawfully measure, with recruiter review of every rejection the tool recommends. A named owner reports the ratio each quarter.
+
+</Worked>
+
+## Skills, hybrid and gig work: what the evidence says
+
+Vendors and conference speakers sell all three trends. The evidence is more modest, and more useful.
+
+<Figure title="Three numbers to quote with care" caption="Each number comes from one strong study or estimate. Read the label for what it does and doesn't show.">
+  <KeyNumbers
+    items={[
+      { value: "< 1 in 700", label: "US hires changed by skills-based hiring (Harvard and Burning Glass Institute, 2024)" },
+      { value: "33%", label: "fewer quits with two home days a week, with no loss of performance (randomised trial)" },
+      { value: "23.5 million", label: "gig workers projected in India by 2029–30, from 7.7 million in 2020–21 (NITI Aayog)" }
+    ]}
+  />
+</Figure>
+
+### Skills-based organisations
+
+A skills *taxonomy* lists skills; an *ontology* adds how they relate and which roles need them. The WEF expects 39% of core skills to change by 2030. But the 2024 Harvard and Burning Glass study found that about 45% of US firms that dropped degree requirements went on hiring as before. The firms that really changed practice raised non-degree hiring, and those hires had 10-point higher retention than graduates. LinkedIn estimates that hiring on skills would widen India's talent pool 11.3 times for non-AI jobs and 22.1 times for AI jobs. Evidence on internal talent marketplaces comes mostly from vendor case studies. Start with a few high-volume or scarce roles, validate the assessments, and track quality of hire.
+
+### Hybrid work
+
+In a randomised trial at Trip.com, published in *Nature* in 2024, two home days a week cut quits by about a third, with no change in performance reviews or promotions over two years. Women, non-managers and long-distance commuters gained most, which matters in Bengaluru traffic. Office mandates are nonetheless tightening, in India and abroad. Build hybrid policy around team anchor days and output measures, and watch what mandates do to women's retention and to attrition by commute distance.
+
+### Gig and platform work
+
+The Code on Social Security recognises gig and platform workers for the first time. It sets aggregators' contribution to a social security fund at 1–2% of annual turnover, capped at 5% of what they pay these workers, with the exact rate still to be notified. Workers register on e-Shram so benefits follow them across platforms. Karnataka's 2025 Act adds a welfare fee, 14 days' notice with reasons before termination, and a ban on algorithms that discriminate. For HR, the issues are misclassification, overlapping levies, and algorithmic management: software that allocates, rates and deactivates people now falls under transparency and grievance duties.
+
+## Where experts disagree
+
+- **Augment or automate?** SHRM's "AI + HI" stance says AI should support human judgement. Task-based research (Autor and colleagues) shows technology reshapes jobs task by task, and Acemoglu and Restrepo (2019) argue that whether it displaces or empowers workers is a design choice.
+- **Does AI pay?** Task-level studies show real gains. A widely cited MIT report claimed about 95% of enterprise generative-AI pilots had no measurable effect on profit; its method is disputed, but Deloitte finds technology-first approaches more likely to miss returns than human-centred ones.
+- **Skills hype.** Vendors sell skills inference and talent marketplaces on case studies. Independent, peer-reviewed evidence on their accuracy is thin, and inferred skills are probabilities, not facts.
+- **Hybrid versus mandates.** The trial evidence favours hybrid. Critics reply that one firm's engineers may not represent all work, and that mentoring and innovation effects are harder to measure.
+- **Does technology hollow out HR?** One view says HR becomes a ticket queue; the other says automation frees HR for advice and design. Marler and Fisher (2013) found mostly efficiency gains so far.
+
+A good answer weighs task-level evidence against organisation-level results, names who bears the risk, and proposes a measurable pilot instead of a verdict.
+
+## In India
+
+- **Data protection.** The DPDP Act's core duties start on 13 May 2027 (some firms count from 12 May). Section 7 lets employers process personal data for employment purposes without consent, but security safeguards, breach reporting, erasure and grievance handling still apply. Optional uses, such as wellness apps or training AI on employee data, are safer with consent. Penalties reach ₹250 crore for security failures. The [digital agility chapter](/handbooks/hr-professional/digital-agility-and-ai/) has a preparation checklist.
+- **No AI Act.** MeitY's guidelines set seven principles and nothing specific to HR. Existing law still governs outcomes: the Code on Wages bars gender discrimination in recruitment for the same or similar work, the Transgender Persons Act bars discrimination in employment, and the RPwD Act requires every establishment to have an equal opportunity policy.
+- **Gig workers.** The Code on Social Security's aggregator levy rate has not yet been notified. Karnataka's Act is in force and its welfare fee of 1% of payouts is notified; platforms' court challenge was pending in late 2026, and Telangana has a draft bill.
+- **Always-on work.** The Right to Disconnect Bill 2025 is a private member's bill and has not passed. Long hours remain a matter of the Labour Codes, state Shops and Establishments Acts and company policy.
+- **GCCs.** Indian centres that build or run HR AI for EU entities face the EU AI Act through where outputs are used, plus EU pay-transparency rules for reward work (see [module 18](/learn/global-hr-and-esg/)).
+
+## Practise the situation
+
+<Scenario
+  title="The AI screening deal"
+  start="open"
+  nodes={{
+    open: {
+      text: "You're the HR head at the Bengaluru centre. The vendor offers 20% off if you sign by month-end, and the talent head is keen. What do you do?",
+      choices: [
+        { label: "Sign now to lock in the discount", to: "sign" },
+        { label: "Ask for bias-audit results, an explanation of the main factors and data terms, and propose a shadow pilot", to: "evidence" },
+        { label: "Reject AI screening and hire four more recruiters instead", to: "decline" }
+      ]
+    },
+    sign: {
+      text: "Six months in, a rejected candidate for a Frankfurt role asks why she was screened out. Nobody can explain the ranking, and legal finds the video feature scores 'enthusiasm' from facial expressions.",
+      outcome: "poor",
+      debrief: "You skipped governance: no adverse-impact test, no explanation, and a feature that infers emotions, banned for workplace use in the EU since February 2025. EU high-risk duties for those roles start on 2 December 2027, and a vendor's liability doesn't remove yours."
+    },
+    decline: {
+      text: "Screening backlogs ease, but hiring costs rise and recruiters spend their days on repetitive first screens. Within a year the business buys a tool on its own, with no HR conditions.",
+      outcome: "mixed",
+      debrief: "Refusing all AI ignores real value in high-volume, lower-risk work. The value–risk grid points to governing high-risk tools, not banning the category, and HR loses influence when it only says no."
+    },
+    evidence: {
+      text: "The vendor shares a summary audit. Your 8-week shadow pilot on 5,000 applications finds the tool shortlists 40% of men and 28% of women. What next?",
+      choices: [
+        { label: "Go live anyway; the tool saves recruiter time", to: "golive" },
+        { label: "Pause; have the vendor find and fix what drives the gap, re-test, and go live only where the ratio clears 0.80, with human review", to: "fix" },
+        { label: "Use it only for the EU roles, where volumes are lower", to: "euonly" }
+      ]
+    },
+    golive: {
+      text: "Within a quarter, a women engineers' network notices fewer callbacks for returners and raises it publicly. Legal warns of exposure under the Code on Wages ban on gender discrimination in recruitment.",
+      outcome: "poor",
+      debrief: "An impact ratio of 0.70 is a red flag under the four-fifths rule. Going live without finding its cause ignores the evidence you paid to collect."
+    },
+    fix: {
+      text: "The vendor finds a penalty on career gaps. After the fix the ratio is 0.91. You go live with recruiter review, candidate notice and an appeal route, and schedule re-tests after every model update.",
+      outcome: "good",
+      debrief: "Shadow pilot, adverse-impact test, vendor accountability, human oversight, notice and logs: the responsible-AI steps in action. You also built most of what the EU high-risk duties will require from December 2027."
+    },
+    euonly: {
+      text: "Legal points out that EU roles are exactly where high-risk duties will apply from December 2027, and the gap in the tool remains unexplained.",
+      outcome: "poor",
+      debrief: "Moving an untested tool to the strictest jurisdiction raises risk instead of lowering it. Fix the tool, then design to the strictest regime you are exposed to."
+    }
+  }}
+/>
+
+<Callout type="tip" title="Try it at work (about 30 minutes)">
+List every AI tool your HR team uses, including free chatbots. For each, note its purpose, the personal data it touches, who checks its output, and where it sits on the value–risk grid. Pick the highest-risk tool and write down the three controls from the eight-step policy that it is missing, with an owner and a date for each.
+</Callout>

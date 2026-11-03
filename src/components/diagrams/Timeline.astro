@@ -33,16 +33,39 @@ const { items, spans = [], label } = Astro.props;
 const n = items.length;
 const accents = items.filter((it) => it.accent).length;
 const isDeadline = (it: Item) => !it.accent && (/^(?:by|within|no later than)\b/i.test(it.when ?? "") || /\bdues?\b|^latest date\b/i.test(it.label));
+// Seven or more moments crowd one line, so above 640px they wrap onto rows of four or five.
+// Each row has its own thread; a span that runs past a row's end is drawn on each row it
+// crosses, and only its longest piece carries the label.
+const wrap = n >= 7;
+const cols = wrap ? Math.ceil(n / Math.ceil(n / 5)) : n;
+const rows = Math.ceil(n / cols);
+const rowOf = (i: number) => Math.floor(i / cols);
+const pieces = spans.flatMap((s) => {
+  if (!wrap) return [{ s, from: s.from, to: s.to, r: 0, inL: false, outR: false, main: true }];
+  const parts = [];
+  for (let r = rowOf(s.from); r <= rowOf(s.to); r++) {
+    const start = r * cols;
+    const end = Math.min(start + cols, n) - 1;
+    parts.push({ s, from: Math.max(s.from, start) - start, to: Math.min(s.to, end) - start, r, inL: s.from < start, outR: s.to > end, main: false });
+  }
+  parts.reduce((a, b) => (b.to - b.from > a.to - a.from ? b : a)).main = true;
+  return parts;
+});
+// Grid rows when wrapped: moments, then that row's spans; the last spans row only if used.
+const gridRows = rows * 2 - (pieces.some((p) => p.r === rows - 1) ? 0 : 1);
 ---
 
-<div class="tl" style={`--n:${n}`} data-draw role="group" aria-label={label}>
+<div class:list={["tl", { wrap }]} style={wrap ? `--n:${n};--cols:${cols};--rows:${gridRows}` : `--n:${n}`} data-draw role="group" aria-label={label}>
   <ol class="tl-items">
     {
       items.map((it, i) => {
         const circled = it.accent && accents === 1;
         const lit = it.accent && accents > 1;
         return (
-          <li class:list={["tl-item", { accent: it.accent }]} style={`--i:${i}`}>
+          <li
+            class:list={["tl-item", { accent: it.accent, "row-end": wrap && i % cols === cols - 1 && i < n - 1, "row-start": wrap && i % cols === 0 && i > 0 }]}
+            style={wrap ? `--i:${i};--r:${rowOf(i)};--c:${i % cols}` : `--i:${i}`}
+          >
             {it.when && (
               <span class="when">
                 {circled ? (
@@ -68,15 +91,21 @@ const isDeadline = (it: Item) => !it.accent && (/^(?:by|within|no later than)\b/
   {
     spans.length > 0 && (
       <ul class="tl-spans">
-        {spans.map((s) => (
-          <li style={`--from:${s.from};--to:${s.to}`}>
+        {pieces.map(({ s, from, to, r, inL, outR, main }) => (
+          <li
+            class:list={{ more: !main, "in-l": inL, "out-r": outR }}
+            style={wrap ? `--from:${from};--to:${to};--r:${r}` : `--from:${from};--to:${to}`}
+            aria-hidden={main ? undefined : "true"}
+          >
             <span class="bracket" aria-hidden="true" />
-            <span class="span-lbl">
-              {s.label}
-              <span class="visually-hidden">
-                , from “{items[s.from]?.label}” to “{items[s.to]?.label}”
+            {main && (
+              <span class="span-lbl">
+                {s.label}
+                <span class="visually-hidden">
+                  , from “{items[s.from]?.label}” to “{items[s.to]?.label}”
+                </span>
               </span>
-            </span>
+            )}
           </li>
         ))}
       </ul>
@@ -223,8 +252,90 @@ const isDeadline = (it: Item) => !it.accent && (/^(?:by|within|no later than)\b/
     }
   }
 
+  /* Seven or more moments wrap onto rows (see the frontmatter). Both lists share the outer
+     grid through subgrid, so a row's span sits right under that row. */
+  @media (min-width: 641px) {
+    .tl.wrap {
+      display: grid;
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      grid-template-rows: repeat(var(--rows), auto);
+      row-gap: 0.9rem;
+    }
+    .tl.wrap > :is(.tl-items, .tl-spans) {
+      grid-area: 1 / 1 / -1 / -1;
+      grid-template-columns: subgrid;
+      grid-template-rows: subgrid;
+      gap: normal;
+      margin: 0;
+    }
+    .tl.wrap .tl-items::before {
+      display: none;
+    }
+    .tl.wrap .tl-item {
+      position: relative;
+      grid-row: calc(var(--r) * 2 + 1);
+      grid-column: calc(var(--c) + 1);
+    }
+    /* Each moment draws the thread on to the next one in its row. */
+    .tl.wrap .tl-item::after,
+    .tl.wrap .tl-item.row-start::before {
+      content: "";
+      position: absolute;
+      top: 2.45rem;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--neel-300);
+      transform-origin: left;
+    }
+    .tl.wrap .tl-item:last-child::after {
+      display: none;
+    }
+    /* At a row's end the thread runs off the edge, and comes back in at the next row's start. */
+    .tl.wrap .tl-item.row-end::after {
+      width: 50%;
+      background: linear-gradient(90deg, var(--neel-300) 30%, transparent);
+    }
+    .tl.wrap .tl-item.row-start::before {
+      left: 0;
+      width: 50%;
+      background: linear-gradient(90deg, transparent, var(--neel-300) 70%);
+    }
+    .tl.wrap .tl-spans li {
+      grid-row: calc(var(--r) * 2 + 2);
+    }
+    .tl.wrap .tl-spans li.in-l .bracket {
+      margin-left: 0;
+      border-left: 0;
+      border-bottom-left-radius: 0;
+      mask-image: linear-gradient(90deg, transparent, #000 3rem);
+    }
+    .tl.wrap .tl-spans li.out-r .bracket {
+      margin-right: 0;
+      border-right: 0;
+      border-bottom-right-radius: 0;
+      mask-image: linear-gradient(270deg, transparent, #000 3rem);
+    }
+    .tl.wrap .tl-spans li.in-l.out-r .bracket {
+      mask-image: linear-gradient(90deg, transparent, #000 3rem calc(100% - 3rem), transparent);
+    }
+    :global(html.js-anim) .tl.wrap:not(.draw):not(.drawn) .tl-item::after,
+    :global(html.js-anim) .tl.wrap:not(.draw):not(.drawn) .tl-item::before {
+      transform: scaleX(0);
+    }
+    .tl.wrap:global(.draw) .tl-item::after,
+    .tl.wrap:global(.draw) .tl-item::before {
+      animation: tl-line 0.5s var(--ease-draw) both;
+      animation-delay: calc(0.15s + var(--i) * (1.2s / var(--n)));
+    }
+  }
+
   /* phones: vertical thread */
   @media (max-width: 640px) {
+    /* A wrapped span's extra pieces belong to the rows; phones list each span once. */
+    .tl-spans li.more {
+      display: none;
+    }
     .tl-items {
       grid-template-columns: 1fr;
       gap: 1.1rem;
@@ -292,9 +403,13 @@ const isDeadline = (it: Item) => !it.accent && (/^(?:by|within|no later than)\b/
       transform: none !important;
       animation: none !important;
     }
-    .tl .tl-items::before {
+    .tl .tl-items::before,
+    .tl.wrap .tl-item::after,
+    .tl.wrap .tl-item::before {
       background: none;
       border-top: 2px solid #8a8fa6;
+      transform: none !important;
+      animation: none !important;
     }
   }
   @media print and (max-width: 640px) {

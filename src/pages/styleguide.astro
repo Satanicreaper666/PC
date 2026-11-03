@@ -19,6 +19,11 @@ import Matrix from "../components/diagrams/Matrix.astro";
 import Cycle from "../components/diagrams/Cycle.astro";
 import KeyNumbers from "../components/diagrams/KeyNumbers.astro";
 import Compare from "../components/diagrams/Compare.astro";
+import Pyramid from "../components/diagrams/Pyramid.astro";
+import Iceberg from "../components/diagrams/Iceberg.astro";
+import Spectrum from "../components/diagrams/Spectrum.astro";
+import Funnel from "../components/diagrams/Funnel.astro";
+import Venn from "../components/diagrams/Venn.astro";
 ---
 
 <BaseLayout title="Style guide" description="PeopleCraft components and diagrams." noindex>
@@ -111,5 +116,106 @@ import Compare from "../components/diagrams/Compare.astro";
 
       <Faq items={[{ q: "Can my employer hold my salary after I resign?", a: "Dues must be paid within the time the law sets." }, { q: "Is notice period buyout allowed?", a: "Only if your contract or the company allows it." }]} />
     </div>
+
+    <section class="sg-learn" aria-labelledby="sg-learn-h">
+      <h2 id="sg-learn-h" class="sg-h">Learn</h2>
+      <p class="lede">Diagrams and components for PeopleCraft Learn modules (docs/LEARN-GUIDE.md, section 9). Example data only.</p>
+      <div class="prose" style="margin-top:2rem">
+        <Figure title="Pyramid: Kirkpatrick's four levels" caption="Read from the base up: each level is harder to measure and matters more to the business.">
+          <Pyramid
+            levels={[
+              { label: "Results", note: "business outcomes the training was for", accent: true },
+              { label: "Behaviour", note: "what people do differently at work" },
+              { label: "Learning", note: "knowledge and skill gained" },
+              { label: "Reaction", note: "how participants felt about it" }
+            ]}
+          />
+        </Figure>
+
+        <Figure title="Iceberg: Schein's levels of culture" caption="Read from top to bottom: what you can see sits above the line; what explains it sits below.">
+          <Iceberg
+            aboveLabel="Visible"
+            belowLabel="Hidden"
+            above={[{ label: "Artefacts", note: "dress, office layout, rituals, jargon" }]}
+            below={[
+              { label: "Espoused values", note: "what people say matters" },
+              { label: "Basic assumptions", note: "unspoken beliefs nobody questions" }
+            ]}
+          />
+        </Figure>
+
+        <Figure title="Spectrum: frames of reference in employee relations" caption="Read left to right: from one shared interest to built-in conflict.">
+          <Spectrum
+            left="Unitarist"
+            right="Radical"
+            points={[
+              { label: "One team, one goal", at: 6, note: "conflict is a failure of communication" },
+              { label: "Pluralist", at: 50, note: "interests differ; bargaining manages them", accent: true },
+              { label: "Marxist critique", at: 94, note: "conflict is built into capitalism" }
+            ]}
+          />
+        </Figure>
+
+        <Figure title="Spectrum, crowded: leadership styles" caption="When labels would collide, the knots are numbered and the labels listed in order.">
+          <Spectrum
+            left="Manager decides"
+            right="Team decides"
+            points={[
+              { label: "Tells", at: 5 },
+              { label: "Sells", at: 18, note: "explains the decision" },
+              { label: "Presents ideas", at: 30 },
+              { label: "Tentative decision", at: 42, note: "open to change" },
+              { label: "Presents problem", at: 58, accent: true },
+              { label: "Defines limits", at: 75 },
+              { label: "Team decides within limits", at: 92 }
+            ]}
+          />
+        </Figure>
+
+        <Figure title="Funnel: recruitment yield" caption="Example numbers. Read top to bottom: each stage keeps a share of the one above.">
+          <Funnel
+            stages={[
+              { label: "Applications", value: 1200, note: "job boards and referrals" },
+              { label: "Screened in", value: 240 },
+              { label: "Interviewed", value: 60, note: "structured panel" },
+              { label: "Offers", value: 12 },
+              { label: "Joined", value: 10, display: "10 people" }
+            ]}
+          />
+        </Figure>
+
+        <Figure title="Venn: what the three bodies share" caption="Each circle is one body; the centre is what all three teach.">
+          <Venn
+            sets={[
+              { label: "XLRI", items: ["Industrial relations depth", "Case method"] },
+              { label: "CIPD", items: ["Evidence-based practice", "Written assignments"] },
+              { label: "SHRM", items: ["Situational judgement", "US law"] }
+            ]}
+            shared={{ label: "All three", items: ["Strategy", "Ethics", "People data"] }}
+          />
+        </Figure>
+
+        <Figure title="Venn with two sets: AMO" caption="Two circles and what they share.">
+          <Venn
+            sets={[
+              { label: "Ability", items: ["Selection", "Training"] },
+              { label: "Motivation", items: ["Pay for performance", "Recognition"] }
+            ]}
+            shared={{ items: ["Opportunity to take part"] }}
+          />
+        </Figure>
+      </div>
+    </section>
   </div>
 </BaseLayout>
+
+<style>
+  .sg-learn {
+    margin-top: var(--section);
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .sg-h {
+    font-size: var(--fs-2xl);
+  }
+</style>

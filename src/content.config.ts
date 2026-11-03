@@ -157,4 +157,100 @@ const glossary = defineCollection({
   })
 });
 
-export const collections = { handbooks, toolkit, glossary, jds };
+/**
+ * PeopleCraft Learn: the free HR course built from what XLRI, CIPD and SHRM teach.
+ * Modules: src/content/learn/<NN>-<slug>.mdx  (URL /learn/<slug>/)
+ * Guides:  src/content/learn/guide-<slug>.mdx (URL /learn/<slug>/)
+ * The contract for writers is docs/LEARN-GUIDE.md.
+ */
+export const LEARN_BLOCK_IDS = ["foundations", "core", "relations", "strategy", "frontier", "credentials"] as const;
+
+const quizItem = z
+  .object({
+    id: z.string().regex(/^[a-z0-9-]+$/),
+    /** knowledge = one right answer; judgement = SHRM-style best response; written = CIPD-style short answer with a model answer */
+    type: z.enum(["knowledge", "judgement", "written"]),
+    /** core = operational (SHRM-CP, CIPD L5); advanced = strategic (SHRM-SCP, CIPD L7) */
+    level: z.enum(["core", "advanced"]).default("core"),
+    q: z.string(),
+    options: z.array(z.string()).min(3).max(5).optional(),
+    /** Index (from 0) of the correct or best option. */
+    answer: z.number().int().min(0).optional(),
+    /** One line per option explaining why it is right, weaker or wrong (same order as options). */
+    feedback: z.array(z.string()).optional(),
+    /** The explanation shown after answering; for written questions, the model answer. */
+    why: z.string()
+  })
+  .refine((x) => x.type === "written" || (x.options !== undefined && x.answer !== undefined && x.answer < x.options.length), {
+    message: "knowledge and judgement questions need 3–5 options and an answer index inside them"
+  })
+  .refine((x) => x.feedback === undefined || x.options === undefined || x.feedback.length === x.options.length, {
+    message: "feedback needs one line per option"
+  });
+
+const learn = defineCollection({
+  loader: glob({ pattern: "**/*.mdx", base: "./src/content/learn" }),
+  schema: z
+    .object({
+      title: z.string(),
+      /** 120–170 characters; used for search results and link previews. */
+      description: z.string().max(200),
+      kind: z.enum(["module", "guide"]).default("module"),
+      /** Module number, 1–20 (modules only). */
+      module: z.number().int().min(1).max(40).optional(),
+      block: z.enum(LEARN_BLOCK_IDS).optional(),
+      /** Honest study time in minutes, including the practice. */
+      minutes: z.number().int().min(5).max(60),
+      stage: stage.optional(),
+      checked: z.coerce.date(),
+      /** The one sentence to remember. */
+      bigIdea: z.string(),
+      /** The opening workplace situation, 2–4 sentences, fictional and Indian. */
+      situation: z.string().optional(),
+      /** "You'll be able to…" outcomes, each starting with a verb. */
+      outcomes: z.array(z.string()).min(2).max(6),
+      /** The cheat sheet: 3–6 lines a reader should be able to say from memory. */
+      summary: z.array(z.string()).min(2).max(6),
+      /** Where this topic sits in each syllabus (from research/07). */
+      schools: z
+        .object({
+          xlri: z.array(z.string()).default([]),
+          cipd: z.array(z.string()).default([]),
+          shrm: z.array(z.string()).default([]),
+          india: z.array(z.string()).default([]),
+          note: z.string().optional()
+        })
+        .optional(),
+      /** Theories and models taught in this module; they also feed /learn/models/. */
+      models: z
+        .array(
+          z.object({
+            id: z.string().regex(/^[a-z0-9-]+$/),
+            name: z.string(),
+            by: z.string(),
+            year: z.string(),
+            idea: z.string(),
+            use: z.string(),
+            watch: z.string().optional(),
+            cite: z.string().optional()
+          })
+        )
+        .default([]),
+      /** Check-yourself questions; they also feed /learn/practice/. */
+      quiz: z.array(quizItem).default([]),
+      /** The books behind the module, described in our own words. */
+      books: z
+        .array(z.object({ author: z.string(), title: z.string(), edition: z.string().optional(), year: z.string().optional(), why: z.string() }))
+        .default([]),
+      sources: z.array(source).default([]),
+      related,
+      faq,
+      keywords: z.array(z.string()).default([]),
+      draft: z.boolean().default(false)
+    })
+    .refine((x) => x.kind === "guide" || (x.module !== undefined && x.block !== undefined && x.situation !== undefined && x.schools !== undefined), {
+      message: "modules need module, block, situation and schools"
+    })
+});
+
+export const collections = { handbooks, toolkit, glossary, jds, learn };

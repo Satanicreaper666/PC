@@ -1,0 +1,591 @@
+---
+title: "Workforce planning and organisation design"
+description: "Forecast workforce demand and supply, choose build, buy, borrow or bridge, and design structures, spans and layers, with India's rules on fixed-term and contract staff."
+kind: module
+module: 4
+block: core
+minutes: 30
+stage: lead
+checked: 2026-11-04
+bigIdea: "Headcount is the last answer, not the first: forecast the work, decide how to source each skill, then design the structure around it."
+situation: "A 180-person direct-to-consumer skincare brand in Gurugram expects revenue to double next year and plans a second warehouse outside Bengaluru. The founders want to grow to 300 people and add a layer of regional managers; the CFO says payroll can grow by only 40%. You have three weeks to take a workforce plan and a structure to the board. Where do you start?"
+outcomes:
+  - "Forecast workforce demand from business drivers, and supply from today's people, attrition and internal moves"
+  - "Choose between build, buy, borrow and bridge for each capability gap, and justify the mix"
+  - "Build a 12-month workforce plan with scenarios, trigger points and a payroll check"
+  - "Evaluate a structure, its spans and its layers using the Star Model and the 7S framework"
+  - "Apply India's rules on fixed-term employment and contract labour when deciding how to staff work"
+summary:
+  - "Start from the business plan: forecast the work, then the people, then the gap. Headcount comes last."
+  - "Demand follows drivers such as orders or tickets; supply is today's people, minus expected leavers, plus internal moves."
+  - "Hires are growth plus replacements. At high attrition, you may hire twice the number you grow by."
+  - "Close each gap by building, buying, borrowing or bridging; choose by time, cost, risk and how core the skill is."
+  - "Structure follows strategy. Pick a form, set spans by the type of work, then align processes, rewards and people."
+  - "Fixed-term staff get parity and gratuity after a year; contract labour is barred from core activities, with exceptions."
+schools:
+  xlri:
+    - "OB-III: Organizational Structure, Design and Change (Term 3, core)"
+    - "Human Resource Planning and Advanced Manpower Planning (electives; Human Resource Planning was core until 2026)"
+  cipd:
+    - "5HR02 Talent management and workforce planning (LO2: workforce planning)"
+    - "7HR02 Resourcing and talent management to sustain success (LO3: workforce planning)"
+    - "7LD01 Organisational design and development (optional on the people-management diploma)"
+    - "Profession Map specialist areas: Workforce planning (added November 2025); Organisation development and design"
+  shrm:
+    - "Workforce Management (build, buy, borrow, bridge; supply and demand; gap analysis)"
+    - "Organizational Effectiveness & Development (organisation design; McKinsey 7S)"
+    - "HR Strategy (scenario planning)"
+  india:
+    - "Fixed-term employees must get the same terms as comparable permanent staff, and gratuity after one year (Industrial Relations Code; Social Security Code)"
+    - "Contract labour rules apply from 50 contract workers, and contractors are barred from core activities, with three exceptions (OSH Code)"
+  note: "XLRI teaches planning and design in separate courses, CIPD made workforce planning its own Profession Map area in 2025, and SHRM tests both as strategic judgement calls."
+models:
+  - id: cappelli-talent-on-demand
+    name: "Talent on demand"
+    by: "Peter Cappelli"
+    year: "2008"
+    idea: "Plan talent like a supply chain under uncertainty: forecast in ranges, mix developing your own people with hiring, and cut the cost of forecasting errors."
+    use: "When demand is uncertain and a single headcount number would give false confidence."
+    watch: "Supply-chain language can treat people as stock; balance it with what you owe employees."
+    cite: "Cappelli, P. (2008) Talent management for the twenty-first century. Harvard Business Review, March 2008."
+  - id: wack-scenario-planning
+    name: "Scenario planning"
+    by: "Pierre Wack (Royal Dutch Shell)"
+    year: "1970s; described in 1985"
+    idea: "Build a few plausible futures from the biggest uncertainties, then find decisions that hold up in all of them."
+    use: "Annual plans in volatile businesses, or big bets such as a new site, market or licence."
+    watch: "Teams quietly pick a favourite scenario; without trigger points, scenarios change no decisions."
+    cite: "Wack, P. (1985) Scenarios: uncharted waters ahead. Harvard Business Review, September 1985."
+  - id: atkinson-flexible-firm
+    name: "The flexible firm (core and periphery)"
+    by: "John Atkinson"
+    year: "1984"
+    idea: "Firms keep a core of permanent staff and add peripheral rings of fixed-term, part-time, agency and outsourced work for flexibility."
+    use: "Deciding which work stays with permanent employees and which can be time-bound or contracted."
+    watch: "Shifts risk onto peripheral workers; in India, the law limits contract labour in core work."
+    cite: "Atkinson, J. (1984) Manpower strategies for flexible organisations. Personnel Management, August 1984."
+  - id: chandler-structure-follows-strategy
+    name: "Structure follows strategy"
+    by: "Alfred Chandler"
+    year: "1962"
+    idea: "As firms grow into new products and markets, they outgrow functional structures and move to divisional forms."
+    use: "Explaining when a growing company should change its structure, and to what."
+    watch: "The arrow runs both ways: managers choose, and structure also shapes what strategies seem possible."
+    cite: "Chandler, A. D. (1962) Strategy and Structure. MIT Press."
+  - id: galbraith-star-model
+    name: "Star Model of organisation design"
+    by: "Jay Galbraith"
+    year: "1977"
+    idea: "Five connected design levers: strategy, structure, processes, rewards and people. Change one and the others must be realigned."
+    use: "Testing a new structure before launch by checking processes, rewards and people practices too."
+    watch: "Tells you what to align, not which design is right; you still need evidence about the work."
+    cite: "Galbraith, J. R. (1977) Organization Design. Addison-Wesley (widely cited as the source of the model)."
+  - id: mckinsey-7s-framework
+    name: "7-S framework"
+    by: "Robert Waterman, Tom Peters and Julien Phillips (McKinsey)"
+    year: "1980"
+    idea: "Seven elements must fit: strategy, structure and systems (hard), and shared values, style, staff and skills (soft)."
+    use: "Diagnosing why a restructure, merger or new strategy isn't working, especially the soft elements."
+    watch: "A checklist of what to examine, not a theory of cause; fit is judged, not measured."
+    cite: "Waterman, R. H., Peters, T. J. and Phillips, J. R. (1980) Structure is not organization. Business Horizons, 23(3)."
+quiz:
+  - id: wp-hires-needed
+    type: knowledge
+    q: "A team of 200 plans 30 new roles next year and expects 15% annual attrition. Roughly how many people must it hire?"
+    options:
+      - "30"
+      - "About 35"
+      - "About 60"
+      - "230"
+    answer: 2
+    feedback:
+      - "That counts only growth. People who leave during the year must be replaced too."
+      - "This replaces leavers only among the 30 new roles, not among the existing 200."
+      - "Correct. Growth of 30, plus about 15% of an average headcount of 215 (about 32 leavers), is roughly 62 hires."
+      - "That is the year-end headcount, not the number of people to hire."
+    why: "Hires needed = growth + expected leavers, and expected leavers ≈ average headcount × attrition rate."
+  - id: wp-borrow-build
+    type: knowledge
+    q: "A company engages a specialist firm on a nine-month contract to run its new warehouse system while it trains three of its own engineers to take over. Which two strategies is it combining?"
+    options:
+      - "Buy and build"
+      - "Borrow and build"
+      - "Bridge and buy"
+      - "Borrow and bridge"
+    answer: 1
+    feedback:
+      - "Nobody is hired on to the payroll here, so this isn't buying."
+      - "Correct. It borrows outside capability for a fixed period and builds its own people to replace it."
+      - "No one moves into a new role, and no one is hired."
+      - "Borrow is right, but training your own engineers for the same work is building, not bridging people into different roles."
+    why: "Borrowing buys time; building creates lasting capability. Pairing them is a common, sensible bridge to self-sufficiency."
+  - id: wp-wide-span
+    type: knowledge
+    q: "Which situation best supports a wide span of control, say 15 or more direct reports?"
+    options:
+      - "Varied, complex work done by new joiners in several cities"
+      - "Standardised work by experienced staff in one place, with good systems"
+      - "A manager who also carries a large individual sales target"
+      - "A small team building a new product from scratch"
+    answer: 1
+    feedback:
+      - "Complexity, inexperience and distance all call for narrower spans."
+      - "Correct. Similar, well-supported work by experienced people needs less day-to-day direction."
+      - "A player-coach has little time left for people, so the span should be narrower."
+      - "Novel, interdependent work needs close coordination, which suits a small span."
+    why: "Set spans by the type of work: how similar, how standardised, how experienced the team, and how much of the manager's own time is left."
+  - id: wp-merger-7s
+    type: knowledge
+    q: "A merger aligned the two firms' structures and systems within three months, but the sales teams still won't share accounts. Which 7S elements are most likely misaligned?"
+    options:
+      - "Strategy and structure"
+      - "Shared values and style"
+      - "Systems and skills"
+      - "Staff numbers"
+    answer: 1
+    feedback:
+      - "These hard elements are the ones the merger already aligned."
+      - "Correct. Refusing to share accounts points to different beliefs and ways of managing, the soft elements."
+      - "Systems were aligned; skills alone wouldn't explain a refusal to cooperate."
+      - "Headcount doesn't explain the behaviour."
+    why: "Hard elements change on paper quickly; shared values and style change slowly and decide whether the new design works."
+  - id: wp-fte-gratuity
+    type: knowledge
+    q: "A fixed-term employee on a 14-month contract leaves when the contract ends. What does the law say about gratuity?"
+    options:
+      - "Nothing is due, because gratuity needs five years of service"
+      - "It is due pro rata, as service under the contract is at least a year"
+      - "Gratuity is due only if the contract is renewed for a second term"
+      - "Only fixed-term staff working in factories qualify for gratuity"
+    answer: 1
+    feedback:
+      - "Five years applies to permanent staff. The Codes set one year for fixed-term employees."
+      - "Correct. Under the Labour Codes, fixed-term employees qualify after one year of service under the contract, paid pro rata."
+      - "Renewal doesn't matter; the year of service under the contract does."
+      - "The rule covers fixed-term employees in all covered establishments."
+    why: "Fixed-term staff get parity with comparable permanent staff and gratuity after one year, from 21 November 2025."
+  - id: wp-sales-headcount
+    type: judgement
+    q: "You are the HR business partner for a 90-person sales team at a SaaS company in Pune. The sales head asks for 25 more salespeople next year 'to hit the number'. What do you do first?"
+    options:
+      - "Approve the request and start sourcing, because revenue depends on it"
+      - "Ask finance to decide whether the budget allows it"
+      - "Work with the sales head to model the driver: revenue target ÷ realistic sales per person, with ramp-up time and expected attrition, then compare hiring with options to raise productivity"
+      - "Offer 10 people now as a compromise and review mid-year"
+    answer: 2
+    feedback:
+      - "Revenue matters, but an unmodelled number can over- or under-hire, and ignores ramp-up and attrition."
+      - "Finance should check affordability, but the need itself has to be worked out first."
+      - "Best. You test the request against the driver, include ramp-up and attrition, and look at alternatives before committing."
+      - "A split-the-difference number has no logic behind it and may still be wrong."
+    why: "Strong answers turn a headcount request into a driver-based model, check the assumptions with the business, and compare options."
+  - id: wp-contract-core
+    type: judgement
+    q: "You are the HR business partner at a 600-person pharmaceutical packaging plant in Baddi. To cut cost, operations wants to move all packing-line operators, the plant's main activity, to a contractor. What do you advise?"
+    options:
+      - "Agree, provided the contractor holds a licence and pays wages on time"
+      - "Explain that packing is likely a core activity, where contract labour is barred unless an exception applies; check whether one does, and model alternatives such as fixed-term hiring for peaks"
+      - "Agree to a six-month pilot and review compliance afterwards"
+      - "Refuse outright, citing the law, and close the discussion"
+    answer: 1
+    feedback:
+      - "A licence doesn't cure the use of contract labour in a core activity."
+      - "Best. You apply the law to the facts, check the exceptions, and still help operations meet its cost goal lawfully."
+      - "A pilot of an unlawful arrangement is still unlawful."
+      - "The legal point is right, but HR should also help solve the cost problem."
+    why: "Good judgement answers apply the rule to the facts, look for lawful alternatives, and keep the business problem in view."
+  - id: wp-delayering
+    type: judgement
+    level: advanced
+    q: "You head HR at a 2,500-person consumer-durables company with nine layers between the CEO and the front line and an average span of three. The CEO wants two layers removed within a quarter. What do you recommend?"
+    options:
+      - "Remove two layers across the board this quarter to show momentum"
+      - "Map spans and layers by function, set target spans by type of work, redesign roles and decision rights, then phase the change with a people plan that handles any exits lawfully"
+      - "Avoid delayering, because it always damages morale"
+      - "Merge grades so there are fewer levels on paper, without changing reporting lines"
+    answer: 1
+    feedback:
+      - "Uniform cuts ignore differences in the work and can overload some managers."
+      - "Best. The design follows the work, decision rights change with the structure, and people and legal risks are planned."
+      - "Nine layers with spans of three is a real cost and speed problem; avoiding it isn't neutral."
+      - "Renaming grades changes nothing about how decisions are made."
+    why: "At strategic level, structure changes start from diagnosis, set spans by the type of work, and come with a people and legal plan."
+  - id: wp-scenarios
+    type: judgement
+    level: advanced
+    q: "You are the CHRO of a Bengaluru fintech. A regulator's decision due in six months could double or halve your lending business. The board wants one hiring number for next year. What do you bring?"
+    options:
+      - "One number based on the most likely outcome"
+      - "Three scenarios with hiring plans for each, the 'no-regret' hires needed in all of them, and trigger points for switching plans"
+      - "A hiring freeze until the decision is known"
+      - "The highest number, so the business is never short of people"
+    answer: 1
+    feedback:
+      - "A single number hides the risk the board most needs to see."
+      - "Best. The board sees the range, commits only to what is safe in every case, and knows what will change the plan."
+      - "A freeze delays even the hires every scenario needs."
+      - "Over-hiring is costly to reverse and may mean lay-offs later."
+    why: "Under real uncertainty, plan in scenarios, commit to no-regret moves, and agree triggers in advance."
+  - id: wp-written-matrix
+    type: written
+    level: advanced
+    q: "Critically evaluate whether a fast-growing Indian direct-to-consumer brand should move from a functional structure to a matrix. Use one organisation design model in your answer. (About 200 words.)"
+    why: "Model answer: A functional structure suits a young brand with one product line, because it builds deep skills and keeps costs low. As the brand adds categories, marketplaces and a second warehouse, decisions about each category need marketing, supply chain and finance to coordinate, and functional heads become a bottleneck. Chandler's argument that structure follows strategy suggests a change is due. A matrix, with category heads working across functions, can speed category decisions while keeping functional expertise. Galbraith's Star Model, however, warns that structure alone fails: the brand would also need clear decision rights between category and function heads, planning processes that resolve conflicts, rewards that recognise shared goals, and managers able to work with two bosses. Without these, a matrix brings slow decisions, conflicting priorities and blame. A further limit is cost: an extra management layer may break the payroll budget. A balanced recommendation is a light matrix: category leads with clear profit goals, a monthly forum to settle priorities, and functions kept intact, reviewed after six months against measures such as launch time and stock-outs."
+books:
+  - author: "Jay R. Galbraith"
+    title: "Designing Organizations"
+    why: "The Star Model explained by its author: how strategy, structure, processes, rewards and people have to fit together, with practical design choices."
+  - author: "Peter Cappelli"
+    title: "Talent on Demand: Managing Talent in an Age of Uncertainty"
+    year: "2008"
+    why: "Makes the case for planning talent like a supply chain under uncertainty, and for mixing development with hiring."
+  - author: "Stephen Taylor"
+    title: "Resourcing and Talent Management"
+    edition: "8th"
+    year: "2021"
+    why: "The CIPD's standard text for 5HR02 and 7HR02: labour markets, workforce planning, flexibility and resourcing strategy."
+  - author: "Richard L. Daft"
+    title: "Organization Theory and Design"
+    why: "The standard textbook on structure and design choices, used in organisation design courses including XLRI's OB-III."
+sources:
+  - { title: "XLRI Admission Prospectus 2027 (PGDM HRM core courses)", url: "https://cloud-server.xlri.ac.in/file/6ae1febe65cd3e58180bb565", publisher: "XLRI – Xavier School of Management" }
+  - { title: "CIPD Level 5 Associate Diploma in People Management, specification v2.6", url: "https://www.cipd.org/globalassets/media/marketing/quals/2026/l5-associate-diploma-in-people-management-2.6.pdf", publisher: "CIPD" }
+  - { title: "SHRM Body of Applied Skills and Knowledge (BASK), 2026 edition", url: "https://www.shrm.org/content/dam/en/shrm/credentials/shrm-certification/bask/shrm-bask.pdf", publisher: "SHRM" }
+  - { title: "The Industrial Relations Code, 2020", url: "https://www.indiacode.nic.in/bitstream/123456789/22040/1/aa202035.pdf", publisher: "Government of India" }
+  - { title: "The Occupational Safety, Health and Working Conditions Code, 2020", url: "https://www.indiacode.nic.in/bitstream/123456789/22041/1/2020-37.pdf", publisher: "Government of India" }
+  - { title: "Government makes the four Labour Codes effective (21 Nov 2025)", url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2192463", publisher: "Press Information Bureau" }
+  - { title: "Top 10 FAQs on fixed-term employment", url: "https://www.lkslaw.com/insights/articles/top-10-faqs-on-fixed-term-employment-fte", publisher: "Lakshmikumaran & Sridharan" }
+  - { title: "FAQs on the OSH Code and OSH (Central) Rules, 2026", url: "https://acuitylaw.co.in/md/faqs/faqs-on-the-occupational-safety-health-and-working-conditions-code-2020-and-the-occupational-safety-health-and-working-conditions-central-rules-2026/", publisher: "Acuity Law" }
+  - { title: "Cappelli (2008) Talent management for the twenty-first century", url: "https://hbr.org/2008/03/talent-management-for-the-twenty-first-century", publisher: "Harvard Business Review" }
+  - { title: "Wack (1985) Scenarios: uncharted waters ahead", url: "https://hbr.org/1985/09/scenarios-uncharted-waters-ahead", publisher: "Harvard Business Review" }
+  - { title: "Waterman, Peters and Phillips (1980) Structure is not organization", url: "https://doi.org/10.1016/0007-6813(80)90027-0", publisher: "Business Horizons" }
+related:
+  - toolkit/headcount-planning-model
+  - handbooks/recruitment/01-do-you-need-this-role
+  - handbooks/labour-law/05-contracts-and-fixed-term-employment
+  - glossary/workforce-planning
+  - glossary/span-of-control
+  - glossary/fixed-term-employment
+  - glossary/contract-labour
+  - learn/05-talent-acquisition
+faq:
+  - q: What are the steps in workforce planning?
+    a: Start from the business plan, forecast the work and the people it needs (demand), forecast the people you will have (supply), find the gaps, and choose how to close each one. Review the plan every quarter against what actually happens.
+  - q: What is the difference between build, buy, borrow and bridge?
+    a: Build means developing your own people; buy means hiring from outside; borrow means using contractors, agencies or consultants for a period; bridge means moving existing people into new roles. Most plans use all four for different gaps.
+  - q: What is a good span of control?
+    a: There is no single right number. Spans can be wide (15 or more) for similar, standardised work by experienced people, and should be narrow (3 to 6) for complex, varied or new work.
+  - q: Can a company use contract labour for its main activity in India?
+    a: Generally not. The OSH Code bars contract labour in core activities unless the work is normally done through contractors, isn't full-time, or is a sudden rise in work that must be finished in a set time.
+keywords: [workforce planning process, build buy borrow bridge, demand and supply forecasting in hr, span of control and layers, galbraith star model, mckinsey 7s model, types of organisation structure, fixed term employment labour code]
+draft: false
+---
+
+## Start with the work, not the headcount
+
+The founders' number, 300 people, answers a question nobody has asked yet. Before anyone argues about headcount, HR needs three things from the business plan: what work there will be, which skills it needs, and when. Headcount, structure and payroll follow from those.
+
+In the Gurugram brand, doubling revenue won't double every team. Orders drive warehouse work, customer contacts drive support, and the product roadmap drives tech. Some work can be automated, some bought in for a season, some done by people the brand already has. A plan built from these drivers, team by team, is usually smaller, cheaper and easier to defend than a top-down number.
+
+That discipline is workforce planning, and most planning cycles run through the same five steps.
+
+<Figure title="The workforce planning cycle" caption="Follow the steps in order: each uses the one before it, and the plan is reviewed every quarter against what actually happens.">
+  <Flow
+    steps={[
+      { who: "Business heads", title: "Read the business plan", detail: "Revenue, products, sites, technology" },
+      { who: "HR with each function", title: "Forecast demand", detail: "Work drivers and productivity" },
+      { who: "HR", title: "Forecast supply", detail: "Today's people, leavers, internal moves" },
+      { who: "HR and finance", title: "Find the gaps", detail: "By role, skill, place and month" },
+      { who: "Leadership team", title: "Close each gap", detail: "Build, buy, borrow or bridge" }
+    ]}
+    outcomes={[
+      { title: "Workforce plan and budget", detail: "With its assumptions written down", tone: "good" }
+    ]}
+  />
+</Figure>
+
+The output is not one headcount number. It is a plan by role, skill, location and month, with a cost and the assumptions behind it. Agree those assumptions with finance and the business heads early, because they are what people will argue about later. The [headcount planning model](/toolkit/headcount-planning-model/) does the month-by-month arithmetic once you have them.
+
+## Forecast demand and supply
+
+**Demand** is the people the work will need. Three methods cover most situations:
+
+- **Driver-based (ratio) forecasting.** Divide the volume of work by what one person can handle. It suits operational roles with a clear driver, such as orders, tickets, beds or branches.
+- **Trend and regression.** Relate past headcount to revenue or volume and project it forward. It works when the business model is stable, and misleads when it is changing.
+- **Judgement.** Ask managers bottom-up, set limits top-down, or run Delphi rounds, in which experts revise their estimates anonymously, for capabilities you have never built before.
+
+<Figure title="Driver-based demand for warehouse staff" caption="Divide the work by what one person can do; change either number and the headcount changes with it.">
+  <Formula
+    parts={[
+      { value: "Orders a day", label: "from the sales plan" },
+      { op: "÷" },
+      { value: "Orders per person a day", label: "productivity, allowing for leave and absence" }
+    ]}
+    result={{ value: "Warehouse associates needed", label: "on the roster" }}
+    example="Example: 12,000 orders ÷ 120 orders per person = 100 associates"
+  />
+</Figure>
+
+**Supply** is the people you will have if you do nothing. Start with today's headcount, then subtract expected leavers: resignations, retirements and fixed-term contracts that end. Add internal moves in and out, such as promotions and transfers. Larger firms track these moves as yearly probabilities in a transition (Markov) matrix. Check external supply too: whether the skills exist in that city, at what pay, and who else is hiring them.
+
+The gap between demand and supply is what you must close. Remember that hires are not the same as growth. Expected leavers are roughly average headcount × attrition rate, so a team with high attrition may hire twice as many people as it grows by.
+
+## Close each gap: build, buy, borrow or bridge
+
+The Gurugram brand has four very different gaps. It needs a marketplace lead within weeks, data analysts for the next three years, 45 extra people in the warehouse for the festive peak, and an HR person to open the Bengaluru site. One answer won't fit all four.
+
+SHRM's body of knowledge names four ways to close a gap:
+
+- **Build:** develop your own people through trainee schemes, academies, coaching and stretch roles. It is slower, builds loyalty and firm-specific skill, and needs a pipeline started early.
+- **Buy:** hire from the market. It is fastest for scarce or senior skills, and most expensive: pay premiums, agency fees and the risk that a star's results don't travel with them.
+- **Borrow:** use contractors, consultants, agencies or gig workers for a period. It is flexible and quick to stop, but the knowledge leaves with them, and Indian law limits contract labour in core work.
+- **Bridge:** move existing people into new roles through redeployment, transfers and promotions, often after short reskilling. It is quick and keeps know-how, but every move leaves a role to backfill.
+
+Some frameworks add **bind** (keep the people you have), **bounce** (exit roles you no longer need) or **bot** (automate the work).
+
+<Figure title="Which B fits this gap?" caption="Start at the top question for each capability gap, not for the company as a whole; most plans end up using all four.">
+  <DecisionTree
+    node={{
+      q: "Is the capability core and needed for years?",
+      detail: "Part of how you compete, not a one-off project or peak",
+      yes: {
+        q: "Do some of your people have adjacent skills?",
+        detail: "They could do the new role after short reskilling",
+        yes: { result: "Bridge", detail: "Move and reskill them; plan the backfill", tone: "good" },
+        no: {
+          q: "Can the business wait 6 to 12 months?",
+          yes: { result: "Build", detail: "Start a pipeline: trainees, academies, stretch roles", tone: "good" },
+          no: { result: "Buy", detail: "Hire now, and build behind the hires", tone: "accent" }
+        }
+      },
+      no: { result: "Borrow", detail: "Contractor, consultant or agency; or hire on a fixed-term contract", tone: "neutral" }
+    }}
+  />
+</Figure>
+
+For HR, the point is to compare options on the same terms: time to productivity, full cost over the period, risk and legal limits. Borrowing a core capability for years creates dependency and, in India, may breach the ban on contract labour in core activities. At strategic level, Lepak and Snell's HR architecture makes the same choice by how valuable and how unique each skill is; see [strategic HRM](/learn/strategic-hrm/).
+
+## Plan in scenarios, then commit
+
+Next year's demand depends on things nobody controls: a festive season, a marketplace changing its fees, a competitor's price cut. A single forecast hides that uncertainty and makes the plan look more certain than it is.
+
+Shell's planners, led by Pierre Wack, made **scenario planning** famous in the 1970s. The method is simple:
+
+1. Pick the two or three uncertainties that move demand most.
+2. Build three plausible scenarios, such as low, base and high.
+3. Find the **no-regret moves** you need in every scenario, and commit to them now.
+4. Hold **contingent moves** for the high or low case, each with a **trigger point** that tells you when to switch.
+
+Peter Cappelli makes the same argument from supply-chain thinking: long-range forecasts are usually wrong, so plan in ranges and make errors cheap to correct. Short fixed-term contracts, internal moves and trained contractors adjust more easily than early permanent hires.
+
+<Worked title="Worked example: a 12-month workforce plan for the Gurugram brand">
+
+All figures are an illustrative example.
+
+**Step 1: forecast demand from the drivers.**
+
+| Group | Today → in 12 months | Driver and assumption |
+| --- | --- | --- |
+| Warehouse | 60 → 100 | Orders double from 6,000 to 12,000 a day; a new warehouse system lifts each person from 100 to 120 orders a day |
+| Customer support | 30 → 35 | Contacts rise from 3,000 to 5,000 a day; a chatbot handles 30%; 100 contacts per agent |
+| Tech and data | 20 → 28 | Two new product squads of four |
+| Marketing | 30 → 36 | Two new marketplaces and one new category |
+| Corporate | 40 → 44 | Site HR, finance and admin for Bengaluru |
+| **Total** | **180 → 243** | |
+
+**Step 2: hires are growth plus expected leavers.** Leavers are estimated as average headcount × attrition.
+
+| Group | Growth + leavers = hires | Attrition |
+| --- | --- | --- |
+| Warehouse | 40 + 32 = **72** | 40% |
+| Customer support | 5 + 10 = **15** | 30% |
+| Tech and data | 8 + 4 = **12** | 15% |
+| Marketing | 6 + 7 = **13** | 20% |
+| Corporate | 4 + 5 = **9** | 12% |
+| **Total** | **63 + 58 = 121** | |
+
+The founders asked for 120 more people. That is roughly the number of **hires** the plan needs, but headcount grows by only 63, because 58 of those hires replace people who leave.
+
+**Step 3: choose a B for each gap.**
+
+- **Warehouse:** build through a two-week induction academy; borrow a licensed contractor for loading, housekeeping and security; hire the festive surge on fixed-term contracts.
+- **Support:** buy entry-level agents; the chatbot is already in the demand figure.
+- **Tech and data:** buy most roles; bridge two operations analysts who already work with the data, and count their backfills.
+- **Marketing:** buy the marketplace lead; borrow a performance-marketing agency; build two associate brand managers.
+- **Corporate:** bridge an HR executive to run the Bengaluru site; buy the rest.
+
+**Step 4: set scenarios and triggers for the most volatile group.**
+
+| Scenario | Associates | Orders a day, month 12 | Signal at month 6 |
+| --- | --- | --- | --- |
+| Low (revenue × 1.5) | 75 | 9,000 | Near 7,500 a day: slow hiring |
+| Base (revenue × 2) | 100 | 12,000 | Near 9,000 a day: stay on plan |
+| High (revenue × 2.5) | 125 | 15,000 | Near 10,500 a day: open contingent roles |
+
+The warehouse system, the induction academy and the data hires are no-regret moves. A second Bengaluru shift and extra fixed-term staff are contingent.
+
+**Step 5: check the payroll.** Using example average CTCs (₹3 lakh in the warehouse, ₹4 lakh in support, ₹18 lakh in tech, ₹12 lakh in marketing, ₹10 lakh in corporate), the annual payroll run-rate rises from ₹14.2 crore to about ₹18.2 crore, up 28%. After a 9% pay rise the increase is about 39%: inside the CFO's 40% limit, but only just. Three hundred people at today's average cost would add about 67%.
+
+**The answer to the board:** 243 people at year end, 121 hires, payroll within the limit, and a written list of the assumptions and triggers that would change the plan.
+
+</Worked>
+
+<Callout type="note" title="At strategic level (SHRM-SCP, CIPD Level 7)">
+Boards want options, costs and risks, not a headcount request. Plan the total workforce, including contractors and gig workers, and show which roles are pivotal: those where better performance moves the strategy most. Put succession cover and automation choices in the same plan, so the board sees one picture of how the work will get done.
+</Callout>
+
+## Choose a structure that fits the strategy
+
+Today the brand is organised by function: heads of marketing, operations, tech and finance report to the founders. That worked with one category and one website. Now the marketing head sets priorities for the website and two marketplaces at once, operations plans stock by warehouse rather than by channel, and every trade-off goes to the founders. The structure, not the people, is creating the queue.
+
+Alfred Chandler's study of large American firms found that **structure follows strategy**: as companies diversified, functional structures gave way to divisional ones. The main forms are these:
+
+| Form | Groups people by | Strengths | Risks | Fits when |
+| --- | --- | --- | --- | --- |
+| Functional | Expertise: marketing, operations, finance | Deep skills, low cost, clear careers | Silos; every trade-off climbs to the top | One main product or market, fairly stable |
+| Divisional | Product, region or customer | Focus and clear accountability for results | Duplicated functions; divisions compete | Several distinct businesses or markets |
+| Matrix | Two dimensions at once, such as category and function | Balances market focus with expertise | Two bosses, conflict and slow decisions | Both dimensions really matter |
+| Network | A small core, with partners doing much of the work | Flexible, low fixed cost, quick to scale | Less control; depends on partners | Work can be specified and bought in |
+
+Many consumer firms use hybrids. A "front-back" design, for example, organises the customer-facing front by channel and the back by product or function. For the Gurugram brand, a light matrix is the likely answer: category leads accountable for results, working with functional teams that keep their expertise.
+
+## Align the whole design, not just the chart
+
+Most reorganisations redraw boxes and lines, then stop. Jay Galbraith's **Star Model** says the chart is only one of five levers, and the five must fit. A matrix with rewards that pay each function for its own targets will fight itself.
+
+<Figure title="Galbraith's Star Model" caption="Go round the star: when you change one point, check the other four still fit it.">
+  <Cycle
+    center="Every point must fit the others"
+    items={[
+      { title: "Strategy", note: "where you compete and how you win" },
+      { title: "Structure", note: "where power and decisions sit" },
+      { title: "Processes", note: "how work and information cross units" },
+      { title: "Rewards", note: "what goals, pay and recognition encourage" },
+      { title: "People", note: "skills, selection and development" }
+    ]}
+  />
+</Figure>
+
+The **McKinsey 7S framework** makes a similar point and adds culture. Three "hard" elements can be changed on paper. Four "soft" ones decide whether the change lives, and they move slowly.
+
+<Figure title="The 7S framework: hard and soft elements" caption="Read top to bottom: the hard elements are visible and quick to change; the soft ones sit beneath and decide whether a new design works.">
+  <Iceberg
+    aboveLabel="Hard: visible, quick to change"
+    belowLabel="Soft: harder to see, slow to change"
+    above={[
+      { label: "Strategy", note: "the plan for advantage" },
+      { label: "Structure", note: "who reports to whom" },
+      { label: "Systems", note: "processes, budgets, IT" }
+    ]}
+    below={[
+      { label: "Shared values", note: "the core beliefs, at the centre" },
+      { label: "Style", note: "how leaders actually behave" },
+      { label: "Staff", note: "the people and how they are developed" },
+      { label: "Skills", note: "what the organisation is good at" }
+    ]}
+  />
+</Figure>
+
+For HR, the design work after the chart is yours: decision rights between category and function heads, a monthly forum to settle priorities, goals and bonuses that reward shared results, and managers trained to work across lines.
+
+## Set spans and layers by the type of work
+
+The brand's warehouse supervisors each manage 20 associates, while its marketing team has six managers with two reports each. Both could be right, or both wrong. It depends on the work.
+
+A **span of control** is the number of people reporting directly to a manager. **Layers** are the levels between the CEO and the front line. The two are linked: narrow spans need more layers to cover the same people. For a 1,000-person firm, an average span of 4 needs about five layers below the CEO, a span of 8 about four, and a span of 15 about three.
+
+<Figure title="Narrow and wide spans compared" caption="Compare the columns: neither is better in general; the right span depends on the work the team does.">
+  <Compare
+    columns={["Narrow span (about 3 to 6)", "Wide span (about 10 to 20)"]}
+    rows={[
+      { label: "Suits", values: ["Complex, varied or new work; new or remote teams", "Similar, standardised work; experienced teams; good data"] },
+      { label: "Manager's role", values: ["Close coaching and coordination", "Setting standards, removing blockers"] },
+      { label: "Risk", values: ["Cost, slow decisions, managers doing the work", "Little coaching; overloaded managers"] },
+      { label: "Example: layers for 1,000 people", values: ["About 5 at a span of 4", "About 3 at a span of 15"] }
+    ]}
+  />
+</Figure>
+
+Set target spans by role type, then count layers. Watch for managers with one or two reports, who are often senior specialists given a title, and for "player-coaches" carrying a full individual target, who have little time left for their people.
+
+## Where experts disagree
+
+- **How far ahead can you plan?** Classic manpower planning forecasts years ahead. Cappelli argues most long-range forecasts are wrong and favours short cycles and options. The answer depends on lead time: pilots, doctors and specialist engineers take years to develop, so their plans must look further ahead than plans for sales or support roles.
+- **Fit or choice?** Contingency theorists argue that the environment and technology decide the best structure. John Child replied in 1972 that managers make real strategic choices. Restructuring is also overused: a reorganisation disrupts work for months, and its promised benefits often fail to arrive.
+- **Flatter is not always better.** Removing layers can speed decisions, but flat structures can hide informal hierarchies, and the evidence on self-managing models such as holacracy is mixed. Popular span rules of thumb have little research behind them.
+- **Who carries the flexibility?** Atkinson's flexible firm explains how employers buy flexibility; critics point out that the risk lands on peripheral workers. In India the point is sharp, because contract workers often do similar work to permanent staff for less pay.
+
+A good answer names the model, applies it to the case, states its limit, and shows how evidence from the case changes the recommendation.
+
+## In India
+
+- **Fixed-term employment (Industrial Relations Code).** A fixed-term employee works on a written contract for a set period and must get the same hours, wages, allowances and benefits as a comparable permanent worker, with statutory benefits in proportion to service. Gratuity is payable after <Fact id="gratuity.fixedTermMinYears" /> of service under the contract. Expiry or non-renewal is not retrenchment, but ending a contract early for non-disciplinary reasons may be. Use it for genuinely time-bound work: rolling renewals for permanent work invite challenge. See [contracts and fixed-term employment](/handbooks/labour-law/contracts-and-fixed-term-employment/).
+- **Contract labour (OSH Code).** The rules apply from 50 contract workers, up from 20. Contract labour is barred from **core activities** unless the work is normally done through contractors in that industry, doesn't need full-time workers for most of the day, or is a sudden rise in core work that must be finished in a set time. Support services such as security, canteen, housekeeping and loading are not core. The principal employer must pay wages if the contractor doesn't.
+- **Planning a reduction.** Retrenching a worker with a year's service needs notice of <Fact id="notice.retrenchmentNoticeMonths" /> (or wages in lieu), compensation of <Fact id="notice.retrenchmentCompensationDays" /> for each completed year, and a payment of <Fact id="notice.reskillingFundDays" /> into the worker re-skilling fund. Industrial establishments with <Fact id="notice.layoffPermissionWorkers" /> or more need government permission first. See [termination, grievances and disputes](/handbooks/labour-law/termination-grievance-and-disputes/).
+- **State rules.** The Codes are in force nationwide, but state rules lag. Karnataka, Goa and Delhi rules were still in draft in early November 2026, so older state rules and forms continue where they are consistent with the Codes. A plan that covers Gurugram and Bengaluru must check the rules in both states.
+
+## Practise the situation
+
+<Scenario
+  title="The Gurugram growth plan"
+  start="open"
+  nodes={{
+    open: {
+      text: "You're the head of HR at the Gurugram skincare brand. The founders want 300 people by next year and a new layer of regional managers. The CFO caps payroll growth at 40%. The board meets in three weeks. What is your first move?",
+      choices: [
+        { label: "Take the founders' 300 and phase the hiring over the year", to: "topdown" },
+        { label: "Ask each function head for a wish list and add them up", to: "wishlist" },
+        { label: "Build a driver-based plan with each function head, in three scenarios", to: "drivers" }
+      ]
+    },
+    topdown: {
+      text: "Hiring starts fast. By month five, payroll is up 30% and marketing has spare people, while the warehouse is short for the festive peak because nobody planned for its 40% attrition.",
+      outcome: "poor",
+      debrief: "A top-down number without drivers ignores where the work is and confuses growth with hires. Demand forecasting by driver, and supply net of leavers, would have shown both problems."
+    },
+    wishlist: {
+      text: "The wish lists add up to 162 new roles. The CFO cuts every team by 25% to fit the budget, and the cuts land hardest on the warehouse, where the work is growing fastest.",
+      outcome: "poor",
+      debrief: "Adding up requests isn't planning. Without drivers and scenarios there is no basis for trade-offs, so the budget is cut evenly instead of where the work is."
+    },
+    drivers: {
+      text: "The plan shows 243 people at year end, 121 hires and payroll within the cap. The warehouse needs 45 extra people for ten weeks of festive peak. How do you staff the peak?",
+      choices: [
+        { label: "Give all picking and packing, year-round, to a staffing contractor to keep headcount down", to: "offbooks" },
+        { label: "Hire the peak on fixed-term contracts with parity pay; use a licensed contractor only for loading, housekeeping and security", to: "design" },
+        { label: "Ask permanent associates to work overtime through the peak", to: "overtime" }
+      ]
+    },
+    offbooks: {
+      text: "Headcount on paper falls, but contract workers now pick and pack all year, alongside a small permanent team. Their numbers pass 50, and an inspection asks why contract labour is doing the warehouse's core work.",
+      outcome: "poor",
+      debrief: "Borrowing a core capability year-round creates legal risk under the OSH Code and leaves the brand dependent on the contractor. The flexible-firm logic has legal limits in India."
+    },
+    overtime: {
+      text: "Associates agree at first, and earn twice their ordinary rate for overtime. By week four, errors and absence rise, and overtime hours approach the legal limits.",
+      outcome: "mixed",
+      debrief: "Overtime with consent is lawful but capped, and it can't cover a 45-person gap for ten weeks. It works for short spikes, not a planned peak."
+    },
+    design: {
+      text: "The peak is staffed lawfully, and the board approves the plan. The founders still want a regional-manager layer between the two warehouse heads and themselves. What do you advise?",
+      choices: [
+        { label: "Add the layer as requested", to: "layer" },
+        { label: "Keep spans wide: a head of operations over both sites, with the Star Model used to align processes, rewards and people", to: "star" }
+      ]
+    },
+    layer: {
+      text: "Two regional managers join with two reports each. Decisions slow down, the warehouse heads feel demoted, and the payroll headroom is gone.",
+      outcome: "mixed",
+      debrief: "A layer with spans of two adds cost and delay. Set spans by the type of work before adding layers, and test any change against the Star Model's other points."
+    },
+    star: {
+      text: "One head of operations leads both sites. You agree decision rights, a weekly planning routine, shared targets for stock-outs and delivery time, and a development plan for site leads. Six months in, both sites hit their service targets.",
+      outcome: "good",
+      debrief: "You planned from drivers, used scenarios, matched each gap to a B within the law, and aligned structure with processes, rewards and people. That is the full Star Model in action."
+    }
+  }}
+/>
+
+<Callout type="tip" title="Try it at work (about 30 minutes)">
+Pick one team you support. Write down its main work driver (orders, tickets, accounts, projects) and how much one person handles today. Forecast next year's demand from the business plan, subtract expected leavers from today's headcount, and find the gap. Then choose build, buy, borrow or bridge for each part of the gap, and check the manager's span. Share it with the team's head and list the assumptions you disagree on.
+</Callout>
