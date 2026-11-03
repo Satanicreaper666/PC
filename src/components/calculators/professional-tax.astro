@@ -24,7 +24,7 @@ const rows = PT_STATES.filter((s) => s.verified).map((s) => {
       })
       .join(". ");
   } else if (s.status === "none") label = "No professional tax on salaries";
-  return { value: s.name, label, law: s.law, source: s.source, confidence: s.confidence };
+  return { value: s.name, label, law: s.law, source: s.source, also: s.also, confidence: s.confidence };
 });
 ---
 
@@ -64,7 +64,7 @@ const rows = PT_STATES.filter((s) => s.verified).map((s) => {
   import { bindCalculator, inr } from "../../scripts/calc-kit";
   import { fyStart, ptYear, scheduleFor, slabLabel } from "../../lib/calc/professional-tax";
   import type { Gender } from "../../lib/calc/professional-tax";
-  import { ptState } from "../../data/statutory";
+  import { hasOfficialSource, ptState } from "../../data/statutory";
 
   const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const monthName = (iso: string) => `${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
@@ -137,6 +137,15 @@ const rows = PT_STATES.filter((s) => s.verified).map((s) => {
     }
     if (code === "WB") notes.push("West Bengal's new slabs apply from October 2026 salaries (Notification 1607-F.T. of 16 September 2026).");
     if (st.confidence !== "high" && st.note) notes.push(st.note);
+    if (!hasOfficialSource(st)) {
+      let host = "";
+      try {
+        host = new URL(st.source.url).hostname.replace(/^www\./, "");
+      } catch {
+        /* no usable URL */
+      }
+      notes.push(`${st.name}'s slabs come from a secondary source${host ? ` (${host})` : ""}; the state's own schedule wasn't found online. Confirm with the state's commercial tax department.`);
+    }
     notes.push("The employer deducts professional tax and pays it to the state. This assumes the same salary every month.");
     return {
       working: [

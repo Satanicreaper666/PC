@@ -101,6 +101,15 @@ const S = {
   },
   itdS19: { title: "Income-tax Act, 2025, section 19 (Income Tax Department)", url: "https://www.incometaxindia.gov.in/w/section-19-206" },
   lksFte: { title: "Top 10 FAQs on fixed-term employment (Lakshmikumaran & Sridharan)", url: "https://www.lkslaw.com/insights/articles/top-10-faqs-on-fixed-term-employment-fte" },
+  epfoFaq: { title: "EPFO FAQs: contributions, pension share and EDLI (epfindia.gov.in)", url: "https://www.epfindia.gov.in/site_en/FAQ.php" },
+  epfoRates: { title: "EPFO: present rates of contribution and administration charges (epfindia.gov.in)", url: "https://www.epfindia.gov.in/site_docs/PDFs/MiscPDFs/ContributionRate.pdf" },
+  epfoEmployerBooklet: {
+    title: "EPFO information booklet for employers of newly covered establishments (epfindia.gov.in)",
+    url: "https://www.epfindia.gov.in/site_docs/PDFs/MiscPDFs/Employer_Information_Booklet.pdf"
+  },
+  epsHandbook: { title: "EPFO handbook on the Employees' Pension Scheme, 1995 (epfindia.gov.in)", url: "https://www.epfindia.gov.in/site_docs/PDFs/EPFO_Rules-Regulations_PDFs/Handbook_EPS1995.pdf" },
+  esicContribution: { title: "ESIC: rates of contribution (esic.gov.in)", url: "https://esic.gov.in/contribution" },
+  esicFaq: { title: "ESIC: frequently asked questions on the ESI scheme (esic.gov.in)", url: "https://esic.gov.in/attachments/files/faq.pdf" },
   sccBonus: {
     title: "Centre notifies bonus eligibility and calculation ceilings under the Code on Wages (SCC Online, 26 Aug 2026)",
     url: "https://www.scconline.com/blog/post/2026/08/26/bonus-rules-under-code-on-wages-eligibility-calculation/"
@@ -342,7 +351,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Part of the employer's 12% that goes to the pension scheme (EPS), on wages up to the ceiling",
     law: "Code on Social Security, 2020 s.16(1)(b); Employees' Pension Scheme, 2026",
     source: S.epfRates,
-    also: [S.kpmgSchemes, S.epfoCeilingFaq],
+    also: [S.kpmgSchemes, S.epfoCeilingFaq, S.epfoFaq, S.epsHandbook],
     verified: true,
     confidence: "high"
   }),
@@ -352,7 +361,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Employer's EDLI (insurance) contribution on wages up to the ceiling",
     law: "Employees' Deposit-Linked Insurance Scheme, 2026; rate notification of 1 Jul 2026",
     source: S.epfRates,
-    also: [S.epfoCeilingFaq],
+    also: [S.epfoCeilingFaq, S.epfoFaq, S.epfoRates],
     verified: true,
     confidence: "high",
     from: "2026-06-29"
@@ -363,6 +372,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Employer's EPF administrative charge on PF wages",
     law: "Employees' Provident Funds Scheme, 2026",
     source: S.epfoCeilingFaq,
+    also: [S.epfoFaq, S.epfoRates],
     verified: true,
     confidence: "medium-high",
     note: "Shown on the PF wage base in EPFO's worked examples."
@@ -373,6 +383,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Minimum EPF administrative charge per establishment (₹75 if it has no contributing member)",
     law: "Employees' Provident Funds Scheme, 2026",
     source: S.epfoCeilingFaq,
+    also: [S.epfoRates],
     verified: true,
     confidence: "medium"
   }),
@@ -394,7 +405,7 @@ export const STAT: Record<string, StatFact> = {
     label: "PF wage ceiling before 17 September 2026",
     law: "S.O. 2702(E), 29 May 2026 (re-notifying the 2014 ceiling under the Code)",
     source: S.epfoCeilingFaq,
-    also: [S.kpmgSchemes],
+    also: [S.kpmgSchemes, S.epfoFaq],
     verified: true,
     confidence: "medium-high",
     until: "2026-09-16"
@@ -405,6 +416,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Central Government's pension (EPS) contribution, on wages up to ₹15,000; not an employer cost",
     law: "Employees' Pension Scheme, 2026",
     source: S.epfoCeilingFaq,
+    also: [S.epsHandbook],
     verified: true,
     confidence: "medium-high"
   }),
@@ -423,7 +435,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Time to file the PF return (ECR) and pay contributions",
     law: "Employees' Provident Funds Scheme, 2026",
     source: S.kpmgSchemes,
-    also: [S.epfoCeilingFaq],
+    also: [S.epfoCeilingFaq, S.epfoEmployerBooklet],
     verified: true,
     confidence: "medium-high"
   }),
@@ -435,7 +447,7 @@ export const STAT: Record<string, StatFact> = {
     label: "ESI covers employees whose wages are at or below this amount",
     law: "ESI wage limit continued under the Code on Social Security, 2020 pending new rules",
     source: S.faq2026,
-    also: [S.lksEsi, S.mercansEsi],
+    also: [S.lksEsi, S.mercansEsi, S.esicFaq],
     verified: true,
     confidence: "medium-high",
     note: "Ministry FAQs (16 Mar 2026): the pre-existing ₹21,000 threshold continues pending revised rules."
@@ -446,7 +458,7 @@ export const STAT: Record<string, StatFact> = {
     label: "ESI wage limit for employees with a disability",
     law: "ESI wage limit continued under the Code on Social Security, 2020 pending new rules",
     source: S.lksEsi,
-    also: [S.mercansEsi],
+    also: [S.mercansEsi, S.esicFaq],
     verified: true,
     confidence: "medium-high"
   }),
@@ -456,6 +468,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Employee's ESI contribution, rounded up to the next rupee",
     law: "Social Security (Central) Rules, 2026 r.19(1)",
     source: S.ssRules,
+    also: [S.esicContribution],
     verified: true,
     confidence: "high"
   }),
@@ -465,6 +478,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Employer's ESI contribution, rounded up to the next rupee",
     law: "Social Security (Central) Rules, 2026 r.19(1)",
     source: S.ssRules,
+    also: [S.esicContribution],
     verified: true,
     confidence: "high"
   }),
@@ -474,6 +488,7 @@ export const STAT: Record<string, StatFact> = {
     label: "Employees with an average daily wage at or below this pay no employee share; the employer still pays",
     law: "ESI rules saved until 20 Nov 2026 (Code on Social Security, 2020 s.164(2)(b))",
     source: S.mercansEsi,
+    also: [S.esicFaq],
     verified: true,
     confidence: "medium",
     note: "Secondary sources only; esic.gov.in could not be read. Confirm with ESIC."
@@ -494,6 +509,7 @@ export const STAT: Record<string, StatFact> = {
     label: "ESI contribution periods; an employee covered at the start stays covered until the period ends",
     law: "ESI regulations saved until 20 Nov 2026 (Code on Social Security, 2020 s.164(2)(b))",
     source: S.mercansEsi,
+    also: [S.esicFaq],
     verified: true,
     confidence: "medium"
   }),

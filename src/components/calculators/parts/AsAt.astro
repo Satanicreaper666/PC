@@ -5,7 +5,7 @@
  *   <AsAt ids={["epf.wageCeiling", "epf.employeeRate"]} />
  * Pass `rows` for values that are not in STAT (professional-tax slabs).
  */
-import { AS_AT_DISPLAY, stat } from "../../../data/statutory";
+import { AS_AT_DISPLAY, hasOfficialSource, stat } from "../../../data/statutory";
 import type { StatSource } from "../../../data/statutory";
 
 interface Row {
@@ -13,6 +13,7 @@ interface Row {
   label: string;
   law: string;
   source: StatSource;
+  also?: StatSource[];
   confidence?: string;
 }
 interface Props {
@@ -24,7 +25,7 @@ const { ids = [], rows = [], note } = Astro.props;
 const all: Row[] = [
   ...ids.map((id) => {
     const f = stat(id);
-    return { value: f.display, label: f.label, law: f.law, source: f.source, confidence: f.confidence };
+    return { value: f.display, label: f.label, law: f.law, source: f.source, also: f.also, confidence: f.confidence };
   }),
   ...rows
 ];
@@ -55,6 +56,7 @@ const confidenceText: Record<string, string> = {
                 <td>
                   {r.label}
                   {r.confidence && r.confidence !== "high" && <span class="conf">{confidenceText[r.confidence]}</span>}
+                  {!hasOfficialSource(r) && <span class="conf">Secondary source only: no official text was found online. Confirm with the department before relying on it.</span>}
                 </td>
                 <td>
                   {r.law}. <a href={r.source.url} rel="noopener">{r.source.title}</a>

@@ -23,7 +23,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { STAT, factText } from "../src/data/statutory.ts";
+import { factText } from "../src/data/statutory.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CONTENT = join(ROOT, "src/content");
@@ -81,7 +81,7 @@ function maskQuoted(text) {
 
 function sentenceAround(text, start, end) {
   const before = text.slice(0, start);
-  const b = Math.max(before.search(/[^]*(?:[.!?]\s|\n)/) >= 0 ? before.lastIndexOf("\n") : -1, ...[". ", "? ", "! "].map((s) => before.lastIndexOf(s)));
+  const b = Math.max(...["\n", ". ", "? ", "! "].map((s) => before.lastIndexOf(s)));
   const after = text.slice(end);
   const ends = ["\n", ". ", "? ", "! "].map((s) => after.indexOf(s)).filter((n) => n >= 0);
   const e = ends.length ? end + Math.min(...ends) : text.length;
