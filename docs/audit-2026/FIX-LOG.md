@@ -50,7 +50,7 @@ Follows [REPORT.md](REPORT.md) (3 November 2026). Work is on branch `claude/peop
 | PERF-2 Render-blocking CSS | **Not fixed** | About 19 KB of small CSS files. LCP is now under 2.5 s everywhere tested, so inlining them isn't worth the lost caching. | — |
 | PERF-3 Chunk warning | **Fixed** | Warn above 600 kB. | Build log. |
 | A11Y-1 Nested asides | **Fixed** | Notes inside content are `role="note"`. | Crawl (below). |
-| A11Y-2 Unnamed table regions | **Fixed** | Numbered labels. | Crawl. |
+| A11Y-2 Unnamed table regions | **Fixed** | Numbered labels; the headcount and salary band tables no longer give two regions one name. | Crawl: 173 of 173 pages with no axe violations (was 72 of 172). |
 | A11Y-3 Letter heading order | **Fixed** | Hidden h2 for the document preview. | Crawl. |
 | A11Y-4 Highlight colours | **Verified** | The "In short" box already shows a colour key, and highlighted words carry their meaning in the text. | — |
 | A11Y-5 Screen reader pass | **Not fixed: owner** | Needs a person with NVDA or VoiceOver. | — |
