@@ -5,6 +5,39 @@
   tinted bands, one deep ink band per page at most.
 */
 
+/* ---------- Fonts ----------
+   Anek Latin (OFL, public/fonts/ANEK-OFL.txt), cut down by scripts/make-fonts.sh to the
+   characters, weights (300–800) and widths (100–106%) the site uses. The rupee sign has
+   its own 1 KB file, so ₹ no longer pulls in the 82 KB extended-Latin file; that file is
+   kept for the rare name with a character outside the core set. */
+@font-face {
+  font-family: "Anek Latin Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 800;
+  font-stretch: 100% 106%;
+  src: url("/fonts/anek-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20B8,U+20BA-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "Anek Latin Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 800;
+  font-stretch: 100% 106%;
+  src: url("/fonts/anek-latin-core.woff2") format("woff2");
+  unicode-range: U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2010-2027,U+2030-203A,U+2044,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+2264-2265,U+FEFF;
+}
+@font-face {
+  font-family: "Anek Latin Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 800;
+  font-stretch: 100% 106%;
+  src: url("/fonts/anek-latin-rupee.woff2") format("woff2");
+  unicode-range: U+20B9;
+}
+
 :root {
   color-scheme: light;
 
@@ -676,7 +709,8 @@ html.js-anim [data-reveal].shown {
    Pen marks: tick = right or done, cross = wrong or avoid, strike = out of date, circle = don't miss this. */
 @font-face {
   font-family: "Caveat";
-  src: url("/fonts/caveat-latin.woff2") format("woff2");
+  /* A single static cut at weight 650 (scripts/make-fonts.sh): notes use 600 and 700, which look the same in handwriting. */
+  src: url("/fonts/caveat-latin-650.woff2") format("woff2");
   font-weight: 400 700;
   font-display: swap;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2122, U+2191, U+2193, U+2212;

@@ -1,6 +1,4 @@
 ---
-import "@fontsource-variable/anek-latin/standard.css";
-import fontUrl from "@fontsource-variable/anek-latin/files/anek-latin-latin-standard-normal.woff2?url";
 import "../styles/global.css";
 import Header from "../components/site/Header.astro";
 import Footer from "../components/site/Footer.astro";
@@ -86,7 +84,7 @@ const ld = [...(isHome ? [siteLd, orgLd] : []), ...extraLd];
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="alternate" type="application/rss+xml" title="PeopleCraft: what changed" href="/changes/rss.xml" />
     <slot name="head" />
-    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/anek-latin-core.woff2" as="font" type="font/woff2" crossorigin />
 
     <meta property="og:site_name" content="PeopleCraft" />
     <meta property="og:type" content={type} />

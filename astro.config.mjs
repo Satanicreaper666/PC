@@ -60,5 +60,8 @@ export default defineConfig({
   markdown: {
     shikiConfig: { theme: "github-light" }
   },
-  devToolbar: { enabled: false }
+  devToolbar: { enabled: false },
+  // The three.js hero (desktop home page only, loaded on demand) is about 580 kB; warn only above that,
+  // so a new oversized chunk still shows up in the build log.
+  vite: { build: { chunkSizeWarningLimit: 600 } }
 });

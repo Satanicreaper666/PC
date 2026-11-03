@@ -111,7 +111,7 @@
       ]
     },
     {
-      "source": "/(og|icons)/(.*)",
+      "source": "/(og|icons|fonts)/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
