@@ -9,15 +9,20 @@ Built with [Astro](https://astro.build) (static output), MDX and [Pagefind](http
 ```bash
 npm install
 npm run dev          # http://localhost:4321
-npm run build        # builds dist/ and the search index
+npm run build        # builds dist/, the search index, and hash-locks inline scripts (scripts/csp-meta.mjs)
 npm run preview      # serve dist/ locally
 npm run check:links  # after a build: every internal link and #anchor must resolve
-npm test             # calculator unit tests (worked examples from the law)
+npm run check:facts  # statutory figures in pages come from src/data/statutory.ts (see below)
+npm test             # calculator and library unit tests (worked examples from the law)
 npx astro check      # type-check pages and scripts
-npm run assets       # regenerate favicon, app icons, OG images, manifest
+npm run assets       # regenerate favicon, app icons, share images (og/*.jpg), manifest
+node scripts/check-headers.mjs   # vercel.json and public/.htaccess send the same security headers
+sh scripts/make-fonts.sh         # rebuild the subset web fonts (needs: pip install "fonttools[woff]")
 ```
 
-Node 22 or later. The site builds for `https://peoplecraft.vercel.app` (the current live address). When you add a custom domain, set `SITE_URL` so canonical links, the sitemap and social images use it, and regenerate the social images:
+GitHub Actions (`.github/workflows/ci.yml`) runs all of these, plus `npm audit` and Lighthouse budgets, on every push. A daily job (`uptime.yml`) checks that the live site answers.
+
+Node 22 or 24. The site builds for `https://peoplecraft.vercel.app` (the current live address). When you add a custom domain, set `SITE_URL` so canonical links, the sitemap and social images use it, and regenerate the social images:
 
 ```bash
 SITE_URL=https://peoplecraft.in npm run assets
@@ -86,7 +91,8 @@ scripts/              make-assets.cjs, check-links.mjs, make-preview.mjs, render
 ### Adding or updating content
 
 - Read `docs/CONTENT-GUIDE.md` first.
-- **A rate or limit changed** (EPF ceiling, ESI limit, gratuity cap, professional tax slab): edit `src/data/statutory.ts` only. Calculators and chapters that use `<Fact id="…">` update themselves. Update `verified`, the source and the date.
+- **A rate or limit changed** (EPF ceiling, ESI limit, gratuity cap, professional tax slab): edit `src/data/statutory.ts` only, and update `verified`, the source and the date. Calculators, chapters, tools and the glossary all read figures from it: `<Fact id="…" />` in MDX prose, `fx("…")` in MDX component props, and `{{fact:…}}` tokens in front matter, `glossary.json` and Markdown templates. Then run `npm run check:facts`: it fails if a page types a watched figure by hand, and lists worked examples in `scripts/facts-allow.json` whose sums need redoing. The change also appears on `/changes/` and its RSS feed automatically.
+- **A reviewer has checked a page**: add `reviewedBy: "Name, credential"` and `reviewed: YYYY-MM-DD` to its front matter. The stamp then shows the reviewer instead of "expert review pending".
 - **A chapter**: edit the `.mdx` file and set `checked:` to the date you compared every fact with its source.
 - **A new tool**: add `src/content/toolkit/<id>.md` with `kind:` (calculator, letter, form, policy, checklist, survey, plan). Letters and forms use `{{field}}` placeholders and get Word download automatically.
 - **Drafts**: `draft: true` keeps a page visible in `npm run dev` and out of the build.
@@ -129,9 +135,9 @@ scripts/              make-assets.cjs, check-links.mjs, make-preview.mjs, render
 - [ ] **Salary data**: if you hold licensed salary surveys, send the sources and the JD library can show sourced pay ranges again.
 - [ ] **Testimonials**: removed. Re-add only real, signed-off quotes.
 - [ ] **Terms of use**: the template licence (free to adapt, including commercially) and "don't republish whole chapters" are policy choices. Confirm them.
-- [ ] **Domain**: builds default to `https://peoplecraft.vercel.app`. The old pages' metadata pointed at `peoplecraft.in`. If you own that domain, add it in Vercel and build with `SITE_URL`.
+- [ ] **Domain**: builds default to `https://peoplecraft.vercel.app`. The old pages' metadata pointed at `peoplecraft.in`. If you own that domain, add it in Vercel, then run `SITE_URL=https://peoplecraft.in npm run assets` and build with `SITE_URL`, and verify it in Google Search Console (DNS verification, no script on the pages).
 - [ ] **Trademark**: no conflicting "PeopleCraft" HR brand was found in a web search, but run a formal check before investing in the brand.
-- [ ] **Vercel Analytics**: the rebuild loads no analytics script, which keeps the About page's "no tracking" promise. If Web Analytics is switched on for this project in Vercel, switch it off. If you want analytics later, choose a cookie-free tool and update the privacy page first.
+- [x] **Vercel Analytics**: confirmed off on 3 Nov 2026 (the Vercel API reports no Web Analytics for project `peoplecraft-hr-os`), and the pages load no analytics script. If you want analytics later, choose a cookie-free tool and update the privacy page first.
 - [ ] **Safari**: check a few pages on an iPhone and a Mac. Card edges use CSS masks and drop-shadow filters, and the hero uses WebGL; Safari draws these slightly differently from Chrome, which is what the build was tested in.
-- [ ] **Offline copies**: after the first deploy, open two pages, switch on airplane mode and reopen them; open a third page to see the offline page. `sw.js` must be served from the site root with `Cache-Control: no-cache` (`vercel.json` and `.htaccess` already say so).
+- [ ] **Offline copies**: after the first deploy, open two pages, switch on airplane mode and reopen them (the first page you opened is kept too, since 3 Nov 2026); open a third page to see the offline page. `sw.js` must be served from the site root with `Cache-Control: no-cache` (`vercel.json` and `.htaccess` already say so).
 - [ ] **Firebase**: the old admin panel used Firebase sign-in and Firestore, and its web config was public in `js/firebase-config.js`. The rebuild uses neither. Delete the Firebase project (or at least lock its Firestore rules) and any user records you no longer need.

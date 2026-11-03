@@ -108,7 +108,7 @@ All diagrams are data-driven components, available in every `.mdx` file **withou
 
 Rules: labels ≤ 8 words; never rely on colour alone (labels always visible); at most 6 parts in a Breakdown; no decorative diagrams; example numbers say "Example". See every component rendered at `/styleguide/`.
 
-Inline statutory values: `<Fact id="gratuity.ceiling" />` prints the value from `src/data/statutory.ts` with its source on hover, so chapters and calculators never disagree.
+Inline statutory values: `<Fact id="gratuity.ceiling" />` prints the value from `src/data/statutory.ts` with its source on hover, so chapters and calculators never disagree. `<Fact id="epf.wageCeiling" short />` prints just the figure ("₹25,000" rather than "₹25,000 a month"). Inside component props, import `fx` from the data file and write `fx("esi.wageCeiling", "short")`; in front matter, `glossary.json` and Markdown templates, write `{{fact:esi.wageCeiling}}` or `{{fact:esi.wageCeiling|short}}`. Never type a statutory figure by hand: `npm run check:facts` fails the build if you do. A worked example or a dated piece of history ("rose to ₹25,000 on 17 September 2026") goes in `scripts/facts-allow.json` with a reason.
 
 ## 5. Facts and sources (non-negotiable)
 
