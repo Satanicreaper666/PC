@@ -6,14 +6,15 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && pagefind --site dist --output-subdir pagefind",
+    "build": "astro build && pagefind --site dist --output-subdir pagefind && node scripts/csp-meta.mjs dist",
     "preview": "astro preview",
     "check:links": "node scripts/check-links.mjs dist",
-    "test": "node --test src/lib/calc/*.test.ts src/lib/analytics/*.test.ts src/lib/orgchart/*.test.ts src/lib/mailmerge/*.test.ts",
-    "assets": "node scripts/make-assets.cjs"
+    "test": "node --test src/lib/calc/*.test.ts src/lib/analytics/*.test.ts src/lib/orgchart/*.test.ts src/lib/mailmerge/*.test.ts src/lib/*.test.ts",
+    "assets": "node scripts/make-assets.cjs",
+    "check:facts": "node scripts/check-facts.mjs"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.x || 24.x"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.2",
@@ -33,5 +34,8 @@
     "@types/three": "^0.187.0",
     "pagefind": "^1.6.0",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "image-size": "^2.0.4"
   }
 }
