@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Test, check and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Calculator and library tests
+        run: npm test
+      - name: Type check
+        run: npx astro check
+      - name: Statutory figures come from src/data/statutory.ts
+        run: npm run check:facts
+      - name: vercel.json and .htaccess send the same security headers
+        run: node scripts/check-headers.mjs
+      - name: Build (site, search index, script hashes)
+        run: npm run build
+      - name: Every internal link and #anchor resolves
+        run: npm run check:links
+      - name: No known vulnerabilities in shipped dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 3
+
+  lighthouse:
+    name: Lighthouse budgets
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Phone-sized Lighthouse runs against the built site
+        run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json
