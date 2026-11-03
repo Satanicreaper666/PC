@@ -1,0 +1,205 @@
+---
+title: "How this course works"
+description: "How PeopleCraft Learn is built: the module rhythm, six blocks over twelve months, three study plans, study methods backed by evidence, and how to use it for SHRM or CIPD."
+kind: guide
+minutes: 15
+checked: 2026-11-04
+bigIdea: "Short, regular practice beats long, occasional reading: test yourself, space it out, mix topics and apply each idea at work."
+outcomes:
+  - "Choose a study plan that fits your weekly hours"
+  - "Use retrieval practice, spacing, interleaving and worked examples in every week of study"
+  - "Plan how to use the course for SHRM-CP or SHRM-SCP, or for CIPD Level 5 or Level 7"
+  - "Set up and run a study circle with colleagues"
+summary:
+  - "Each module runs: situation, ideas as pictures, a worked example, the debate, India, a scenario, a quiz and a task at work."
+  - "Twenty modules in six blocks: about 12 months at 3–4 hours a week, 6 months at 6–8, or 3–4 months at 10 or more."
+  - "Test yourself before you reread; space reviews over weeks; mix old and new topics; study a worked example before you try alone."
+  - "For SHRM, practise the judgement questions; for CIPD, write the model-answer questions in full."
+  - "A study circle of four to eight colleagues, meeting for an hour every fortnight, keeps everyone going."
+sources:
+  - { title: "Dunlosky et al. (2013) Improving students' learning with effective learning techniques", url: "https://doi.org/10.1177/1529100612453266", publisher: "Psychological Science in the Public Interest" }
+  - { title: "Roediger and Karpicke (2006) Test-enhanced learning: taking memory tests improves long-term retention", url: "https://doi.org/10.1111/j.1467-9280.2006.01693.x", publisher: "Psychological Science" }
+  - { title: "Cepeda et al. (2006) Distributed practice in verbal recall tasks: a review and quantitative synthesis", url: "https://doi.org/10.1037/0033-2909.132.3.354", publisher: "Psychological Bulletin" }
+  - { title: "Sweller and Cooper (1985) The use of worked examples as a substitute for problem solving in learning algebra", url: "https://doi.org/10.1207/s1532690xci0201_3", publisher: "Cognition and Instruction" }
+  - { title: "Kalyuga, Ayres, Chandler and Sweller (2003) The expertise reversal effect", url: "https://doi.org/10.1207/S15326985EP3801_4", publisher: "Educational Psychologist" }
+  - { title: "SHRM Body of Applied Skills and Knowledge (BASK), 2026 edition", url: "https://www.shrm.org/content/dam/en/shrm/credentials/shrm-certification/bask/shrm-bask.pdf", publisher: "SHRM" }
+  - { title: "CIPD: CPD policy 2026", url: "https://www.cipd.org/globalassets/media/marketing/learning/cpd/cpd-policy/8661-cpd-policy-2026.pdf", publisher: "CIPD" }
+related:
+  - learn/guide-the-map
+  - learn/guide-credentials
+  - learn/02-people-at-work
+  - learn/19-shrm-exam-prep
+  - learn/20-cipd-assignments-and-capstone
+  - handbooks/hr-professional/09-performance-and-learning
+  - glossary/70-20-10-model
+  - glossary/learning-and-development
+faq:
+  - q: How long does PeopleCraft Learn take?
+    a: About 12 months at 3–4 hours a week, 6 months at 6–8 hours, or 3–4 months at 10 hours or more. Each module page takes 20–30 minutes; the rest of the time goes on practice and applying it at work.
+  - q: Is PeopleCraft Learn accredited by XLRI, CIPD or SHRM?
+    a: No. It is a free, independent course built from their published syllabi and the standard HR books. It does not award any of their credentials.
+  - q: What is the most effective way to study for an HR exam?
+    a: Test yourself rather than rereading, spread practice over weeks, mix topics, and study worked examples before attempting problems alone. These methods have the strongest research support.
+keywords: [how to study for shrm, hr course india free, cipd study plan, spaced repetition hr exam, retrieval practice, hr study group]
+draft: false
+---
+
+import { LEARN_BLOCKS, LEARN_MODULES } from "../../data/learn";
+import { CRED } from "../../data/credentials";
+
+export const inBlock = (id) => LEARN_MODULES.filter((m) => m.block === id);
+export const span = (id) => { const ns = inBlock(id).map((m) => m.n); return ns.length > 1 ? "Modules " + Math.min(...ns) + "–" + Math.max(...ns) : "Module " + ns[0]; };
+
+PeopleCraft Learn is a free, self-paced HR course for people moving into HR business partner and strategic roles. It is built from what XLRI teaches in its PGDM (HRM), what CIPD assesses at Level 5 and Level 7, and what SHRM tests in SHRM-CP and SHRM-SCP, plus Indian law and the standard HR books. This page explains how to use it.
+
+<Callout type="note" title="Free and independent">
+This course is not run or endorsed by XLRI, CIPD or SHRM, and finishing it does not award any of their credentials. It teaches the content they share, so your time on a credential later goes into the exam or the assignments rather than first-time learning.
+</Callout>
+
+## What happens in each module
+
+Every module follows the same pattern, so you always know where you are. Reading it and doing the practice once takes 20–30 minutes. The rest of a module's time goes on spaced practice and on using the ideas at work.
+
+<Figure title="The rhythm of every module" caption="Work through the steps in order; the layout adds the quiz, the key models and the cheat sheet after the main text.">
+  <Steps
+    items={[
+      { title: "The situation", body: "A fictional Indian workplace facing a decision with no obvious answer. Keep it in mind as you read." },
+      { title: "Ideas as pictures", body: "Three to five short sections. Each starts with an example, gives the model, draws it, then says what it means for HR." },
+      { title: "A worked example", body: "One problem solved step by step, with numbers or a full analysis. Study it before you try a similar problem alone." },
+      { title: "Where experts disagree", body: "The main critique or competing school: the material XLRI case discussions and CIPD Level 7 essays expect." },
+      { title: "In India", body: "What Indian law and practice change, with links to the handbooks for detail." },
+      { title: "Practise and check", body: "A branching scenario, then a quiz with SHRM-style judgement questions and a CIPD-style written question. Every option has feedback." },
+      { title: "Try it at work", body: "A 30-minute task in your own organisation, so the idea is used while it is fresh." }
+    ]}
+  />
+</Figure>
+
+The shape is deliberate. Concrete examples come before abstract models; each key idea is shown as a picture as well as in words; and you practise recalling and applying what you read, with feedback, rather than only reading it.
+
+Strategic material is marked "At strategic level (SHRM-SCP, CIPD Level 7)". If you are preparing for SHRM-CP or Level 5, read those notes but don't stop on them.
+
+## Six blocks over twelve months
+
+The 20 modules sit in six blocks, in broadly the order XLRI teaches the subject: business and behaviour first, then the HR functions, then employee relations and law, then strategy, the frontier and, finally, the credentials.
+
+<Figure title="The 12-month route at 3–4 hours a week" caption="Read the blocks in order; each one ends with a written assignment, and Block F turns what you know into exam and assignment results." wide>
+  <Timeline
+    items={Object.entries(LEARN_BLOCKS).map(([id, b]) => ({ when: b.weeks, label: b.letter + ". " + b.title, note: span(id), accent: id === "credentials" }))}
+  />
+</Figure>
+
+<div class="block-list">
+{Object.entries(LEARN_BLOCKS).map(([id, b]) => (
+  <section>
+    <p><strong>{b.letter}. {b.title}</strong> ({b.weeks}). {b.blurb}</p>
+    <ul>{inBlock(id).map((m) => <li><a href={"/learn/" + m.slug + "/"}>{m.n}. {m.title}</a></li>)}</ul>
+  </section>
+))}
+</div>
+
+Each block ends with one longer written task of 1,500–2,500 words, written in the style of a CIPD assignment. Together they build a portfolio you can show:
+
+| Block | Written task |
+| --- | --- |
+| A. Foundations | A costed business case for one HR initiative |
+| B. The HR functions | An evidence-based review of one HR process in your organisation |
+| C. Employee relations and law | A Labour Codes compliance check of one location |
+| D. Strategic HR | An HR strategy on one page, with a one-year plan |
+| E. The frontier | An AI-in-HR policy for your organisation |
+| F. Credentials | The capstone: an HR strategy for a real organisation, as a board deck |
+
+## Choose your pace
+
+The whole course is roughly 180 hours of study, whichever pace you choose. Pick the plan that fits your weeks as they really are, not as you hope they will be.
+
+<Figure title="Three study plans" caption="Compare the columns; all three cover the same 20 modules and the same practice, at different speeds." wide>
+  <Compare
+    columns={["3–4 hours a week", "6–8 hours a week", "10 or more hours a week"]}
+    rows={[
+      { label: "Finish in", values: ["About 12 months", "About 6 months", "About 3–4 months"] },
+      { label: "Pace", values: ["One module every 2–3 weeks", "About one module a week", "One or two modules a week"] },
+      { label: "A typical week", values: ["One 75–90 minute learning session, one practice session, one session applying it at work", "Two learning sessions, two practice sessions, one applying session", "Short daily practice, plus three longer learning and applying sessions"] },
+      { label: "Suits", values: ["A full-time job and a full life outside it", "Steady progress towards a planned exam window", "A career break, a new role with study time, or a fixed deadline"] }
+    ]}
+    highlight={0}
+  />
+</Figure>
+
+When a week gets busy, cut reading before you cut practice, and don't skip practice two weeks in a row. Practice is the part the evidence says matters most.
+
+## How to study so it sticks
+
+Most people study by rereading and highlighting, because it feels productive. The research says it is one of the weakest ways to learn. In a large review of ten common study techniques, Dunlosky and colleagues (2013) rated **practice testing** and **spacing** as the most useful, **interleaving** as moderately useful, and rereading and highlighting as low in usefulness. Four habits follow from the evidence:
+
+1. **Test yourself before you reread.** Close the page and write down what you remember, then check. In a well-known study, students who practised recalling a passage remembered more a week later than students who reread it, even though rereading felt more effective at the time (Roediger and Karpicke, 2006). Every quiz and cheat sheet in this course is built for this.
+2. **Space it out.** Short sessions spread over weeks beat one long session, and the longer you need to remember something, the wider the gaps can be (Cepeda and colleagues, 2006). Spend ten minutes a week on cheat sheets from earlier modules.
+3. **Mix your practice.** When you practise one type of question at a time, you never have to decide which idea applies. Mixing questions from several topics makes you choose, which is exactly what an exam or a real workplace problem asks. SHRM's exam mixes every competency in one sitting.
+4. **Study a worked example, then try a similar problem.** Learners who study worked examples first learn problem-solving faster than those who struggle alone (Sweller and Cooper, 1985). The benefit fades as you become expert, so once a type of problem feels familiar, go straight to practice (Kalyuga and colleagues, 2003).
+
+<Figure title="What feels productive, and what works" caption="The left column feels easier while you do it; the right column is what the research finds you remember." wide>
+  <Compare
+    columns={["Feels productive", "Works better"]}
+    rows={[
+      { label: "After reading", values: ["Reread and highlight", "Close the page, recall the key points, then check"] },
+      { label: "Timing", values: ["One long session before the exam", "Short sessions spread over weeks"] },
+      { label: "Order", values: ["Finish one topic, then start the next", "Mix questions from old and new topics"] },
+      { label: "New problems", values: ["Struggle alone, then read the answer", "Study a worked example, then try a similar one"] }
+    ]}
+    highlight={1}
+  />
+</Figure>
+
+Put together, a good study week is a loop:
+
+<Figure title="A study week that sticks" caption="Go round the loop once a week; the review step brings back earlier modules so nothing fades.">
+  <Cycle
+    center="Each week"
+    items={[
+      { title: "Learn", note: "one section at a time, with its picture" },
+      { title: "Recall", note: "quiz yourself before rereading" },
+      { title: "Mix", note: "add questions from earlier modules" },
+      { title: "Apply", note: "use one idea at work" },
+      { title: "Review", note: "ten minutes on old cheat sheets" }
+    ]}
+  />
+</Figure>
+
+## Using the course for SHRM
+
+SHRM tests the same content at two levels, mostly through judgement questions. To use the course for SHRM-CP or SHRM-SCP:
+
+- **Answer every judgement question before you look at the feedback,** and read why each wrong option is weaker. SHRM credits only the single most effective response, so the reasoning matters more than the answer.
+- **Keep an error log** by competency: Ethical Practice, Consultation and so on. After a few modules you will see where you lose marks.
+- **Mind the altitude.** Questions marked advanced are pitched at SHRM-SCP. If you are sitting CP, practise them anyway: they show you what a CP answer is not.
+- **US law.** [Module 12](/learn/uk-and-us-employment-law/) covers it at a lighter level. {CRED.shrmUsLaw.display}; confirm this for your window before you skip it.
+- **Finish with the sprint.** [Module 19](/learn/shrm-exam-prep/) is an eight-week plan to exam day, using the exam weights and timed mixed practice. Dates, fees and logistics are in the [credentials guide](/learn/credentials/).
+
+## Using the course for CIPD
+
+CIPD tests the same knowledge in writing, against fixed criteria. To use the course for Level 5 or Level 7:
+
+- **Write the written question in full** at the end of each module, in about 200 words, before you read the model answer. Then compare your structure with it: point, evidence, application to the case, limitation, conclusion.
+- **Do the block tasks.** The six written tasks build the habit of long, structured writing that CIPD assignments need, and they give you material from your own organisation to draw on later.
+- **Use "Where this sits".** Each module lists the CIPD units it supports, so you can find your notes again when a brief arrives.
+- **Read [module 20](/learn/cipd-assignments-and-capstone/) before your first assignment.** It covers command verbs, mapping every criterion, Harvard referencing and the Level 7 research project.
+- **Record it as CPD.** CIPD members keep continuing professional development records; CIPD recommends {CRED.cipdCpd.display} of planned learning a year. What counts is a short reflection on how the learning changed your practice.
+
+## Run a study circle at work
+
+Learning with colleagues keeps you going when a week gets busy, and arguing about a scenario teaches more than reading about it. A study circle needs no budget, only a room or a video call and an agreed time.
+
+<Figure title="Running a one-hour study circle" caption="Follow the steps in each meeting; rotate who facilitates, so no one person carries it.">
+  <Steps
+    items={[
+      { title: "Gather four to eight people", body: "Mix experience levels and functions if you can. Agree to meet for an hour every fortnight and work through the same module." },
+      { title: "Open with recall (10 minutes)", body: "Everyone writes down what they remember from the module before anyone speaks. Then check against the cheat sheet." },
+      { title: "Argue the scenario (20 minutes)", body: "Each person picks a choice at each decision point and defends it. Reveal the debrief only after everyone has committed." },
+      { title: "Apply it here (20 minutes)", body: "Take one real situation from your organisation, with names removed, and test the module's ideas against it." },
+      { title: "Commit (10 minutes)", body: "Each person names one 'try it at work' action and reports back at the next meeting." }
+    ]}
+  />
+</Figure>
+
+<Callout type="tip" title="Keep it safe to speak">
+Agree at the first meeting that cases stay in the room. Never bring names, pay details or health information into the circle. Ask your manager or L&D team to count the hour as learning time; it is cheaper than most training, and the "try it at work" tasks produce visible results.
+</Callout>

@@ -1,0 +1,680 @@
+---
+/**
+ * PeopleCraft Learn: the hub. Works with any number of modules written: the plan
+ * (src/data/learn.ts) draws the course, and modules not yet written show as
+ * "Coming soon". Every count on the page is worked out at build time.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import CourseMap from "../../components/learn/CourseMap.astro";
+import WhereToStart from "../../components/learn/WhereToStart.astro";
+import Flow from "../../components/diagrams/Flow.astro";
+import PenTick from "../../components/marks/PenTick.astro";
+import Checked from "../../components/content/Checked.astro";
+import { SCHOOLS } from "../../data/learn";
+import { coursePlan, guidePlan, allModels, allQuizItems, learnModules, count } from "../../lib/learn";
+import { breadcrumbLd } from "../../lib/library";
+
+const [plan, guides, models, quiz, written] = await Promise.all([coursePlan(), guidePlan(), allModels(), allQuizItems(), learnModules()]);
+const modules = plan.flatMap((b) => b.modules);
+const ready = modules.filter((m) => m.ready);
+const first = ready[0];
+const moduleCount = new Set(models.map((m) => m.from.slug)).size;
+const quizModules = new Set(quiz.map((q) => q.from.slug)).size;
+const byType = (t: string) => quiz.filter((q) => q.item.type === t).length;
+const advanced = quiz.filter((q) => q.item.level === "advanced").length;
+const sampleModels = models.slice(0, 3);
+const sampleQ = quiz.find((q) => q.item.type === "judgement") ?? quiz[0];
+const latest = written.map((e) => e.data.checked).sort((a, b) => b.getTime() - a.getTime())[0];
+
+/* Short lines for guides that aren't written yet; a written guide speaks for itself. */
+const GUIDE_LINES: Record<string, string> = {
+  "how-this-course-works": "How the modules, the practice and the cheat sheets fit together, and how to pace your weeks.",
+  credentials: "How the XLRI, CIPD and SHRM routes differ, and how to choose one from India.",
+  "the-map": "What XLRI, CIPD and SHRM each teach, set side by side on one map."
+};
+/* How each school teaches and tests, in a sentence (research/01, 02 and 03). */
+const ASSESS: Record<keyof typeof SCHOOLS, string> = {
+  xlri: "Assessed continuously: case analyses, class participation, assignments, quizzes and term exams. The course follows its order: business and behaviour first, then the HR functions, law, and strategy.",
+  cipd: "Assessed by written work set in a realistic workplace, such as reports, briefing papers and case analyses, marked against published criteria. Level 5 asks you to explain, assess and evaluate; Level 7 adds critical evaluation.",
+  shrm: "A timed exam of knowledge questions and situational-judgement questions. In a judgement question every option is plausible, and only the single best response earns credit."
+};
+
+const description = `A free, visual HR course built from what XLRI, CIPD and SHRM teach: ${modules.length} modules with diagrams, practice and cases, plus Indian law. No sign-up.`;
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Learn", href: "/learn/" }
+];
+const abs = (href: string) => new URL(href, Astro.site).toString();
+const ld = [
+  breadcrumbLd(Astro.site, trail),
+  {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: "PeopleCraft Learn",
+    description,
+    url: abs("/learn/"),
+    provider: { "@type": "Organization", name: "PeopleCraft", url: abs("/") },
+    isAccessibleForFree: true,
+    inLanguage: "en-IN",
+    offers: { "@type": "Offer", category: "Free", price: 0, priceCurrency: "INR" },
+    hasCourseInstance: { "@type": "CourseInstance", courseMode: "online", courseWorkload: "PT10H" },
+    teaches: plan.map((b) => b.title),
+    hasPart: ready.map((m) => ({ "@type": "LearningResource", name: m.title, url: abs(m.href) }))
+  }
+];
+---
+
+<BaseLayout title="Learn HR" fullTitle="PeopleCraft Learn: a free HR course for India" description={description} jsonLd={ld} image="/og/learn.png" imageAlt="PeopleCraft Learn: learn HR, one module at a time">
+  <div data-pagefind-body data-pagefind-meta="kind:Course" data-pagefind-filter="section:Learn">
+    <PageHero title="Learn HR, one module at a time" lede="A free course built from what XLRI, CIPD and SHRM teach, plus the standard HR books, Indian law and current practice." trail={trail}>
+      <div class="cta" data-pagefind-ignore>
+        {
+          first ? (
+            <a class="btn" href={first.href}>
+              Start with Module {first.n}
+            </a>
+          ) : (
+            <a class="btn" href="#course-map">
+              See the course map
+            </a>
+          )
+        }
+        <a class="btn btn-secondary" href="#where-to-start">Find where to start</a>
+      </div>
+      <aside slot="aside" class="brief notepaper" aria-labelledby="brief-t">
+        <p class="brief-t hand" id="brief-t">In short</p>
+        <dl>
+          <div>
+            <dt>Who it's for</dt>
+            <dd>HR professionals with 2–8 years' experience moving into business-partner or strategic roles, and HR students.</dd>
+          </div>
+          <div>
+            <dt>How it works</dt>
+            <dd>Each module takes one area: a real situation, the big idea in pictures, practice with feedback, and a task to try at work.</dd>
+          </div>
+          <div>
+            <dt>How long</dt>
+            <dd>
+              <mark class="hl" data-mark>{modules.length} modules of 20–30 minutes.</mark> About 12 months at 3–4 hours a week, or faster.
+            </dd>
+          </div>
+          <div>
+            <dt>What it costs</dt>
+            <dd>
+              <mark class="hl hl-green" data-mark data-mark-delay="250">Nothing.</mark> No sign-up and no tracking.
+            </dd>
+          </div>
+        </dl>
+      </aside>
+    </PageHero>
+
+    <!-- The course loom -->
+    <section class="section after-hero" id="course-map" aria-labelledby="map-t">
+      <div class="wrap">
+        <div class="head">
+          <h2 id="map-t">The whole course on one cloth</h2>
+          <p class="lede">
+            {plan.length} blocks and {modules.length} modules, in the order they build. Each block is a band of cloth, and each module is a label sewn onto it. {ready.length === modules.length ? "Every module is ready." : `${count(ready.length, "module is", "modules are")} ready so far; the rest show where they will go.`}
+          </p>
+        </div>
+        <CourseMap label={`The course: ${plan.length} blocks, ${modules.length} modules`} />
+      </div>
+    </section>
+
+    <!-- Where to start -->
+    <section class="section band" id="where-to-start" aria-labelledby="start-t">
+      <div class="wrap">
+        <div class="head">
+          <h2 id="start-t">Find where to start, in two minutes</h2>
+          <p class="lede">Six tasks, one from each block. Say how sure you are of each, and the check suggests your first module. Your answers stay on this page: nothing is stored or sent.</p>
+        </div>
+        <div data-pagefind-ignore>
+          <WhereToStart />
+        </div>
+      </div>
+    </section>
+
+    <!-- How a module works -->
+    <section class="section" id="how-it-works" aria-labelledby="how-t">
+      <div class="wrap how">
+        <div class="how-words">
+          <h2 id="how-t">How a module works</h2>
+          <p class="lede">Every module keeps the same rhythm, so you always know where you are and what comes next. Most take 20 to 30 minutes, practice included.</p>
+          <ul class="ticks">
+            <li>
+              <PenTick />
+              <span><strong>Words with pictures.</strong> Every key idea is drawn as well as explained.</span>
+            </li>
+            <li>
+              <PenTick />
+              <span><strong>Practice that teaches.</strong> Feedback on every option, not just the right one.</span>
+            </li>
+            <li>
+              <PenTick />
+              <span><strong>Both sides.</strong> Each module says where experts disagree, the way a good exam answer does.</span>
+            </li>
+          </ul>
+        </div>
+        <figure class="how-fig">
+          <figcaption class="visually-hidden">The rhythm of every module, in five steps</figcaption>
+          <Flow
+            label="The rhythm of a module"
+            steps={[
+              { who: "Meet it", title: "The situation, then the big idea", detail: "A dilemma from an Indian workplace, and the one sentence to remember a year from now." },
+              { who: "See it", title: "Pictures, then a worked example", detail: "Three to six diagrams, then one problem worked through step by step." },
+              { who: "Place it", title: "What XLRI, CIPD and SHRM expect, then India", detail: "Where the topic sits in each syllabus, and what Indian law and practice change." },
+              { who: "Practise it", title: "Check yourself, then a branching case", detail: "Questions with feedback on every option, then a case where your choices play out." },
+              { who: "Use it", title: "Try it at work, then the cheat sheet", detail: "A task of about 30 minutes in your own organisation, and the module on one card to revise from." }
+            ]}
+          />
+        </figure>
+      </div>
+    </section>
+
+    <!-- Revise: models and practice -->
+    <section class="section band" id="revise" aria-labelledby="revise-t">
+      <div class="wrap">
+        <div class="head">
+          <h2 id="revise-t">Revise across the whole course</h2>
+          <p class="lede">Every model and every practice question from the modules, gathered in two places and growing as modules are published.</p>
+        </div>
+        <div class="revise">
+          <article class="door door-models" aria-labelledby="door-m">
+            <p class="door-n tabular">{models.length}</p>
+            <h3 id="door-m"><a href="/learn/models/">Models library</a></h3>
+            <p class="door-d">
+              {models.length ? `${count(models.length, "theory and model", "theories and models")} from ${count(moduleCount, "module")}, each with the idea, when to use it and what to watch for.` : "Each module's theories and models will collect here as modules are published."}
+            </p>
+            {
+              sampleModels.length > 0 && (
+                <ul class="cards" aria-label="From the library">
+                  {sampleModels.map((s, i) => (
+                    <li style={`--i:${i}`}>
+                      <span class="c-n">{s.model.name}</span>
+                      <span class="c-b">
+                        {s.model.by}, {s.model.year}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )
+            }
+            <a class="btn btn-secondary door-go" href="/learn/models/">Open the models library</a>
+          </article>
+          <article class="door door-practice" aria-labelledby="door-p">
+            <p class="door-n tabular">{quiz.length}</p>
+            <h3 id="door-p"><a href="/learn/practice/">Practice bank</a></h3>
+            <p class="door-d">
+              {quiz.length
+                ? `${count(quiz.length, "question")} from ${count(quizModules, "module")}: ${byType("knowledge")} knowledge, ${byType("judgement")} judgement and ${byType("written")} written, ${advanced} of them at the strategic level. Filter them, or take a mixed set of 10.`
+                : "Each module's practice questions will collect here as modules are published."}
+            </p>
+            {
+              sampleQ && (
+                <figure class="slip">
+                  <figcaption>A {sampleQ.item.type} question from Module {sampleQ.from.n}</figcaption>
+                  <p>{sampleQ.item.q}</p>
+                </figure>
+              )
+            }
+            <a class="btn btn-secondary door-go" href="/learn/practice/">Open the practice bank</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guides -->
+    <section class="section" id="guides" aria-labelledby="guides-t">
+      <div class="wrap">
+        <div class="head">
+          <h2 id="guides-t">Three guides to read alongside</h2>
+          <p class="lede">Short guides on studying the course, choosing a credential, and seeing all three syllabuses side by side.</p>
+        </div>
+        <ol class="guides" role="list">
+          {
+            guides.map((g, i) => (
+              <li class:list={["guide", g.ready ? "is-ready" : "is-soon"]} style={`--i:${i}`}>
+                <p class="g-k">Guide {i + 1}</p>
+                <h3 class="g-t">{g.ready ? <a href={g.href}>{g.entry!.data.title}</a> : g.title}</h3>
+                <p class="g-d">{g.entry?.data.description ?? GUIDE_LINES[g.slug] ?? ""}</p>
+                <p class="g-s">{g.ready ? `${g.entry!.data.minutes} min read` : "Coming soon"}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <!-- What the course draws on -->
+    <section class="section band" id="sources" aria-labelledby="draws-t">
+      <div class="wrap">
+        <div class="head">
+          <h2 id="draws-t">What the course draws on</h2>
+          <p class="lede">Three ways of teaching HR, mapped onto one another, so one course prepares you for any of them. PeopleCraft is independent of XLRI, CIPD and SHRM.</p>
+        </div>
+        <ul class="schools" role="list">
+          {
+            (Object.keys(SCHOOLS) as (keyof typeof SCHOOLS)[]).map((k) => (
+              <li class="school">
+                <h3>{SCHOOLS[k].name}</h3>
+                <p class="s-long">{SCHOOLS[k].long}</p>
+                <p class="s-tests">{SCHOOLS[k].tests}</p>
+                <p class="s-how">{ASSESS[k]}</p>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="also">
+          <p>
+            <strong>And beyond the syllabuses:</strong> each module lists the standard books behind it, with a line on what each one gives you, and
+            explains Indian law and practice as they stood on the date it was checked.
+          </p>
+          {latest && <Checked date={latest} />}
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+  /* "In short": the reader's notes, on ruled paper with a red margin (as on every guide). */
+  .brief {
+    --rule: 1.75rem;
+    --margin-x: 2.4rem;
+    --rule-start: 0.55rem;
+    position: relative;
+    padding: 0.35rem 1.4rem 1.2rem 3.2rem;
+    border-radius: 3px;
+    line-height: var(--rule);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07),
+      4px 12px 24px -14px rgb(17 20 58 / 0.25);
+  }
+  .brief::before,
+  .brief::after {
+    content: "";
+    position: absolute;
+    left: 0.9rem;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--canvas);
+    box-shadow: inset 1px 1.5px 2px rgb(17 20 58 / 0.22);
+  }
+  .brief::before {
+    top: 2.2rem;
+  }
+  .brief::after {
+    bottom: 2.2rem;
+  }
+  .brief-t {
+    font-size: 1.75rem;
+    line-height: var(--rule);
+    height: calc(var(--rule) * 1.4);
+    display: flex;
+    align-items: center;
+  }
+  .brief dl {
+    margin: 0;
+    display: grid;
+  }
+  .brief dt {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--ink-3);
+    line-height: var(--rule);
+  }
+  .brief dd {
+    margin: 0;
+    font-size: var(--fs-sm);
+    line-height: var(--rule);
+    color: var(--ink);
+  }
+  .brief dl > div + div {
+    margin-top: 0;
+  }
+
+  /* Section heads */
+  .head {
+    display: grid;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    max-width: 46rem;
+  }
+  .head h2,
+  .how-words h2 {
+    font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem);
+    line-height: 1.1;
+    font-stretch: 106%;
+    letter-spacing: -0.02em;
+  }
+
+  /* How a module works */
+  .how {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+    gap: 2rem 4rem;
+    align-items: start;
+  }
+  .how-words {
+    display: grid;
+    gap: 0.75rem;
+    position: sticky;
+    top: calc(var(--header-h) + 2rem);
+  }
+  .ticks {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    border-top: 2px solid var(--neel-700);
+  }
+  .ticks li {
+    display: grid;
+    grid-template-columns: 2.2rem 1fr;
+    gap: 0.6rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+  }
+  .ticks strong {
+    color: var(--ink);
+    font-weight: 650;
+  }
+  .ticks :global(.pen) {
+    width: 1.7rem;
+    height: 1.7rem;
+    stroke-width: 2.6;
+  }
+  .how-fig {
+    margin: 0;
+  }
+
+  /* Revise: two doors, each showing what's behind it */
+  .revise {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .door {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    column-gap: 1.1rem;
+    align-items: start;
+    padding: 1.5rem 1.5rem 1.4rem;
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07);
+  }
+  .door > :not(.door-n) {
+    grid-column: 2;
+  }
+  .door-n {
+    grid-row: 1 / span 2;
+    min-width: 3.2rem;
+    font-size: clamp(2.6rem, 2rem + 2vw, 3.6rem);
+    font-weight: 720;
+    font-stretch: 108%;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--neel-700);
+  }
+  .door h3 {
+    font-size: var(--fs-lg);
+  }
+  .door h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .door h3 a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 2px;
+  }
+  .door-d {
+    margin-top: 0.35rem;
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .door-go {
+    justify-self: start;
+    margin-top: 1.25rem;
+  }
+  /* The models door: catalogue cards pulled from the drawer. */
+  .cards {
+    list-style: none;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    display: grid;
+  }
+  .cards li {
+    position: relative;
+    z-index: calc(3 - var(--i));
+    display: grid;
+    gap: 0.05rem;
+    padding: 0.55rem 0.9rem 0.6rem;
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.08);
+    transform: rotate(calc((var(--i) - 1) * 0.8deg)) translateX(calc(var(--i) * 0.4rem));
+  }
+  .cards li + li {
+    margin-top: -0.35rem;
+  }
+  /* The headword, ruled off in turmeric as on a catalogue card. */
+  .c-n {
+    font-weight: 700;
+    line-height: 1.25;
+    padding-bottom: 0.3rem;
+    margin-bottom: 0.15rem;
+    border-bottom: 2px solid var(--haldi-500);
+  }
+  .c-b {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    font-weight: 560;
+  }
+  /* The practice door: a question on a slip, as it would appear in an exam booklet. */
+  .slip {
+    margin: 1.1rem 0 0;
+    padding: 0.85rem 1rem 0.95rem;
+    border-left: 3px solid var(--neel-300);
+    background: var(--canvas);
+  }
+  .slip figcaption {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .slip p {
+    margin-top: 0.3rem;
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+    color: var(--ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Guides: three sheets, the corner folded down on the ones you can read */
+  .guides {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    counter-reset: g;
+  }
+  .guide {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 0.35rem;
+    padding: 1.15rem 1.25rem 1.1rem;
+    border-radius: 3px;
+  }
+  .guide.is-ready {
+    background: linear-gradient(225deg, transparent 0 0.9rem, var(--paper) 0.9rem);
+    filter: drop-shadow(0 0 0.7px rgb(17 20 58 / 0.55)) drop-shadow(1.5px 2px 0 rgb(17 20 58 / 0.08));
+  }
+  .guide.is-ready::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1.27rem;
+    height: 1.27rem;
+    background: linear-gradient(225deg, transparent 50%, var(--neel-100) 50%);
+    border-bottom-left-radius: 3px;
+  }
+  .guide.is-soon {
+    background: var(--canvas);
+    box-shadow: inset 0 0 0 1.5px var(--neel-200);
+    outline: 1.5px dashed var(--neel-300);
+    outline-offset: -6px;
+  }
+  .g-k {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .g-t {
+    font-size: var(--fs-md);
+    line-height: 1.25;
+  }
+  .g-t a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .g-t a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  .g-t a:hover {
+    color: var(--primary);
+  }
+  .g-t a:focus-visible {
+    outline: none;
+  }
+  .g-t a:focus-visible::after {
+    outline: 2.5px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+  .g-d {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .g-s {
+    margin-top: 0.5rem;
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--line-strong);
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+
+  /* Schools: three columns, each a thread down its left edge */
+  .schools {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem 2.5rem;
+  }
+  .school {
+    padding-left: 1.1rem;
+    border-left: 3px solid var(--neel-300);
+  }
+  .school h3 {
+    font-size: var(--fs-xl);
+    font-stretch: 106%;
+    letter-spacing: -0.02em;
+  }
+  .s-long {
+    margin-top: 0.2rem;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .s-tests {
+    margin-top: 0.85rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--line-strong);
+    font-weight: 680;
+  }
+  .s-how {
+    margin-top: 0.35rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .also {
+    margin-top: 2.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line-strong);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+  }
+  .also p {
+    max-width: 60ch;
+    color: var(--ink-2);
+  }
+  .also strong {
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  @media (max-width: 960px) {
+    .how {
+      grid-template-columns: 1fr;
+    }
+    .how-words {
+      position: static;
+    }
+    .revise,
+    .guides,
+    .schools {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 520px) {
+    .cards li {
+      transform: rotate(calc((var(--i) - 1) * 0.6deg)) translateX(calc(var(--i) * 0.2rem));
+      margin-right: 0.4rem;
+    }
+    .door {
+      grid-template-columns: 1fr;
+      padding: 1.25rem 1.1rem 1.2rem;
+    }
+    .door > :not(.door-n) {
+      grid-column: 1;
+    }
+    .door-n {
+      grid-row: auto;
+    }
+    .brief {
+      padding-right: 1rem;
+    }
+  }
+</style>

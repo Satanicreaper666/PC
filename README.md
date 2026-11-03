@@ -1,6 +1,6 @@
 # PeopleCraft: the free HR library for India
 
-A static website of plain-English HR handbooks, working tools and a glossary for everyone who works in India: HR professionals, founders, employees, and students or job seekers. There are no accounts, ads, analytics or third-party requests. Calculators, templates and people analytics run in the reader's browser.
+A static website of plain-English HR handbooks, a free visual HR course (PeopleCraft Learn), working tools and a glossary for everyone who works in India: HR professionals, founders, employees, and students or job seekers. There are no accounts, ads, analytics or third-party requests. Calculators, templates and people analytics run in the reader's browser.
 
 Built with [Astro](https://astro.build) (static output), MDX and [Pagefind](https://pagefind.app) for offline search.
 
@@ -59,6 +59,7 @@ SITE_URL=https://peoplecraft.in npm run build
 src/
   content/
     handbooks/<book>/<NN>-<slug>.mdx   chapters (URL: /handbooks/<book>/<slug>/)
+    learn/<NN>-<slug>.mdx              Learn modules (URL: /learn/<slug>/); guide-<slug>.mdx for guides
     toolkit/<id>.md|mdx                tools (URL: /toolkit/<id>/)
     glossary.json                      terms (URL: /glossary/#<id>)
   content.config.ts                    the schema every page must follow
@@ -66,6 +67,8 @@ src/
     statutory.ts      every statutory number (ceilings, rates, caps), with source and "as at" date
     taxonomy.ts       lifecycle stages, readers, tool types
     books.ts          the four handbooks
+    learn.ts          the course plan: 6 blocks, 20 modules, 3 guides (one source of truth for the hub and map)
+    credentials.ts    SHRM, CIPD and XLRI facts that change (fees, exam windows, items), with source and date
     paths.ts          "Start here" reading paths per reader
     site.ts, contact.ts
   components/
@@ -95,6 +98,8 @@ scripts/              make-assets.cjs, check-links.mjs, make-preview.mjs, render
 - **A reviewer has checked a page**: add `reviewedBy: "Name, credential"` and `reviewed: YYYY-MM-DD` to its front matter. The stamp then shows the reviewer instead of "expert review pending".
 - **A chapter**: edit the `.mdx` file and set `checked:` to the date you compared every fact with its source.
 - **A new tool**: add `src/content/toolkit/<id>.md` with `kind:` (calculator, letter, form, policy, checklist, survey, plan). Letters and forms use `{{field}}` placeholders and get Word download automatically.
+- **A Learn module**: follow `docs/LEARN-GUIDE.md` and copy `src/content/learn/02-people-at-work.mdx`. Use the number, slug and title from `src/data/learn.ts`. The schema rejects malformed quiz items. Models and quiz items flow into `/learn/models/` and `/learn/practice/` automatically.
+- **An exam fee, window or membership cost changed**: edit `src/data/credentials.ts` only.
 - **Drafts**: `draft: true` keeps a page visible in `npm run dev` and out of the build.
 
 ## Decisions made in the rebuild
@@ -122,6 +127,9 @@ scripts/              make-assets.cjs, check-links.mjs, make-preview.mjs, render
 | Calculators show their working and compare saved scenarios | HR has to explain a number to an employee or to Finance, and a number without its working can't be checked |
 
 ## Confirm before launch
+
+- [ ] **Learn: professional review.** Have a qualified HR professional and an employment lawyer review the Learn modules, especially 8 (reward and CTC), 10–12 (employee relations and law), 19 (SHRM) and the credentials guide. Exam fees and windows change every year: re-check `src/data/credentials.ts` against shrm.org and cipd.org before each SHRM window.
+- [ ] **Health check-ups (corrected 4 Nov 2026).** Labour-law chapters 03 and 09 now follow the Central Rules 2026: free annual check-ups for employees aged 40 and above in dock work, mines and construction. Check this against the notified rules and your state's final rules before launch. `docs/research/hr-facts-india.md` §1.7 still has the older, wider statement.
 
 - [ ] **Legal review.** All content was researched and drafted with AI assistance and checked against official sources dated up to 2 Nov 2026. Have a qualified professional review the labour-law and TDS handbooks and the calculators before launch. Items marked "not settled" on the pages need watching.
 - [ ] **Open legal points** (from `docs/research/hr-facts-india.md`, "Could not verify"): state Labour Code rules after Oct 2026, the new ESI regulations (old ones saved only until 20 Nov 2026), the start of the 2-working-day F&F clock, the gratuity tax exemption under the 2025 Act, Goa/Kerala/TN professional tax, and exact DPDP dates.

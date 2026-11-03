@@ -1,0 +1,806 @@
+---
+/**
+ * A PeopleCraft Learn module or guide: /learn/<slug>/ (src/content/learn, docs/LEARN-GUIDE.md).
+ *
+ * Header: where it sits (breadcrumbs, block, "Module N of 20"), the title, the big idea,
+ * time and level, print and pin, what you'll be able to do, and the course as a woven map
+ * (ModuleThread). Then the case ("The situation") and "Where this sits" in XLRI, CIPD,
+ * SHRM and Indian law; the body, laid out like a handbook chapter; and after it, in order:
+ * Check yourself, Key models, Bookshelf, Cheat sheet, questions, sources, the disclaimer,
+ * the next and previous modules, and related pages. Guides (kind: guide) use the same page
+ * without the parts only a module has.
+ */
+import { render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/site/Breadcrumbs.astro";
+import Icon from "../../components/ui/Icon.astro";
+import Checked from "../../components/content/Checked.astro";
+import Faq from "../../components/content/Faq.astro";
+import Sources from "../../components/content/Sources.astro";
+import Related from "../../components/content/Related.astro";
+import TermLinks from "../../components/content/TermLinks.astro";
+import PinButton from "../../components/desk/PinButton.astro";
+import SectionLinks from "../../components/desk/SectionLinks.astro";
+import { mdxComponents } from "../../components/content/mdx";
+import Quiz from "../../components/learn/Quiz.astro";
+import ModelGrid from "../../components/learn/ModelGrid.astro";
+import Situation from "../../components/learn/Situation.astro";
+import SchoolMap from "../../components/learn/SchoolMap.astro";
+import Bookshelf from "../../components/learn/Bookshelf.astro";
+import CheatSheet from "../../components/learn/CheatSheet.astro";
+import ModuleThread from "../../components/learn/ModuleThread.astro";
+import LearnDisclaimer from "../../components/learn/LearnDisclaimer.astro";
+import { LEARN_BLOCKS, LEARN_MODULES } from "../../data/learn";
+import { allLearn, learnSlug, learnUrl, type LearnEntry } from "../../lib/learn";
+import { resolveRefs, breadcrumbLd, faqLd, type Linked } from "../../lib/library";
+
+export async function getStaticPaths() {
+  const all = await allLearn();
+  return all.map((e) => ({ params: { slug: learnSlug(e) }, props: { entry: e } }));
+}
+
+const { entry } = Astro.props as { entry: LearnEntry };
+const d = entry.data;
+const isModule = d.kind === "module";
+const all = await allLearn();
+const url = learnUrl(entry);
+const pageUrl = new URL(url, Astro.site).toString();
+const block = d.block ? LEARN_BLOCKS[d.block] : undefined;
+const total = LEARN_MODULES.length;
+const { Content, headings } = await render(entry);
+const body = entry.body ?? "";
+
+/* ---------- The course, for the thread, the module list and the pager ---------- */
+const published = new Map<number, LearnEntry>();
+for (const e of all) if (e.data.kind === "module" && e.data.module !== undefined && !published.has(e.data.module)) published.set(e.data.module, e);
+const courseModules = LEARN_MODULES.map((m) => {
+  const e = published.get(m.n);
+  return { n: m.n, title: e?.data.title ?? m.title, block: m.block, href: e ? learnUrl(e) : undefined };
+});
+const ordered = [...published.values()].sort((a, b) => (a.data.module ?? 0) - (b.data.module ?? 0));
+const at = ordered.findIndex((e) => e.id === entry.id);
+const prev = isModule && at > 0 ? ordered[at - 1] : undefined;
+const next = isModule && at >= 0 ? ordered[at + 1] : undefined;
+
+/* ---------- Related: library refs, plus "learn/<id>" refs resolved here until library.ts knows them ---------- */
+async function resolveRelated(refs: string[]): Promise<Linked[]> {
+  const out: Linked[] = [];
+  for (const ref of refs) {
+    let got: Linked[] = [];
+    try {
+      got = await resolveRefs([ref]);
+    } catch {
+      got = [];
+    }
+    if (!got.length && ref.startsWith("learn/")) {
+      const key = ref.slice("learn/".length).replace(/\/$/, "");
+      const e = all.find((x) => x.id === key || learnSlug(x) === key);
+      if (e && e.id !== entry.id) {
+        const mod = e.data.kind === "module";
+        got = [
+          {
+            href: learnUrl(e),
+            title: e.data.title,
+            kind: mod ? "Learn module" : "Learn guide",
+            description: e.data.description,
+            icon: "graduation",
+            art: "learn",
+            meta: mod ? `Module ${e.data.module}, ${e.data.minutes} min` : `${e.data.minutes} min`
+          }
+        ];
+      }
+    }
+    for (const g of got) if (g.href !== url && !out.some((o) => o.href === g.href)) out.push(g);
+  }
+  return out;
+}
+const related = await resolveRelated(d.related);
+
+/* ---------- What the header says ---------- */
+const levels = new Set(d.quiz.map((q) => q.level ?? "core"));
+const hasStrategic = /At strategic level/i.test(body);
+const levelHint =
+  levels.has("advanced") || hasStrategic ? (levels.has("core") || !d.quiz.length ? "Core and advanced" : "Advanced") : d.quiz.length ? "Core" : "";
+const practise = headings.find((h) => h.slug === "practise-the-situation");
+// Law disclaimer when the module deals with the law: the labour-law block, statutory facts,
+// links into the law and TDS handbooks, or official legal sources.
+const LAW_SOURCE = /indiacode\.nic\.in|egazette\.gov\.in|labour\.gov\.in|epfindia\.gov\.in|esic\.gov\.in|incometax(?:india)?\.gov\.in|legislation\.gov\.uk|gov\.uk\/(?:employment|government\/publications)|eeoc\.gov|dol\.gov|nlrb\.gov/i;
+const touchesLaw =
+  d.block === "relations" ||
+  /<Fact\b/.test(body) ||
+  /\/handbooks\/(?:labour-law|tds)\//.test(body) ||
+  d.related.some((r) => /^handbooks\/(?:labour-law|tds)\//.test(r)) ||
+  d.sources.some((s) => LAW_SOURCE.test(s.url));
+
+/* ---------- Contents: the case, the body's headings, then practise and review ---------- */
+const lead = [
+  ...(isModule && d.situation ? [{ slug: "the-situation", text: "The situation" }] : []),
+  ...(d.schools ? [{ slug: "where-this-sits", text: "Where this sits" }] : [])
+];
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const review = [
+  ...(d.quiz.length ? [{ slug: "check-yourself", text: "Check yourself" }] : []),
+  ...(d.models.length ? [{ slug: "key-models", text: "Key models" }] : []),
+  ...(d.books.length ? [{ slug: "bookshelf", text: "Bookshelf" }] : []),
+  { slug: "cheat-sheet", text: "Cheat sheet" }
+];
+
+/* ---------- Structured data ---------- */
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Learn", href: "/learn/" },
+  ...(isModule && block && d.block ? [{ name: block.title, href: `/learn/#${d.block}` }] : []),
+  { name: isModule && d.module ? `Module ${d.module}` : d.title, href: url }
+];
+const site = Astro.site?.toString();
+const learningLd = {
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: d.title,
+  description: d.description,
+  url: pageUrl,
+  inLanguage: "en-IN",
+  timeRequired: `PT${d.minutes}M`,
+  educationalLevel: "Intermediate",
+  learningResourceType: isModule ? "Module" : "Guide",
+  teaches: d.outcomes,
+  isAccessibleForFree: true,
+  dateModified: d.checked.toISOString(),
+  keywords: d.keywords.join(", ") || undefined,
+  ...(isModule && d.module ? { position: d.module } : {}),
+  author: { "@type": "Organization", name: "PeopleCraft", url: site },
+  publisher: { "@type": "Organization", name: "PeopleCraft", url: site },
+  isPartOf: {
+    "@type": "Course",
+    name: "PeopleCraft Learn",
+    url: new URL("/learn/", Astro.site).toString(),
+    description: "A free, visual HR course built from what XLRI, CIPD and SHRM teach, with Indian law and practice.",
+    inLanguage: "en-IN",
+    isAccessibleForFree: true,
+    provider: { "@type": "Organization", name: "PeopleCraft", url: site }
+  }
+};
+const ld = [learningLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean) as Record<string, unknown>[];
+const pinMeta = isModule ? `Module ${d.module}, ${d.minutes} min` : `Guide, ${d.minutes} min`;
+---
+
+<BaseLayout title={`${d.title} — PeopleCraft Learn`} description={d.description} type="article" jsonLd={ld} modified={d.checked} image="/og/learn.png">
+  <article
+    class:list={["lm", { "is-guide": !isModule }]}
+    data-pagefind-body
+    data-pagefind-meta={isModule ? `kind:Learn module, module ${d.module}` : "kind:Learn guide"}
+    data-pagefind-filter="section:Learn"
+  >
+    <header class="head band">
+      <div class="wrap head-split">
+        <div class="head-inner">
+          <Breadcrumbs trail={trail} />
+          <p class="kicker">
+            {
+              isModule && block && d.block ? (
+                <a href={`/learn/#${d.block}`}>
+                  Block {block.letter}: {block.title}
+                </a>
+              ) : (
+                <a href="/learn/">PeopleCraft Learn</a>
+              )
+            }
+            <span class="of">{isModule && d.module ? `Module ${d.module} of ${total}` : "Guide"}</span>
+          </p>
+          <h1 class="display">{d.title}</h1>
+          <div class="big">
+            <p class="big-k">The big idea</p>
+            <p class="big-t"><span class="hl" data-mark>{d.bigIdea}</span></p>
+          </div>
+          <div class="meta">
+            <Checked date={d.checked} sources={d.sources.length} />
+            <span class="chip"><Icon name="clock" size={15} /> {d.minutes} min{isModule ? ", with practice" : " read"}</span>
+            {
+              levelHint && (
+                <span class="chip">
+                  <Icon name="graduation" size={15} /> {levelHint}
+                  <span class="visually-hidden">
+                    {" "}
+                    (core matches SHRM-CP and CIPD Level 5; advanced matches SHRM-SCP and CIPD Level 7)
+                  </span>
+                </span>
+              )
+            }
+            <span class="meta-actions" data-print="hide">
+              <button class="btn btn-ghost btn-sm print" type="button" data-print-page>
+                <Icon name="printer" size={16} /> Print
+              </button>
+              <PinButton item={{ href: url, title: d.title, kind: isModule ? "Learn module" : "Learn guide", art: "learn", description: d.description, meta: pinMeta }} />
+            </span>
+            <SectionLinks />
+          </div>
+          <div class="outcomes">
+            <h2 class="out-h">You'll be able to</h2>
+            <ul class="out-list" role="list">
+              {
+                d.outcomes.map((o) => (
+                  <li>
+                    <span class="task-box" aria-hidden="true" />
+                    {o}
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+        <div class="head-glance" data-print="hide" data-pagefind-ignore>
+          <ModuleThread modules={courseModules} current={isModule ? d.module : undefined} />
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap body">
+      <aside class="side" data-print="hide" data-pagefind-ignore>
+        <details class="toc" open data-toc>
+          <summary>In this {isModule ? "module" : "guide"}</summary>
+          {
+            (lead.length > 0 || toc.length > 0) && (
+              <ol>
+                {lead.map((h) => (
+                  <li class="d2">
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+                {toc.map((h) => (
+                  <li class:list={[`d${h.depth}`]}>
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+              </ol>
+            )
+          }
+          <p class="toc-k">Practise and review</p>
+          <ol>
+            {
+              review.map((h) => (
+                <li class="d2">
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))
+            }
+          </ol>
+        </details>
+        <details class="book-nav">
+          <summary>All {total} modules</summary>
+          <ol>
+            {
+              courseModules.map((m) => (
+                <li>
+                  {m.href ? (
+                    <a href={m.href} aria-current={isModule && m.n === d.module ? "page" : undefined}>
+                      <span class="n">{m.n}</span>
+                      {m.title}
+                    </a>
+                  ) : (
+                    <span class="soon">
+                      <span class="n">{m.n}</span>
+                      {m.title} <span class="soon-k">(coming soon)</span>
+                    </span>
+                  )}
+                </li>
+              ))
+            }
+          </ol>
+        </details>
+      </aside>
+
+      <div class="article">
+        {isModule && d.situation && <Situation text={d.situation} practiseHref={practise ? `#${practise.slug}` : undefined} />}
+        {d.schools && <SchoolMap schools={d.schools} />}
+        <div class="prose content">
+          <TermLinks><Content components={mdxComponents} /></TermLinks>
+        </div>
+
+        <div class="after">
+          {
+            d.quiz.length > 0 && (
+              <section class="sec" id="check-yourself" aria-labelledby="check-yourself-h">
+                <h2 id="check-yourself-h">Check yourself</h2>
+                <p class="sec-intro">
+                  Choose an answer to see why each option is right or weaker. Core questions match SHRM-CP and CIPD Level 5; advanced ones match
+                  SHRM-SCP and CIPD Level 7.
+                </p>
+                <Quiz items={d.quiz} />
+                {isModule && d.module && (
+                  <p class="sec-more">
+                    <a href={`/learn/practice/?module=${d.module}`}>
+                      Practise these questions in the practice bank <Icon name="arrow-right" size={16} />
+                    </a>
+                    <span>Filter them by type and level, or mix them with other modules.</span>
+                  </p>
+                )}
+              </section>
+            )
+          }
+          {
+            d.models.length > 0 && (
+              <section class="sec sec-wide" id="key-models" aria-labelledby="key-models-h">
+                <h2 id="key-models-h">Key models</h2>
+                <p class="sec-intro">
+                  The {d.models.length} theories this {isModule ? "module" : "guide"} uses, on index cards to revise from. Each card has its own
+                  link, so you can send someone straight to one.
+                </p>
+                <ModelGrid models={d.models} />
+              </section>
+            )
+          }
+          {
+            d.books.length > 0 && (
+              <section class="sec" id="bookshelf" aria-labelledby="bookshelf-h">
+                <h2 id="bookshelf-h">Bookshelf</h2>
+                <p class="sec-intro">The books behind this {isModule ? "module" : "guide"}, and what each one gives you.</p>
+                <Bookshelf books={d.books} />
+              </section>
+            )
+          }
+          <section class="sec" id="cheat-sheet" aria-labelledby="cheat-sheet-h">
+            <h2 id="cheat-sheet-h">Cheat sheet</h2>
+            <p class="sec-intro" data-print="hide">
+              The {isModule ? "module" : "guide"} on one sheet: the big idea, the lines to remember{d.models.length > 0 ? " and the models to name" : ""}.
+            </p>
+            <CheatSheet
+              title={d.title}
+              label={isModule && d.module ? `Module ${d.module}` : "Guide"}
+              bigIdea={d.bigIdea}
+              summary={d.summary}
+              models={d.models}
+              url={pageUrl}
+            />
+          </section>
+
+          <Faq items={d.faq} />
+          <Sources items={d.sources} checked={d.checked} />
+          <LearnDisclaimer kind={touchesLaw ? "law" : "general"} />
+          <nav class="pager" aria-label={isModule ? "Modules" : "Course"} data-print="hide" data-pagefind-ignore>
+            {
+              prev ? (
+                <a class="pg prev" href={learnUrl(prev)}>
+                  <span class="pg-k">
+                    <Icon name="arrow-left" size={16} /> Module {prev.data.module}
+                  </span>
+                  <span class="pg-t">{prev.data.title}</span>
+                </a>
+              ) : (
+                <a class="pg prev" href="/learn/">
+                  <span class="pg-k">
+                    <Icon name="arrow-left" size={16} /> Course home
+                  </span>
+                  <span class="pg-t">PeopleCraft Learn: all {total} modules</span>
+                </a>
+              )
+            }
+            {
+              next && (
+                <a class="pg next" href={learnUrl(next)}>
+                  <span class="pg-k">
+                    Module {next.data.module} <Icon name="arrow-right" size={16} />
+                  </span>
+                  <span class="pg-t">{next.data.title}</span>
+                </a>
+              )
+            }
+          </nav>
+          <div class="after-related" data-pagefind-ignore><Related items={related} /></div>
+        </div>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  // Highlight the part being read in the contents list: the case, the body's headings, then the review sections.
+  const links = new Map<string, HTMLAnchorElement>();
+  document.querySelectorAll<HTMLAnchorElement>("[data-toc] a").forEach((a) => links.set(decodeURIComponent(a.hash.slice(1)), a));
+  const targets = Array.from(links.keys())
+    .map((id) => document.getElementById(id))
+    .filter((el): el is HTMLElement => !!el);
+  if (targets.length && "IntersectionObserver" in window) {
+    let current = "";
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (!visible.length) return;
+        const id = (visible[0].target as HTMLElement).id;
+        if (id === current) return;
+        links.get(current)?.removeAttribute("aria-current");
+        links.get(id)?.setAttribute("aria-current", "location");
+        current = id;
+      },
+      { rootMargin: "-20% 0px -65% 0px" }
+    );
+    targets.forEach((h) => io.observe(h));
+  }
+  // On small screens the contents list starts closed.
+  if (window.matchMedia("(max-width: 1023px)").matches) document.querySelector<HTMLDetailsElement>("[data-toc]")?.removeAttribute("open");
+</script>
+
+<style>
+  /* ---------- Header ---------- */
+  .head {
+    padding-block: 2rem 2.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .head-split {
+    display: grid;
+    gap: 2rem;
+  }
+  .head-split > * {
+    min-width: 0;
+  }
+  @media (min-width: 64rem) {
+    .head-split {
+      grid-template-columns: minmax(0, 1fr) minmax(19rem, 22.5rem);
+      gap: 3.5rem;
+      align-items: start;
+    }
+    .head-glance {
+      padding: 2.6rem 0 0 1.75rem;
+      border-left: 1px solid var(--line);
+    }
+  }
+  .head-inner {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+  }
+  .kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.9rem;
+    font-size: var(--fs-sm);
+  }
+  .kicker a {
+    color: var(--primary);
+    font-weight: 650;
+    text-decoration: none;
+  }
+  .kicker a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .of {
+    color: var(--ink-3);
+    font-weight: 560;
+  }
+  h1 {
+    max-width: 22ch;
+  }
+  /* The big idea: the line to remember a year from now, gone over with the yellow highlighter. */
+  .big {
+    max-width: 44rem;
+    margin-top: 0.2rem;
+  }
+  .big-k {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .big-t {
+    margin-top: 0.2rem;
+    font-size: clamp(1.2rem, 1.08rem + 0.55vw, 1.5rem);
+    font-weight: 560;
+    line-height: 1.5;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.75rem;
+    margin-top: 0.4rem;
+  }
+  .meta-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  /* What you'll be able to do: boxes drawn in pen, to tick once you can. */
+  .outcomes {
+    margin-top: 0.6rem;
+    max-width: 44rem;
+  }
+  .head .out-h {
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--ink);
+  }
+  .out-list {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .out-list li {
+    position: relative;
+    padding-left: 1.85rem;
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .out-list :global(.task-box) {
+    top: 0.2em;
+  }
+
+  /* ---------- Body: contents on the left, the module on the right ---------- */
+  .body {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 3.5rem;
+    padding-block: 2.5rem var(--section);
+  }
+  .side {
+    position: sticky;
+    top: calc(var(--header-h) + 1.25rem);
+    align-self: start;
+    max-height: calc(100vh - var(--header-h) - 2.5rem);
+    overflow-y: auto;
+    display: grid;
+    gap: 1rem;
+    font-size: var(--fs-sm);
+  }
+  .side summary {
+    cursor: pointer;
+    font-weight: 650;
+    color: var(--ink);
+    padding: 0.2rem 0;
+  }
+  .side ol {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.1rem;
+    border-left: 2px solid var(--line);
+  }
+  .side a,
+  .side .soon {
+    display: block;
+    padding: 0.3rem 0 0.3rem 0.8rem;
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    color: var(--ink-2);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .side .d3 a {
+    padding-left: 1.6rem;
+    font-size: var(--fs-xs);
+  }
+  .side a:hover {
+    color: var(--ink);
+  }
+  .side a[aria-current] {
+    color: var(--ink);
+    font-weight: 620;
+    border-left-color: var(--accent);
+  }
+  .toc-k {
+    margin-top: 1rem;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .book-nav .n {
+    display: inline-block;
+    min-width: 1.5rem;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .side .soon {
+    color: var(--ink-3);
+  }
+  .soon-k {
+    font-size: var(--fs-xs);
+  }
+  .article {
+    display: grid;
+    grid-template-columns: [content-start] minmax(0, 44rem) [content-end] minmax(0, 1fr) [wide-end];
+    align-content: start;
+    row-gap: 2.75rem;
+  }
+  .article > :global(*) {
+    grid-column: content;
+    min-width: 0;
+  }
+  .content {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: content-start / wide-end;
+    max-width: none;
+  }
+  .content > :global(*) {
+    grid-column: content;
+    min-width: 0;
+  }
+  .content > :global(.wide) {
+    grid-column: content-start / wide-end;
+  }
+  /* The body's first heading needs less air: the case and the map sit just above it. */
+  .content > :global(h2:first-child) {
+    margin-top: 0.5rem;
+  }
+
+  /* ---------- Practise and review ---------- */
+  .after {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: content-start / wide-end;
+    row-gap: 3.5rem;
+    margin-top: 1rem;
+  }
+  .after > :global(*) {
+    grid-column: content;
+    min-width: 0;
+  }
+  .after > .sec-wide {
+    grid-column: content-start / wide-end;
+  }
+  .sec {
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .sec > h2 {
+    font-size: var(--fs-xl);
+  }
+  .sec-intro {
+    margin: 0.4rem 0 1.25rem;
+    max-width: 62ch;
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .sec-wide .sec-intro {
+    max-width: 62ch;
+  }
+  .sec-more {
+    margin: 1.25rem 0 0;
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .sec-more a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-right: 0.4rem;
+    font-weight: 620;
+  }
+
+  /* ---------- Turning the page ---------- */
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .pg {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem 1.15rem;
+    border-radius: 3px;
+    background: var(--paper);
+    text-decoration: none;
+    color: inherit;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.09),
+      1px 1.5px 0 rgb(17 20 58 / 0.07);
+    transition:
+      transform 200ms var(--ease-out),
+      box-shadow 200ms;
+  }
+  .pg::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    transition:
+      width 220ms var(--ease-out),
+      height 220ms var(--ease-out);
+  }
+  .pg.next::after {
+    right: 0;
+    background: linear-gradient(315deg, var(--paper) 0 45%, var(--neel-100) 50%, var(--neel-50) 100%);
+    border-top-left-radius: 4px;
+    box-shadow: -2px -2px 4px rgb(17 20 58 / 0.12);
+  }
+  .pg.prev::after {
+    left: 0;
+    background: linear-gradient(45deg, var(--paper) 0 45%, var(--neel-100) 50%, var(--neel-50) 100%);
+    border-top-right-radius: 4px;
+    box-shadow: 2px -2px 4px rgb(17 20 58 / 0.12);
+  }
+  .pg:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgb(59 68 166 / 0.3),
+      3px 8px 18px -10px rgb(17 20 58 / 0.35);
+  }
+  .pg:hover::after {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+  .pg.next {
+    text-align: right;
+    grid-column: 2;
+  }
+  .pg-k {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .next .pg-k {
+    justify-content: flex-end;
+  }
+  .pg-t {
+    font-weight: 640;
+    line-height: 1.3;
+  }
+
+  @media (max-width: 1023px) {
+    .body {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    .side {
+      position: static;
+      max-height: none;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+    }
+    .article {
+      grid-template-columns: [content-start] minmax(0, 1fr) [content-end wide-end];
+    }
+  }
+  @media (max-width: 560px) {
+    .pager {
+      grid-template-columns: 1fr;
+    }
+    .pg.next {
+      grid-column: 1;
+    }
+    .article {
+      row-gap: 2.25rem;
+    }
+  }
+  /* Printed: plain blocks. Chrome breaks grid and subgrid rows across pages badly (items
+     pushed to the next page don't push the rows after them), so nothing here is a grid. */
+  @media print {
+    .head {
+      padding-block: 0 1rem;
+    }
+    .big-t .hl {
+      text-decoration: none;
+    }
+    .body,
+    .article,
+    .content,
+    .after {
+      display: block;
+      padding-block: 0;
+    }
+    .article > :global(* + *),
+    .after > :global(* + *) {
+      margin-top: 1.75rem;
+    }
+    .sec {
+      break-before: auto;
+    }
+    .sec > h2 {
+      break-after: avoid;
+    }
+  }
+</style>

@@ -2,6 +2,7 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import { isBlankJd } from "../components/jds/jd-template";
 import { BOOKS, type BookId } from "../data/books";
 import { TOOL_KIND_INFO } from "../data/taxonomy";
+import { allLearn, learnSlug, learnUrl } from "./learn";
 
 export type Chapter = CollectionEntry<"handbooks">;
 export type Tool = CollectionEntry<"toolkit">;
@@ -58,7 +59,8 @@ export function readingMinutes(body: string | undefined): number {
   return Math.max(1, Math.round(words / 220));
 }
 
-/* ---------- Cross-links: "handbooks/labour-law/03-leave", "toolkit/gratuity-calculator", "glossary/ctc" ---------- */
+/* ---------- Cross-links: "handbooks/labour-law/03-leave", "toolkit/gratuity-calculator", "glossary/ctc", "learn/02-people-at-work" ----------
+   A ref to a page that doesn't exist yet (a module still being written, say) is skipped, never an error. */
 /** `art` names a spot icon (src/components/art/SpotIcon.astro); `meta` says what the reader gets. */
 export type Linked = { href: string; title: string; kind: string; description?: string; icon: string; art: string; meta?: string };
 
@@ -90,12 +92,34 @@ export function toolFacts(t: Tool): string {
 
 export async function resolveRefs(refs: string[]): Promise<Linked[]> {
   if (!refs.length) return [];
-  const [chapters, tools, terms, jds] = await Promise.all([allChapters(), allTools(), allTerms(), allJds()]);
+  // Learn modules are loaded only when a ref asks for one.
+  const [chapters, tools, terms, jds, learn] = await Promise.all([
+    allChapters(),
+    allTools(),
+    allTerms(),
+    allJds(),
+    refs.some((r) => r.startsWith("learn/")) ? allLearn().catch(() => []) : Promise.resolve([])
+  ]);
   const out: Linked[] = [];
   for (const ref of refs) {
     const [kind, ...rest] = ref.split("/");
     const key = rest.join("/");
-    if (kind === "handbooks") {
+    if (kind === "learn") {
+      // "learn/02-people-at-work" (the file id) or "learn/people-at-work" (the slug). Not written yet: skipped.
+      const e = learn.find((x) => x.id === key) ?? learn.find((x) => learnSlug(x) === key);
+      if (e) {
+        const guide = e.data.kind === "guide";
+        out.push({
+          href: learnUrl(e),
+          title: e.data.title,
+          kind: guide ? "Learn guide" : "Learn module",
+          description: e.data.description,
+          icon: "graduation",
+          art: "learn",
+          meta: guide ? `${e.data.minutes} min read` : `Module ${e.data.module}, ${e.data.minutes} min`
+        });
+      }
+    } else if (kind === "handbooks") {
       const c = chapters.find((x) => x.id === key || `${x.data.book}/${chapterSlug(x)}` === key);
       if (c) out.push({ href: chapterUrl(c), title: c.data.title, kind: `${BOOKS[c.data.book].short} handbook`, description: c.data.description, icon: BOOKS[c.data.book].icon, art: c.data.book, meta: `Chapter ${c.data.chapter}, ${readingMinutes(c.body)} min read` });
       else if (key in BOOKS) {

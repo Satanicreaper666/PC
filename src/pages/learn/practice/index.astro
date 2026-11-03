@@ -1,0 +1,446 @@
+---
+/**
+ * The practice bank: every check-yourself question from every written module,
+ * filterable by module, type and level, with a "mixed set of 10" drawn at random.
+ * Each question is the module's own Quiz component, so feedback works the same.
+ * Nothing is stored. Without JavaScript every question shows, grouped by module.
+ */
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PageHero from "../../../components/site/PageHero.astro";
+import Quiz from "../../../components/learn/Quiz.astro";
+import { allQuizItems, coursePlan, count } from "../../../lib/learn";
+import { breadcrumbLd } from "../../../lib/library";
+
+const [items, plan] = await Promise.all([allQuizItems(), coursePlan()]);
+const modules = plan.flatMap((b) => b.modules).filter((m) => items.some((x) => x.from.n === m.n));
+const n = (pred: (x: (typeof items)[number]) => boolean) => items.filter(pred).length;
+const TYPES = [
+  { id: "knowledge", label: "Knowledge" },
+  { id: "judgement", label: "Judgement" },
+  { id: "written", label: "Written" }
+] as const;
+const LEVELS = [
+  { id: "core", label: "Core" },
+  { id: "advanced", label: "Advanced" }
+] as const;
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Learn", href: "/learn/" },
+  { name: "Practice bank", href: "/learn/practice/" }
+];
+const description = `${count(items.length, "free HR practice question")} in the style of SHRM-CP, SHRM-SCP and CIPD: knowledge, judgement and written, with feedback on every option.`;
+---
+
+<BaseLayout title="HR practice questions: the practice bank" description={description} jsonLd={breadcrumbLd(Astro.site, trail)} image="/og/learn.png">
+  <div data-pagefind-body data-pagefind-meta="kind:Practice bank" data-pagefind-filter="section:Learn">
+    <PageHero
+      title="Practice bank"
+      lede={items.length
+        ? `${count(items.length, "question")} from ${count(modules.length, "module")}: ${n((x) => x.item.type === "knowledge")} knowledge, ${n((x) => x.item.type === "judgement")} judgement and ${n((x) => x.item.type === "written")} written, ${n((x) => x.item.level === "advanced")} of them at the strategic level. Answer on the page and the feedback appears. Nothing is stored.`
+        : "Each module's practice questions will collect here as modules are published."}
+      trail={trail}
+    />
+
+    <section class="wrap kinds" aria-labelledby="kinds-t">
+      <h2 id="kinds-t" class="visually-hidden">The kinds of question</h2>
+      <dl class="types">
+        <div>
+          <dt>Knowledge</dt>
+          <dd>One right answer. It tests whether you understand a model or a rule well enough to use it, not whether you can recite it.</dd>
+        </div>
+        <div>
+          <dt>Judgement</dt>
+          <dd>SHRM style. You're given a role, a situation and four things you could do. Every option is something a real manager might do; pick the most effective.</dd>
+        </div>
+        <div>
+          <dt>Written</dt>
+          <dd>CIPD style. A short answer to a command such as explain, evaluate or recommend, with a word count. Write yours, then compare it with the model answer.</dd>
+        </div>
+      </dl>
+      <div class="rules">
+        <div class="rule">
+          <p class="rule-t">How SHRM scores a judgement question</p>
+          <p>
+            A panel of SHRM-certified professionals agrees which response is the most effective. Only that one earns credit: an option that would be acceptable at work
+            still scores nothing, and there is no partial credit for the second best. So read for the best action, not a good one: usually the one that finds the
+            facts, involves the right people, follows a fair process and acts in proportion.
+          </p>
+        </div>
+        <div class="rule">
+          <p class="rule-t">Core and advanced</p>
+          <p>Core questions sit at the level of SHRM-CP and CIPD Level 5. Advanced questions are strategic, like SHRM-SCP and CIPD Level 7: enterprise decisions, evidence and a costed case.</p>
+        </div>
+      </div>
+    </section>
+
+    {
+      items.length > 0 && (
+        <div class="bank" data-pagefind-ignore>
+          <div class="tools" data-pb-tools hidden>
+            <div class="tools-in">
+              <label class="pick">
+                <span class="pick-l">Module</span>
+                <select class="control" data-pb-module>
+                  <option value="">All modules</option>
+                  {modules.map((m) => (
+                    <option value={String(m.n)}>
+                      {m.n}. {m.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div class="seg" role="group" aria-label="Type of question">
+                <button type="button" aria-pressed="true" data-f-type="">
+                  All types
+                </button>
+                {TYPES.map((t) => (
+                  <button type="button" aria-pressed="false" data-f-type={t.id}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <div class="seg" role="group" aria-label="Level">
+                <button type="button" aria-pressed="true" data-f-level="">
+                  Both levels
+                </button>
+                {LEVELS.map((l) => (
+                  <button type="button" aria-pressed="false" data-f-level={l.id}>
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+              <button type="button" class="btn btn-accent mix" data-pb-mix>
+                Mixed set of 10
+              </button>
+            </div>
+            <p class="status" data-pb-status aria-live="polite" />
+          </div>
+          <noscript>
+            <p class="wrap nojs">Filtering and the mixed set need JavaScript. Every question is listed below, module by module.</p>
+          </noscript>
+
+          <div class="wrap list">
+            <div class="mixed" data-pb-mixed hidden>
+              <div class="mixed-head">
+                <h2 class="mixed-t" tabindex="-1" data-pb-mixed-title>
+                  A mixed set
+                </h2>
+                <div class="mixed-act">
+                  <button type="button" class="btn btn-secondary btn-sm" data-pb-again>
+                    Draw another set
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-sm" data-pb-exit>
+                    Back to all questions
+                  </button>
+                </div>
+              </div>
+              <ol class="items" role="list" data-pb-mixed-list />
+            </div>
+
+            {modules.map((m) => (
+              <section class="mod" aria-labelledby={`pm-${m.n}`} data-pb-section={m.n}>
+                <h2 class="mod-t" id={`pm-${m.n}`}>
+                  <span class="mod-n">Module {m.n}</span>
+                  <a href={m.href}>{m.title}</a>
+                </h2>
+                <ol class="items" role="list" data-pb-list={m.n}>
+                  {items
+                    .filter((x) => x.from.n === m.n)
+                    .map((x) => (
+                      <li class="item" data-pb data-pb-module={m.n} data-pb-type={x.item.type} data-pb-level={x.item.level}>
+                        <p class="from">
+                          From <a href={x.from.href}>Module {x.from.n}: {x.from.title}</a>
+                        </p>
+                        <Quiz items={[x.item]} />
+                      </li>
+                    ))}
+                </ol>
+              </section>
+            ))}
+            <p class="none" data-pb-none hidden>
+              No questions match these filters yet. <button type="button" class="link clear" data-pb-clear>Show every question</button>
+            </p>
+          </div>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../../scripts/learn-practice";
+</script>
+
+<style>
+  .kinds {
+    padding-block: 2.25rem 0.5rem;
+    display: grid;
+    gap: 1.5rem;
+  }
+  /* The three kinds, each ruled off like an exam paper's instructions. */
+  .types {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem 2.5rem;
+    border-top: 2px solid var(--neel-700);
+  }
+  .types > div {
+    padding-top: 0.9rem;
+  }
+  .types dt {
+    font-weight: 700;
+    font-size: var(--fs-md);
+  }
+  .types dd {
+    margin: 0.3rem 0 0;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .rules {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 1rem 2.5rem;
+  }
+  .rule {
+    padding: 1rem 1.2rem 1.1rem;
+    border-left: 3px solid var(--neel-300);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .rule-t {
+    margin-bottom: 0.3rem;
+    font-size: var(--fs-base);
+    font-weight: 680;
+    color: var(--ink);
+  }
+
+  .tools {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 5;
+    margin-top: 2rem;
+    padding-block: 0.8rem 0.6rem;
+    background: rgb(255 255 255 / 0.96);
+    backdrop-filter: blur(10px);
+    border-block: 1px solid var(--line);
+  }
+  .tools-in,
+  .status {
+    width: min(100% - 2 * var(--gutter), var(--wrap));
+    margin-inline: auto;
+  }
+  .tools-in {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+  }
+  .pick {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .pick-l {
+    font-size: var(--fs-sm);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .pick .control {
+    min-height: 2.5rem;
+    width: auto;
+    max-width: 19rem;
+    padding-block: 0.35rem;
+    font-size: var(--fs-sm);
+  }
+  .seg {
+    display: inline-flex;
+    border-radius: var(--r);
+    box-shadow: 0 0 0 1.5px #7d83a1;
+    background: var(--paper);
+  }
+  .seg button {
+    min-height: 2.5rem;
+    padding: 0 0.8rem;
+    border: 0;
+    background: transparent;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .seg button + button {
+    border-left: 1.5px solid #7d83a1;
+  }
+  .seg button:first-child {
+    border-radius: var(--r) 0 0 var(--r);
+  }
+  .seg button:last-child {
+    border-radius: 0 var(--r) var(--r) 0;
+  }
+  .seg button:hover {
+    background: var(--neel-50);
+    color: var(--ink);
+  }
+  .seg button[aria-pressed="true"] {
+    background: var(--neel-700);
+    color: #fff;
+  }
+  .seg button:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline-offset: 2px;
+  }
+  .mix {
+    margin-left: auto;
+  }
+  .status {
+    margin-top: 0.45rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .nojs {
+    margin-top: 1.5rem;
+    color: var(--ink-2);
+  }
+
+  .list {
+    display: grid;
+    gap: 2.75rem;
+    padding-block: 2rem var(--section);
+  }
+  .mod-t {
+    display: grid;
+    gap: 0.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--neel-700);
+    font-size: var(--fs-lg);
+  }
+  .mod-n,
+  .mixed-t {
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .mod-t a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .mod-t a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .item {
+    padding-block: 0.4rem;
+    max-width: 52rem;
+  }
+  .mixed .item {
+    padding-top: 1rem;
+  }
+  /* Each question is its own Quiz, so its "1 question" line, running score and number say
+     nothing here; the type and level tags it shows are what a reader filters by. */
+  .item :global(.qz-bar),
+  .item :global(.qz-num) {
+    display: none;
+  }
+  .from {
+    margin-bottom: 0.5rem;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .from a {
+    color: var(--ink-2);
+    text-decoration: underline;
+    text-decoration-color: rgb(95 101 132 / 0.4);
+    text-underline-offset: 3px;
+  }
+  .from a:hover {
+    color: var(--primary);
+  }
+  /* Under its module's heading a question needn't name the module; in a mixed set it does. */
+  .mod .from {
+    display: none;
+  }
+  .mixed {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .mixed-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--accent);
+  }
+  .mixed-t {
+    font-size: var(--fs-lg);
+    font-weight: 680;
+    color: var(--ink);
+  }
+  .mixed-t:focus {
+    outline: none;
+  }
+  .mixed-act {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .none {
+    color: var(--ink-2);
+  }
+  .clear {
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+  }
+  @media (max-width: 900px) {
+    .types,
+    .rules {
+      grid-template-columns: 1fr;
+    }
+    .mix {
+      margin-left: 0;
+    }
+  }
+  @media (max-width: 640px) {
+    .tools {
+      position: static;
+    }
+    .pick,
+    .pick .control {
+      width: 100%;
+      max-width: none;
+    }
+    .pick {
+      display: grid;
+      gap: 0.25rem;
+    }
+    .seg {
+      width: 100%;
+    }
+    .seg button {
+      flex: 1;
+      padding: 0 0.4rem;
+    }
+    .mix {
+      width: 100%;
+    }
+  }
+</style>

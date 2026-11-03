@@ -49,6 +49,17 @@ export const PATHS: Record<Audience, { intro: string; groups: { title: string; w
           "toolkit/org-chart-builder",
           "handbooks/hr-professional/11-the-path-to-chro"
         ]
+      },
+      {
+        title: "Study for business-partner and strategic roles",
+        why: "PeopleCraft Learn, the free course built from what XLRI, CIPD and SHRM teach. Start with these modules, or find your own starting point on the course page.",
+        refs: [
+          "learn/01-business-acumen-for-hr",
+          "learn/03-evidence-based-hr",
+          "learn/13-strategic-hrm",
+          "learn/11-indian-labour-law",
+          "learn/guide-credentials"
+        ]
       }
     ]
   },
@@ -119,6 +130,11 @@ export const PATHS: Record<Audience, { intro: string; groups: { title: string; w
         title: "If HR is your career",
         why: "The skills that matter and the path from HR executive to CHRO.",
         refs: ["handbooks/hr-professional/01-the-competency-model", "handbooks/hr-professional/11-the-path-to-chro", "toolkit/competency-self-assessment"]
+      },
+      {
+        title: "Learn HR properly, for free",
+        why: "PeopleCraft Learn follows what XLRI, CIPD and SHRM teach, one module at a time. These are good first modules, with a guide to the credentials.",
+        refs: ["learn/guide-how-this-course-works", "learn/01-business-acumen-for-hr", "learn/02-people-at-work", "learn/05-talent-acquisition", "learn/guide-credentials"]
       }
     ]
   }

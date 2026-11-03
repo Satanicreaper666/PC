@@ -100,5 +100,27 @@
     "text": "note: \"12% of ₹25,000\"",
     "fact": "epf.wageCeiling",
     "why": "Worked example: the sums use this figure, so redo them if it changes"
+  },
+  {
+    "file": "src/content/learn/08-reward-and-total-rewards.mdx",
+    "text": "The EPF wage ceiling rose from ₹15,000 to ₹25,000 a month on 17 September 2026",
+    "why": "Historical: describes a change on a fixed date, true whatever the figure is later"
+  },
+  {
+    "file": "src/content/learn/08-reward-and-total-rewards.mdx",
+    "text": "note: \"12% of the ₹25,000 ceiling\"",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
+  },
+  {
+    "file": "src/content/learn/08-reward-and-total-rewards.mdx",
+    "text": "PF is 12% of the old ₹15,000 ceiling",
+    "why": "Worked example: the before column uses the ceiling that applied before 17 September 2026"
+  },
+  {
+    "file": "src/content/learn/08-reward-and-total-rewards.mdx",
+    "text": "In the new column, PF is 12% of the ₹25,000 ceiling",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
   }
 ]

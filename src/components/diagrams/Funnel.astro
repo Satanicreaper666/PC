@@ -1,0 +1,217 @@
+---
+/**
+ * Stages that narrow, widest first: recruitment yield, narrowing choices, the path from
+ * an idea to a decision.
+ * <Funnel stages={[{ label: "Applications", value: 1200 }, { label: "Interviewed", value: 60, note: "structured panel" }, …]} />
+ *
+ * Paper bands that narrow in one continuous slope, the words and numbers beside them.
+ * When two stages next to each other both have a `value`, the share that moves on is
+ * worked out and shown ("20% of the stage above"), because that ratio is usually the
+ * point of a funnel. The bands fall into place from the top, once, when scrolled to.
+ */
+type Stage = { label: string; value?: number; display?: string; note?: string };
+interface Props {
+  stages: Stage[];
+  label?: string;
+}
+const { stages, label } = Astro.props;
+const n = Math.max(stages.length, 1);
+const MIN = 0.3;
+const width = (k: number) => (n === 1 ? 1 : 1 - ((1 - MIN) * k) / (n - 1));
+const pct = (v: number) => Number((v * 100).toFixed(2));
+const RAMP = ["--neel-100", "--neel-200", "--neel-300", "--neel-400", "--neel-500"];
+const fill = (i: number) => RAMP[n === 1 ? 1 : Math.round((i * (RAMP.length - 1)) / (n - 1))];
+const fmt = new Intl.NumberFormat("en-IN");
+const shown = (s: Stage) => s.display ?? (typeof s.value === "number" ? fmt.format(s.value) : "");
+const hasValues = stages.some((s) => shown(s));
+// One width for the number column on every row, from the longest value, so the numbers line up.
+const longest = Math.max(0, ...stages.map((s) => shown(s).length));
+const valueCol = `${Math.min(9, Math.max(3.2, longest * 0.68 + 0.4)).toFixed(2)}em`;
+const rate = (i: number) => {
+  const a = stages[i - 1]?.value;
+  const b = stages[i]?.value;
+  if (typeof a !== "number" || typeof b !== "number" || a <= 0) return "";
+  const r = (b / a) * 100;
+  return `${r < 10 ? r.toFixed(1).replace(/\.0$/, "") : Math.round(r)}%`;
+};
+const rows = stages.map((s, i) => {
+  const t = width(i);
+  const b = i === n - 1 ? width(i) * 0.78 : width(i + 1);
+  const pts = [
+    [50 - pct(t) / 2, 0],
+    [50 + pct(t) / 2, 0],
+    [50 + pct(b) / 2, 100],
+    [50 - pct(b) / 2, 100]
+  ]
+    .map(([x, y]) => `${Number(x.toFixed(2))},${y}`)
+    .join(" ");
+  return { ...s, i, pts, edge: pct(0.5 + (t + b) / 4), fill: fill(i), value: shown(s), rate: i > 0 ? rate(i) : "" };
+});
+---
+
+<div
+  class:list={["fun", { "has-values": hasValues }]}
+  data-diagram="funnel"
+  data-draw
+  role="group"
+  aria-label={label ?? "Funnel, from the widest stage to the narrowest"}
+  style={`--vcol:${valueCol}`}
+>
+  <ol class="fun-rows" role="list">
+    {
+      rows.map((r) => (
+        <li class="fun-row" style={`--i:${r.i};--edge:${r.edge}%;--fill:var(${r.fill})`}>
+          <span class="fun-art" aria-hidden="true">
+            <svg class="fun-band" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
+              <polygon points={r.pts} />
+            </svg>
+          </span>
+          <span class="fun-text">
+            {hasValues && <span class="fun-v">{r.value}</span>}
+            <span class="fun-words">
+              <span class="fun-l">{r.label}</span>
+              {r.note && <span class="fun-n" set:html={r.note} />}
+              {r.rate && (
+                <span class="fun-r">
+                  <span class="fun-pc">{r.rate}</span> of the stage above
+                </span>
+              )}
+            </span>
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .fun {
+    container-type: inline-size;
+  }
+  .fun-rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-auto-rows: minmax(3.1rem, 1fr);
+    row-gap: 3px;
+  }
+  .fun-row {
+    display: grid;
+    grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
+    align-items: center;
+  }
+  .fun-art {
+    position: relative;
+    align-self: stretch;
+    display: block;
+    filter: var(--paper-1);
+  }
+  .fun-art::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--edge) + 6px);
+    right: 0.35rem;
+    top: 50%;
+    border-top: 1.5px dotted var(--neel-400);
+  }
+  .fun-band {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .fun-band polygon {
+    fill: var(--fill);
+    stroke: var(--neel-800);
+    stroke-opacity: 0.35;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .fun-text {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.3rem 0 0.3rem 0.5rem;
+    min-width: 0;
+  }
+  .has-values .fun-text {
+    grid-template-columns: var(--vcol) minmax(0, 1fr);
+  }
+  .fun-v {
+    font-size: var(--fs-md);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--neel-800);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .fun-words {
+    display: grid;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+  .fun-l {
+    font-weight: 650;
+    font-size: var(--fs-sm);
+    line-height: 1.3;
+  }
+  .fun-n,
+  .fun-r {
+    font-size: var(--fs-xs);
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+  .fun-pc {
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  @container (max-width: 26rem) {
+    .fun-row {
+      grid-template-columns: minmax(0, 30%) minmax(0, 1fr);
+    }
+    .has-values .fun-text {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+    .fun-v {
+      text-align: left;
+      font-size: var(--fs-base);
+    }
+    .fun-art::after {
+      right: 0.15rem;
+    }
+  }
+
+  /* Falls into place from the top, once, when scrolled to. The words never move. */
+  :global(html.js-anim) .fun:not(:global(.draw)):not(:global(.drawn)) .fun-art {
+    opacity: 0;
+  }
+  .fun:global(.draw) .fun-art {
+    animation: fun-in 0.45s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 0.12s);
+  }
+  @keyframes fun-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scaleX(1.06);
+    }
+  }
+  @media print {
+    .fun {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      break-inside: avoid;
+    }
+    .fun .fun-art {
+      opacity: 1 !important;
+      animation: none !important;
+      filter: none;
+    }
+  }
+</style>

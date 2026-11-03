@@ -1,0 +1,587 @@
+---
+title: "Evidence-based HR: data, metrics and research"
+description: "Use CIPD's four sources of evidence, ask answerable questions, read the statistics that matter, calculate core HR metrics and turn people data into decisions."
+kind: module
+module: 3
+block: foundations
+minutes: 35
+stage: lead
+checked: 2026-11-04
+bigIdea: "Start with the question, weigh four kinds of evidence, and trust a number only when you know how it was defined and measured."
+situation: "Relationship-manager attrition at a 1,400-person non-banking finance company (NBFC) in Tamil Nadu jumped from 24% to an annualised 36% in two quarters. The business head blames a rival's poaching and wants a 15% pay rise for all 600 relationship managers. HR holds exit records, an engagement survey and the HRMS data, but nobody has looked at them together. What would you check before the money is spent?"
+outcomes:
+  - "Turn a people problem into an answerable question and choose a research design that fits it"
+  - "Weigh scientific, organisational, practitioner and stakeholder evidence before recommending action"
+  - "Interpret medians, correlations, regression, significance, reliability and validity in HR data"
+  - "Calculate and define core HR metrics consistently, including the people metrics in SEBI's BRSR Core"
+  - "Diagnose a people problem with data and present it as a story that changes a decision"
+summary:
+  - "Evidence-based HR combines research, organisational data, professional expertise and stakeholders' concerns, through ask, acquire, appraise, aggregate, apply and assess."
+  - "An answerable question names who, what change, compared with what, which outcome and in what context."
+  - "Use medians for pay, treat a correlation as a lead rather than a cause, and read the size of an effect, not just its significance."
+  - "A metric is only as good as its written definition: the same base, period and counting rules every time."
+  - "LAMP: data changes decisions only with a causal logic, sound analytics, trustworthy measures and a process that reaches decision-makers."
+  - "Tell the story in order: what is happening, what it costs, why, what to do, and how you will know it worked."
+schools:
+  xlri:
+    - "Quantitative Techniques & Analytics for HR (Term 2, core)"
+    - "Data, Analytics, and Artificial Intelligence (Term 2, core)"
+    - "Research Methods & Analytics: HR Applications (Term 3, core)"
+    - "People Analytics (elective)"
+  cipd:
+    - "5CO02 Evidence-based practice"
+    - "7CO04 Business research in people practice"
+    - "Profession Map: Evidence-based practice (core knowledge) and People analytics (specialist knowledge)"
+  shrm:
+    - "Analytical Aptitude (Data Advocate, Data Gathering, Data Analysis, Evidence-Based Decision-Making)"
+    - "Metrics in the functional areas, e.g. cost per hire and time to fill (Talent Acquisition), compa-ratio (Total Rewards)"
+  india:
+    - "Large listed companies report assured people metrics under SEBI's BRSR Core, such as wages paid to women and POSH complaints"
+    - "The DPDP Act's main duties for employers begin in May 2027, so people analytics needs notice, a clear purpose and security"
+  note: "CIPD makes evidence-based practice a core value and asks for a full research project. SHRM tests it as Analytical Aptitude through scenarios. XLRI teaches it through statistics, research-methods and analytics courses."
+models:
+  - id: evidence-based-practice-four-sources
+    name: "Evidence-based practice: four sources, six steps"
+    by: "Eric Barends, Denise Rousseau and Rob Briner (CEBMa)"
+    year: "2014"
+    idea: "Decide by combining research, organisational data, practitioner expertise and stakeholders' concerns, through ask, acquire, appraise, aggregate, apply and assess."
+    use: "Structuring any recommendation, from a business case to a CIPD assignment, so that its evidence is visible."
+    watch: "It can become a box-ticking ritual, and critics say evidence hierarchies undervalue context and hide whose interests count."
+    cite: "Barends, E., Rousseau, D. M. and Briner, R. B. (2014) Evidence-Based Management: The Basic Principles. Center for Evidence-Based Management."
+  - id: evidence-hierarchy-horses-for-courses
+    name: "Hierarchy of evidence: horses for courses"
+    by: "Evidence-based medicine tradition; Mark Petticrew and Helen Roberts"
+    year: "2003"
+    idea: "Systematic reviews usually outrank single controlled studies, which outrank surveys, case studies and expert opinion, but the best design depends on the question."
+    use: "Deciding how much weight to give a study or a consultant's report at the appraise step."
+    watch: "A rigid ranking can dismiss qualitative evidence, which is often the best answer to 'why' and 'how' questions."
+    cite: "Petticrew, M. and Roberts, H. (2003) Evidence, hierarchies, and typologies: horses for courses. Journal of Epidemiology and Community Health, 57(7)."
+  - id: lamp-framework
+    name: "LAMP"
+    by: "John Boudreau and Peter Ramstad"
+    year: "2007"
+    idea: "Measurement improves decisions only when four parts work together: logic, analytics, measures and process."
+    use: "Working out why a dashboard or an analytics team isn't changing decisions."
+    watch: "A diagnostic frame rather than a method: it says what must be present, not how to build it."
+    cite: "Boudreau, J. W. and Ramstad, P. M. (2007) Beyond HR: The New Science of Human Capital. Harvard Business School Press."
+  - id: cronbach-alpha
+    name: "Cronbach's alpha"
+    by: "Lee Cronbach"
+    year: "1951"
+    idea: "Estimates how consistently the items in a multi-item scale measure the same thing; about 0.7 is the usual floor."
+    use: "Checking an engagement or culture survey scale before you trust its scores."
+    watch: "High alpha shows consistency, not validity. Long scales inflate it, and very high values can mean repetitive items."
+    cite: "Cronbach, L. J. (1951) Coefficient alpha and the internal structure of tests. Psychometrika, 16(3)."
+  - id: cohen-effect-size
+    name: "Effect size benchmarks"
+    by: "Jacob Cohen"
+    year: "1988"
+    idea: "Report how big a difference is, not just whether it is significant. A standardised difference (d) of 0.2 is small, 0.5 medium and 0.8 large."
+    use: "Judging whether a 'significant' survey or pilot result is big enough to act on."
+    watch: "Cohen offered these as rough conventions; whether an effect matters depends on its cost and context."
+    cite: "Cohen, J. (1988) Statistical Power Analysis for the Behavioral Sciences, 2nd edn. Lawrence Erlbaum."
+  - id: thematic-analysis
+    name: "Thematic analysis"
+    by: "Virginia Braun and Victoria Clarke"
+    year: "2006"
+    idea: "Code qualitative data, such as exit interviews or survey comments, into themes through six phases, from getting familiar with the data to writing up."
+    use: "Turning free-text comments into evidence you can count and quote fairly."
+    watch: "Results depend on the coder. Use a clear codebook or a second coder, and don't pick only the vivid quotes."
+    cite: "Braun, V. and Clarke, V. (2006) Using thematic analysis in psychology. Qualitative Research in Psychology, 3(2)."
+quiz:
+  - id: eb-four-sources
+    type: knowledge
+    q: "In CIPD's model of evidence-based practice, which four sources should a recommendation draw on?"
+    options:
+      - "Benchmarks, vendor case studies, best-practice reports and leaders' views"
+      - "Surveys, interviews, focus groups and direct observation"
+      - "Research, organisational data, practitioner expertise and stakeholders' concerns"
+      - "Descriptive, diagnostic, predictive and prescriptive analytics"
+    answer: 2
+    feedback:
+      - "These can be useful inputs, but they mix sources of very different quality and leave out research and the people affected."
+      - "These are ways of collecting data, mostly within one source: organisational data."
+      - "Correct. These are the four sources CIPD takes from the Center for Evidence-Based Management."
+      - "These are types of analytics, not sources of evidence."
+    why: "Combine all four sources and judge each one for trustworthiness; no single source is enough."
+  - id: eb-turnover-calc
+    type: knowledge
+    q: "A company starts the year with 400 employees and ends it with 440. During the year, 63 people left. What is its turnover rate for the year?"
+    options:
+      - "7.5%"
+      - "14.3%"
+      - "15%"
+      - "15.75%"
+    answer: 2
+    feedback:
+      - "This divides by 400 + 440 without halving, so it halves the true rate."
+      - "This divides by the closing headcount of 440, which understates turnover in a growing company."
+      - "Correct. Average headcount is (400 + 440) ÷ 2 = 420, and 63 ÷ 420 × 100 = 15%."
+      - "This divides by the opening headcount of 400, which overstates it."
+    why: "Turnover = leavers ÷ average headcount for the same period × 100."
+  - id: eb-median
+    type: knowledge
+    q: "In one branch, nine relationship managers earn between ₹3.5 lakh and ₹4.5 lakh, and the branch head earns ₹18 lakh. Which figure best describes typical pay?"
+    options:
+      - "The mean"
+      - "The median"
+      - "The range"
+      - "The total pay bill"
+    answer: 1
+    feedback:
+      - "One high earner pulls the mean up to about ₹5.4 lakh, above what nine of the ten people earn."
+      - "Correct. The median is the middle value, and one high salary doesn't distort it."
+      - "The range shows spread, not the typical value."
+      - "The total matters for budgets but says nothing about a typical person."
+    why: "Pay is skewed by a few high earners, so medians describe the typical employee better than means."
+  - id: eb-correlation
+    type: knowledge
+    q: "Across 40 branches, those with more training hours have lower attrition (r = −0.4). What is the soundest conclusion?"
+    options:
+      - "Training reduces attrition, so every branch should double its training hours next year"
+      - "An r of −0.4 is too weak a link to be worth investigating further"
+      - "Branches with low attrition can simply afford to spend more of their budget on training"
+      - "There is a moderate link, but a third factor, such as better managers, may drive both"
+    answer: 3
+    feedback:
+      - "A correlation can't show cause. Doubling training may change nothing if managers are the real driver."
+      - "An r of −0.4 explains about 16% of the variation, which is often worth investigating."
+      - "Reverse causation is possible, but the data alone can't tell you which way cause runs."
+      - "Correct. Treat it as a lead: look for confounders, then test with a pilot and a comparison group."
+    why: "A correlation is a lead, not a verdict. Look for confounders and reverse causation, then test."
+  - id: eb-reliability
+    type: knowledge
+    q: "A stable team takes the same engagement survey two weeks apart, with nothing changing in between, and the scores differ widely. What is the main problem with the survey?"
+    options:
+      - "Low reliability"
+      - "Low validity"
+      - "A low response rate"
+      - "Sampling bias"
+    answer: 0
+    feedback:
+      - "Correct. Reliability is consistency: a stable group should get similar scores each time."
+      - "Validity is whether it measures the right thing. You can't judge that until it measures consistently."
+      - "Response rates affect who answers, not whether the same people get the same score twice."
+      - "Sampling bias is about who was asked, not whether the instrument is consistent."
+    why: "A measure must be reliable before it can be valid, though reliability alone doesn't make it valid."
+  - id: eb-wellness-claim
+    type: judgement
+    q: "You are the HR business partner at a 2,000-person retail chain. The CEO forwards a consultancy report saying that companies with wellness apps have 30% lower attrition, and wants to buy one for all staff. What is your best first step?"
+    options:
+      - "Appraise the report, check what drives your own attrition, and propose a time-boxed pilot with a comparison group"
+      - "Buy it, since the report comes from a well-known consultancy and the CEO supports it"
+      - "Decline, explaining that wellness programmes have no proven effect on attrition or business results"
+      - "Run a staff poll first on whether people would use a wellness app, then decide"
+    answer: 0
+    feedback:
+      - "Best. You appraise the claim, use your own data and test before spending, which respects the CEO's goal."
+      - "A brand name isn't evidence. A comparison across companies can't show that the app caused lower attrition."
+      - "That overstates it, because some wellbeing measures do help. Dismissing the idea untested isn't evidence-based either."
+      - "Popularity doesn't tell you whether the app would reduce attrition."
+    why: "Treat outside claims as hypotheses: appraise the design, check the fit with your own data, then pilot."
+  - id: eb-small-team
+    type: judgement
+    q: "A manager asks you for the engagement survey results for her team of four, including the free-text comments. What do you do?"
+    options:
+      - "Send her the full results, since she is accountable for her team's engagement and needs the detail"
+      - "Explain the five-person minimum, share results combined with a sister team, and help her plan a team discussion"
+      - "Refuse to share any results with her, since a team of four is too small to protect anonymity"
+      - "Send the scores now, and pass on the comments once names have been removed"
+    answer: 1
+    feedback:
+      - "With four people, individuals could be identified. That breaks the promise of anonymity and future trust in surveys."
+      - "Best. You keep the anonymity promise and still give her something useful to act on."
+      - "Managers need results to act on. Withholding everything wastes the survey."
+      - "In a team of four, writing style and content can identify people even without names."
+    why: "Keep the promise of anonymity: a reporting threshold, commonly five, protects people and the survey's future."
+  - id: eb-three-numbers
+    type: judgement
+    level: advanced
+    q: "You head HR analytics at a listed manufacturer. In the quarterly review, finance, the plants and the CHRO's dashboard show three different attrition rates. The board meets next week, and the figure also feeds the company's BRSR. What do you do?"
+    options:
+      - "Present the lowest figure to avoid alarming the board, and footnote the other two figures"
+      - "Average the three figures for the board, so that no single team's method is favoured"
+      - "Hold the item back until the new HR system goes live and produces one figure automatically"
+      - "Agree one definition with finance, restate past quarters on it, report the reconciled figure and name an owner"
+    answer: 3
+    feedback:
+      - "Choosing the most flattering number misleads the board and would not survive assurance."
+      - "An average of three inconsistent definitions is a fourth inconsistent number."
+      - "A new system won't fix inconsistent definitions, and the delay leaves the board uninformed."
+      - "Best. One definition, restated history and a named owner give the board a trustworthy figure and fix the root cause."
+    why: "LAMP's measures come first: agree the definition, give it an owner, document it and restate history so trends are real."
+  - id: eb-flight-risk
+    type: judgement
+    level: advanced
+    q: "A vendor offers an AI tool that scores each employee's 'flight risk' from email metadata and badge swipes. The business head wants every manager to see their team's scores. What do you recommend?"
+    options:
+      - "Roll it out to all managers now, since it is lawful and early warning has clear value"
+      - "Check purpose, notice and data-protection duties, test accuracy and bias on your own data, and start at team level"
+      - "Reject all predictive analytics on principle, since predicting individuals' behaviour amounts to surveillance"
+      - "Let each manager decide whether to use the scores with their own team, with a short guide"
+    answer: 1
+    feedback:
+      - "Being lawful isn't the only test. Untested individual scores can be wrong, biased and damaging to trust."
+      - "Best. You weigh law, accuracy, fairness and trust, and start with the least intrusive version that is still useful."
+      - "Prediction can be legitimate and useful when it is well governed. A blanket refusal isn't evidence-based."
+      - "Leaving it to managers creates inconsistent, ungoverned use of sensitive data."
+    why: "With people data, test accuracy and fairness, meet data-protection duties and choose the least intrusive design."
+  - id: eb-written-data-driven
+    type: written
+    level: advanced
+    q: "Critically evaluate the claim that HR decisions should be 'data-driven'. Use CIPD's four sources of evidence in your answer. (About 200 words.)"
+    why: "Model answer: The claim is half right. Organisational data protects HR from fads and from the loudest opinion. In an NBFC facing rising attrition, splitting exits by length of service and branch can show that new joiners, not experienced staff, are leaving, which a pay rise for everyone would miss. But 'data-driven' implies that data should decide, and CIPD's model of evidence-based practice argues otherwise. Organisational data is only one of four sources. It is often messy, it describes more than it explains, and a correlation misleads when a confounder, such as new branches in tougher markets, drives both variables. Research adds what is known about causes, for example on newcomer adjustment. Practitioner expertise adds context, such as a rival's hiring pattern. Stakeholders' concerns, such as relationship managers' views on targets, add both insight and legitimacy. Critics also note that 'data-driven' can hide judgements about what gets measured and whose interests count, and analytics brings privacy duties under India's DPDP Act. A better aim is evidence-based HR: combine the four sources, appraise each for trustworthiness, test the decision with a pilot where possible, and state the limits of what the evidence shows."
+books:
+  - author: "Eric Barends and Denise M. Rousseau"
+    title: "Evidence-Based Management: How to Use Evidence to Make Better Organizational Decisions"
+    year: "2018"
+    why: "A step-by-step guide to asking, finding, appraising and applying evidence, by two of the people behind the approach CIPD uses."
+  - author: "Martin R. Edwards, Kirsten Edwards and Daisung Jang"
+    title: "Predictive HR Analytics: Mastering the HR Metric"
+    why: "Takes HR readers from metrics to regression and prediction, with worked examples on attrition, engagement and pay."
+  - author: "Mark Saunders, Philip Lewis and Adrian Thornhill"
+    title: "Research Methods for Business Students"
+    why: "The standard guide for CIPD 7CO04 and MBA projects: research questions, design, sampling, questionnaires and analysis."
+  - author: "Richard I. Levin and David S. Rubin"
+    title: "Statistics for Management (Indian edition)"
+    why: "The statistics text many Indian business schools use; clear on averages, sampling, correlation and regression."
+sources:
+  - { title: "Evidence-based practice factsheet (1 July 2026)", url: "https://www.cipd.org/asia/knowledge/factsheets/evidence-based-practice-factsheet/", publisher: "CIPD" }
+  - { title: "What is a PICOC?", url: "https://cebma.org/resources/frequently-asked-questions/what-is-a-picoc", publisher: "Center for Evidence-Based Management (CEBMa)" }
+  - { title: "CIPD Level 5 Associate Diploma in People Management, specification v2.6 (5CO02)", url: "https://www.cipd.org/globalassets/media/marketing/quals/2026/l5-associate-diploma-in-people-management-2.6.pdf", publisher: "CIPD" }
+  - { title: "CIPD Level 7 Advanced Diploma in Strategic People Management, specification v1.7 (7CO04)", url: "https://www.cipd.org/globalassets/media/marketing/quals/2026/l7-advanced-diploma-in-strategic-people-management-1.7.pdf", publisher: "CIPD" }
+  - { title: "SHRM Body of Applied Skills and Knowledge (BASK), 2026 edition", url: "https://www.shrm.org/content/dam/en/shrm/credentials/shrm-certification/bask/shrm-bask.pdf", publisher: "SHRM" }
+  - { title: "XLRI Admission Prospectus 2027 (PGDM HRM core courses)", url: "https://cloud-server.xlri.ac.in/file/6ae1febe65cd3e58180bb565", publisher: "XLRI – Xavier School of Management" }
+  - { title: "BRSR Core: framework for assurance and ESG disclosures for value chain (12 July 2023)", url: "https://www.sebi.gov.in/legal/circulars/jul-2023/brsr-core-framework-for-assurance-and-esg-disclosures-for-value-chain_73854.html", publisher: "Securities and Exchange Board of India" }
+  - { title: "What is BRSR Core reasonable assurance and who must obtain it? (assessment option from March 2025)", url: "https://greensutra.in/question/brsr-core-reasonable-assurance/", publisher: "GreenSutra" }
+  - { title: "Government notifies the Digital Personal Data Protection Rules, 2025", url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2190014&reg=3&lang=2", publisher: "Press Information Bureau" }
+  - { title: "Rousseau (2006) Is there such a thing as 'evidence-based management'?", url: "https://doi.org/10.5465/amr.2006.20208679", publisher: "Academy of Management Review" }
+  - { title: "Petticrew and Roberts (2003) Evidence, hierarchies, and typologies: horses for courses", url: "https://doi.org/10.1136/jech.57.7.527", publisher: "Journal of Epidemiology and Community Health" }
+  - { title: "Rynes, Colbert and Brown (2002) HR professionals' beliefs about effective human resource practices", url: "https://doi.org/10.1002/hrm.10029", publisher: "Human Resource Management" }
+  - { title: "Marler and Boudreau (2017) An evidence-based review of HR analytics", url: "https://doi.org/10.1080/09585192.2016.1244699", publisher: "International Journal of Human Resource Management" }
+  - { title: "Angrave and colleagues (2016) HR and analytics: why HR is set to fail the big data challenge", url: "https://doi.org/10.1111/1748-8583.12090", publisher: "Human Resource Management Journal" }
+  - { title: "Bauer and colleagues (2007) Newcomer adjustment during organizational socialization: a meta-analytic review", url: "https://doi.org/10.1037/0021-9010.92.3.707", publisher: "Journal of Applied Psychology" }
+  - { title: "Braun and Clarke (2006) Using thematic analysis in psychology", url: "https://doi.org/10.1191/1478088706qp063oa", publisher: "Qualitative Research in Psychology" }
+  - { title: "Cronbach (1951) Coefficient alpha and the internal structure of tests", url: "https://doi.org/10.1007/BF02310555", publisher: "Psychometrika" }
+related:
+  - handbooks/hr-professional/04-people-analytics-and-data-literacy
+  - toolkit/hr-metrics-calculator
+  - toolkit/people-analytics
+  - toolkit/engagement-pulse-survey
+  - toolkit/exit-interview-questionnaire
+  - glossary/attrition
+  - glossary/people-analytics
+  - learn/01-business-acumen-for-hr
+faq:
+  - q: What are the four sources of evidence in evidence-based HR?
+    a: Scientific research, organisational data, the expertise and judgement of practitioners, and the values and concerns of the people affected. CIPD, drawing on the Center for Evidence-Based Management, asks you to combine all four and judge how far each can be trusted.
+  - q: How do you calculate employee turnover rate?
+    a: Divide the number of leavers in a period by the average headcount for the same period and multiply by 100. Report voluntary and involuntary turnover separately, and say so when you annualise a monthly or quarterly rate.
+  - q: What is the LAMP model in HR analytics?
+    a: LAMP, from John Boudreau and Peter Ramstad, says measurement changes decisions only when four parts work together. They are a logic linking people to results, sound analytics, trustworthy measures, and a process that gets findings to the people who decide.
+  - q: Which BRSR Core metrics concern HR?
+    a: Spending on employee wellbeing as a share of revenue; safety incidents such as the lost-time injury frequency rate, fatalities and permanent disabilities; wages paid to women as a share of total wages; POSH complaints; and wages paid in smaller towns as a share of total wage cost.
+keywords: [evidence-based hr, cipd evidence-based practice four sources, hr metrics formulas, turnover rate formula, lamp model hr analytics, correlation vs causation hr, brsr core people metrics, picoc question example]
+draft: false
+---
+
+## Decide with four sources of evidence
+
+At the Tamil Nadu NBFC, the business head is working from one source of evidence: his own reading of the market. He may be right. But a 15% rise for 600 relationship managers is a large, permanent cost, and it deserves a better test than one person's conviction.
+
+Evidence-based practice means deciding with the best available evidence from several sources, each judged for how far it can be trusted. CIPD builds on the work of the Center for Evidence-Based Management (CEBMa), by Eric Barends, Denise Rousseau and Rob Briner, and names four sources.
+
+| Source | In the NBFC case | Typical weakness |
+| --- | --- | --- |
+| **Scientific research**: peer-reviewed studies, ideally systematic reviews | Research on why new hires leave in their first year | May come from a different context |
+| **Organisational data**: HRMS, payroll, exit and survey data | Exits by tenure, branch and manager | Messy; shows patterns more than causes |
+| **Practitioner expertise**: judgement from similar situations | Area managers' view of the rival's hiring | Bias and overconfidence |
+| **Stakeholders' values and concerns**: what the people affected care about | What relationship managers say about targets | Loud voices drown out quiet ones |
+
+No single source is enough. Data without judgement misreads context; judgement without data repeats old beliefs. CIPD works through six steps, and they loop: checking the result raises the next question.
+
+<Figure title="The six steps of evidence-based practice" caption="Start at Ask and follow the steps in order. The last step, Assess, feeds the next question, so the cycle repeats.">
+  <Cycle
+    center="An evidence-based decision"
+    items={[
+      { title: "Ask", note: "Turn the issue into an answerable question" },
+      { title: "Acquire", note: "Gather evidence from all four sources" },
+      { title: "Appraise", note: "Judge how trustworthy and relevant it is" },
+      { title: "Aggregate", note: "Weigh and combine what you found" },
+      { title: "Apply", note: "Use it in the decision" },
+      { title: "Assess", note: "Check the result, then ask again" }
+    ]}
+  />
+</Figure>
+
+At the Appraise step, weigh what you find. A systematic review usually counts for more than one study, and one well-designed study for more than a consultant's survey of its clients. But the best design depends on the question: for "why are people leaving?", good interviews may beat any number (Petticrew and Roberts, 2003). The business head's view is practitioner expertise: one input, not the answer.
+
+## Ask an answerable question, then design the study
+
+"Why is attrition up?" is a fair worry but a poor question. It doesn't say about whom, compared with what, or what result would count. CEBMa suggests a five-part check called PICOC.
+
+<Figure title="From a worry to an answerable question" caption="Compare each row: the answerable version names every part, which tells you what evidence to collect.">
+  <Compare
+    columns={["Vague question", "Answerable question (PICOC)"]}
+    rows={[
+      { label: "Population", values: ["Our people", "Relationship managers in 40 Tamil Nadu branches"] },
+      { label: "Intervention", values: ["Pay", "A 15% rise for all of them"] },
+      { label: "Comparison", values: ["Not stated", "A cheaper fix aimed at the main cause"] },
+      { label: "Outcome", values: ["Attrition, somehow", "Voluntary exits over the next two quarters"] },
+      { label: "Context", values: ["Not stated", "An NBFC facing a rival's hiring drive"] }
+    ]}
+    highlight={1}
+  />
+</Figure>
+
+Then choose the design that can answer it:
+
+- **Existing records** (HRMS, payroll, exits) are fast and cheap, and show patterns. On their own they rarely show causes.
+- **A survey** reaches many people. Use established scales where they exist, one idea per item and neutral wording. "My manager gives me clear targets and support" asks two things at once.
+- **Interviews and focus groups** explain why. Code the answers into themes (thematic analysis; Braun and Clarke, 2006) rather than quoting the most vivid one.
+- **A pilot with a comparison group** is the strongest practical test of cause: make the change in some branches, and compare them with similar branches that wait.
+
+Two checks catch most design mistakes. **Sampling:** in a large workforce, a random sample of about 400 gives a margin of error of roughly ±5 percentage points at 95% confidence. A sample of volunteers can be biased however large it is. **Ethics:** tell people what you collect and why, keep responses anonymous, report no group smaller than five, and keep data only as long as you need it.
+
+## Read the statistics an HR leader needs
+
+You rarely need to run the statistics yourself. You do need to read them well enough to spot a weak argument, including your own.
+
+### Mean, median and spread
+
+The mean adds everything up and divides; the median is the middle value. Pay is skewed by a few high earners, so the median describes the typical employee better. In a branch where nine relationship managers earn ₹3.5–4.5 lakh and the branch head earns ₹18 lakh, the mean is pulled up to about ₹5.4 lakh while the median stays at about ₹4 lakh. Look at the spread too: two teams with the same average engagement score can be very different places to work.
+
+### Correlation is a lead, not a verdict
+
+A correlation (r, from −1 to +1) shows how closely two things move together. Squared, it gives the share of variation explained, so r = 0.3 explains only 9%. A correlation can't tell you which way cause runs, or what else lies behind it. If branches with new managers lose more people, the managers may be the cause. Or new managers may have been sent to the hardest branches, a **confounder** that drives both.
+
+### Regression in one picture
+
+Regression estimates the effect of each factor while holding the others constant. Software finds the numbers; your job is to read them.
+
+<Figure title="Regression in one picture: what predicts pay?" caption="Read each b as the change in pay for one more unit of that factor, with the other factors held constant. Software estimates the b values from your data.">
+  <Formula
+    parts={[
+      { value: "Baseline", label: "pay with every factor at zero" },
+      { op: "+" },
+      { value: "b₁ × Years of experience", label: "₹ per extra year" },
+      { op: "+" },
+      { value: "b₂ × Woman (1 or 0)", label: "the adjusted gender gap" },
+      { op: "+" },
+      { value: "Error", label: "what the model can't explain" }
+    ]}
+    result={{ value: "Pay", label: "each person's actual pay" }}
+    example="Example: predicted pay = ₹3.2 lakh + ₹0.25 lakh × years − ₹0.3 lakh × woman. At equal experience, women are paid ₹30,000 less: the gap to explain."
+  />
+</Figure>
+
+This is how an adjusted pay gap is calculated. Watch what you control for: if promotions are biased, adding grade to the model hides the very bias you are looking for.
+
+### Significance, size and trust
+
+A p-value is the chance of seeing a difference at least this large if there were really none. Below 0.05 is the usual convention for "significant", but that says nothing about whether the difference matters. With thousands of records, tiny gaps become significant, so read the **effect size** as well. Jacob Cohen's rough rule calls a standardised difference (d) of 0.2 small, 0.5 medium and 0.8 large.
+
+Two more tests apply to any measure. **Reliability** is consistency: a stable team should get similar scores if it takes a survey twice. For a multi-item scale, a Cronbach's alpha of about 0.7 is the usual floor. **Validity** is accuracy: does the score measure what it claims to? An "engagement" score that mostly tracks liking for one's manager can be reliable without being valid.
+
+<Figure title="Four numbers worth remembering" caption="Rules of thumb for reading research and survey results; each one guards against a common misreading.">
+  <KeyNumbers
+    items={[
+      { value: "r = 0.3", label: "a correlation that explains only 9% of the variation" },
+      { value: "±5 points", label: "margin of error for a random sample of about 400" },
+      { value: "p < 0.05", label: "conventional significance, which says nothing about size" },
+      { value: "0.7", label: "the usual minimum Cronbach's alpha for a survey scale" }
+    ]}
+  />
+</Figure>
+
+## Measure the core HR metrics the same way every time
+
+Before any analysis, check the measure. Three teams quoting three attrition rates for one quarter are usually using three definitions. Write each definition down, including what counts and what doesn't, and keep it stable.
+
+<Figure title="Seven core HR metrics and their formulas" caption="One formula per metric, each with an Example from the NBFC. Agree your own version of every definition with finance, then use it every time.">
+  <Formula
+    parts={[{ value: "Leavers", label: "in the period" }, { op: "÷" }, { value: "Average headcount", label: "same period" }, { op: "×" }, { value: "100" }]}
+    result={{ value: "Turnover rate", label: "split voluntary and involuntary" }}
+    example="Example: 96 ÷ 600 × 100 = 16% turnover in six months, or 32% annualised"
+  />
+  <Formula
+    parts={[{ value: "Days lost to absence" }, { op: "÷" }, { value: "Available working days" }, { op: "×" }, { value: "100" }]}
+    result={{ value: "Absence rate" }}
+    example="Example: 1,440 ÷ 72,000 × 100 = an absence rate of 2%"
+  />
+  <Formula
+    parts={[{ value: "Date offer accepted" }, { op: "−" }, { value: "Date requisition approved" }]}
+    result={{ value: "Time to fill", label: "in days" }}
+    example="Example: 2 August − 18 June = 45 days to fill"
+  />
+  <Formula
+    parts={[{ value: "(External + internal hiring costs)", label: "agency fees, ads, recruiter time" }, { op: "÷" }, { value: "Hires", label: "same period" }]}
+    result={{ value: "Cost per hire" }}
+    example="Example: (₹38 lakh + ₹16 lakh) ÷ 120 hires = ₹45,000 per hire"
+  />
+  <Formula
+    parts={[{ value: "(Performance % + 12-month retention % + Manager satisfaction %)", label: "for one hiring cohort" }, { op: "÷" }, { value: "3" }]}
+    result={{ value: "Quality of hire", label: "one common composite" }}
+    example="Example: (70% + 60% + 80%) ÷ 3 = a quality-of-hire score of 70%"
+  />
+  <Formula
+    parts={[{ value: "Actual pay" }, { op: "÷" }, { value: "Midpoint of the pay range" }]}
+    result={{ value: "Compa-ratio", label: "1.00 = paid at the midpoint" }}
+    example="Example: ₹3.8 lakh ÷ ₹4.0 lakh = a compa-ratio of 0.95"
+  />
+  <Formula
+    parts={[{ value: "Revenue", label: "for the year" }, { op: "÷" }, { value: "Average full-time equivalents" }]}
+    result={{ value: "Revenue per employee" }}
+    example="Example: ₹420 crore ÷ 1,400 = ₹30 lakh per employee"
+  />
+</Figure>
+
+Three rules keep these honest:
+
+- Use the same base for every rate, usually average headcount for the period, and say when you have annualised a part-year rate.
+- Split turnover into voluntary and involuntary, and regretted and not regretted, because each has different causes.
+- Fix the start and end points of time to fill, list what goes into cost per hire, and agree the parts of quality of hire (it has no standard formula) before you report it.
+
+### When people metrics are audited: BRSR Core
+
+SEBI requires India's 1,000 largest listed companies by market value to publish a Business Responsibility and Sustainability Report (BRSR). A subset of it, BRSR Core, must be independently checked. Three of its nine attributes are about people:
+
+| BRSR Core attribute | People metrics (paraphrased) |
+| --- | --- |
+| Employee wellbeing and safety | Spending on employee and worker wellbeing as % of total revenue; lost-time injury frequency rate (LTIFR) per million person-hours; fatalities; permanent disabilities |
+| Gender diversity | Gross wages paid to women as % of total wages; POSH complaints: number, as % of women employees and workers, and number upheld |
+| Inclusive development | Wages paid to people employed in smaller towns as % of total wage cost |
+
+Checking was phased in from 2023–24 and reaches the top 1,000 listed companies in 2026–27. Since March 2025, companies may choose an independent assessment instead of assurance. Either way, these people metrics are now audit-grade data. They need written definitions, a named owner and an audit trail.
+
+## Make the numbers change a decision
+
+Most HR dashboards change nothing. John Boudreau and Peter Ramstad's **LAMP** model explains why: measurement improves decisions only when four parts work together.
+
+| Part | The question it answers | What failure looks like |
+| --- | --- | --- |
+| Logic | What is the causal story linking people to business results? | Measuring whatever is easy to count |
+| Analytics | Which methods give valid conclusions? | Reading cause into a correlation |
+| Measures | Are the data accurate, complete, timely and consistent? | Three attrition rates in one meeting |
+| Process | How do findings reach the people who decide, in time? | A good analysis nobody acts on |
+
+Process is where **data storytelling** comes in. Leaders remember a story, not a table: what is happening, what it costs, why, what to do, and how you'll know it worked. Lead with the decision you need, use one chart per point, and say plainly what the data can't tell you.
+
+<Worked title="Worked example: diagnosing the NBFC's attrition spike">
+
+All figures are an Example for the fictional NBFC. Follow the steps in order.
+
+**1. Ask.** Would a 15% rise for relationship managers cut voluntary exits over the next two quarters, compared with a cheaper fix aimed at the main cause?
+
+**2. Check the measure.** The HRMS shows 108 resignations in six months, an annualised 36% on an average headcount of 600. Checking them against payroll shows that 12 were transfers to the gold-loan business, coded as resignations. The true figure is 96, or 32% annualised: still high, but a smaller spike than it looked.
+
+**3. Slice the data.** Split the 96 exits by length of service, and by whether the branch got a new manager in the last six months. Rates are annualised by doubling the six-month figure.
+
+| Annualised attrition (Example) | 14 new-manager branches | 26 other branches |
+| --- | --- | --- |
+| Under 12 months' service | 80% (28 of 70) | 47% (26 of 110) |
+| 12 months or more | 20% (14 of 140) | 20% (28 of 280) |
+| All | 40% (42 of 210) | 28% (54 of 390) |
+
+Across all 40 branches, new joiners are leaving at 60% (54 of 180) and experienced relationship managers at 20% (42 of 420), below last year's 24%. The spike is among new joiners, and it is worst under new branch managers.
+
+**4. Test the pay story.** The median compa-ratio of leavers is 0.96; of stayers, 0.95. Pay position does not separate the two groups. Medians are used because a few senior relationship managers on high pay would distort the means.
+
+**5. Bring in the other three sources.** Sixty exit interviews, coded into themes, point to early target pressure with no ramp-up period (26), the manager (19) and better pay elsewhere (15). Pay is the easiest reason to give, so read that theme with care. Area managers confirm the rival is hiring, but mostly experienced staff. Research on newcomer adjustment links role clarity and feeling accepted in the first months to lower turnover (Bauer and colleagues, 2007).
+
+**6. Look for a confounder.** Five of the 14 new-manager branches are also new branches in tougher markets. But new-joiner exits run at about 75% a year in the nine established branches with new managers too, so the manager change still stands out. This is strong evidence, not proof.
+
+**The recommendation.** A 15% rise for all 600 would cost about ₹3.8 crore a year (600 × average CTC of ₹4.2 lakh × 15%) and targets a cause the data doesn't support. Instead, introduce a 90-day ramp-up with lower first-quarter targets, a buddy for every new joiner and coaching for the 14 new branch managers, at about ₹35 lakh. Run it in seven of those branches and use the other seven as the comparison group. Track new-joiner attrition every month for two quarters.
+
+</Worked>
+
+The same findings, told as a story the business head can act on in two minutes:
+
+<Figure title="The NBFC findings as a data story" caption="Read top to bottom: each step answers the question a leader asks next, ending with how success will be measured.">
+  <Steps
+    items={[
+      { title: "What is happening: new joiners are leaving", body: "New joiners leave at 60% a year, against 20% for experienced relationship managers." },
+      { title: "What it costs: 108 replacements a year", body: "About ₹49 lakh a year in hiring cost alone (108 × ₹45,000), before lost business." },
+      { title: "Why: early targets and new managers", body: "Exits are worst under new branch managers, and leavers' pay position matches stayers'." },
+      { title: "What to do: ramp-up, buddies, manager coaching", body: "About ₹35 lakh, piloted in seven branches, instead of a ₹3.8 crore pay rise." },
+      { title: "How we'll know: pilot against comparison", body: "Track new-joiner exits every month in the seven pilot and seven comparison branches." }
+    ]}
+  />
+</Figure>
+
+<Callout type="note" title="At strategic level (SHRM-SCP, CIPD Level 7)">
+Senior HR builds the system, not just the study: metric definitions agreed with finance, a named owner for each measure, and an analytics agenda tied to the three or four questions the leadership team cares about most. CIPD's Level 7 research project (7CO04) also expects you to justify your methods and state the limits of your evidence. A recommendation that hides its limitations misses an assessment criterion.
+</Callout>
+
+## Where experts disagree
+
+Expect these debates in a CIPD 5CO02 or 7CO04 assignment and in XLRI research-methods discussions.
+
+- **Is "evidence-based" neutral?** Critics argue that medicine-style hierarchies of evidence undervalue context and qualitative knowledge, and that "evidence-based" can become a slogan that hides whose interests are served (Learmonth and Harding, 2006; Morrell, 2008). The four-source model answers this partly by giving stakeholders' concerns a formal place.
+- **How much can HR analytics deliver?** Reviews find that most HR analytics is still reporting rather than analysis (Marler and Boudreau, 2017), and that HR often lacks the skills, data and theory to answer strategic questions (Angrave and colleagues, 2016). HR professionals' beliefs also often differ from research findings (Rynes, Colbert and Brown, 2002). Supporters reply that simple, well-framed diagnosis, like the worked example, already changes decisions.
+- **Metrics get gamed.** Goodhart's and Campbell's laws warn that once a measure becomes a target, it stops measuring well. Push time to fill down hard enough and quality of hire falls.
+- **Prediction and privacy.** Individual "flight-risk" scores built from email or badge data raise questions of consent, accuracy and fairness, and can damage trust even when they are lawful.
+
+A good answer weighs all four sources, names the limits of each, and says what further evidence would change the recommendation.
+
+## In India
+
+- **Audit-grade people data.** BRSR Core makes some people metrics independently checked data for large listed companies (see the table above), and their suppliers may be asked for the same.
+- **Data protection.** The Digital Personal Data Protection (DPDP) Act, 2023 and its 2025 Rules cover employee data, and the main duties for employers apply from May 2027. Say what you collect and why, use it only for that purpose, keep it secure and set retention periods. See [people analytics and data literacy](/handbooks/hr-professional/people-analytics-and-data-literacy/).
+- **Say who you counted.** Many workplaces mix permanent, fixed-term, contract and gig workers, often on different systems. State whether each metric includes contract and fixed-term workers; BRSR and the Labour Codes both separate employees from workers.
+- **Surveys need extra care.** Where people fear being identified, keep the anonymity promise. Offer surveys in the languages people work in, and back-translate items so that a tested scale stays valid.
+- **Benchmarks are context, not a diagnosis.** All-India salary and attrition surveys average across very different sectors. Compare with your own sector and role, and above all with your own trend.
+
+## Practise the situation
+
+<Scenario
+  title="The 15% pay-rise email"
+  start="open"
+  nodes={{
+    open: {
+      text: "You're the regional HR manager at the NBFC. The business head emails: “The rival is poaching our relationship managers. Process a 15% rise for all 600 from next month. I need board approval by Friday.” What do you do first?",
+      choices: [
+        { label: "Process it; he owns the P&L and the board meets on Friday", to: "payfast" },
+        { label: "Ask for one week to check the exit data and talk to relationship managers and area managers", to: "diagnose" },
+        { label: "Reply with industry benchmarks showing attrition is high across NBFCs", to: "benchmark" }
+      ]
+    },
+    payfast: {
+      text: "The rise goes through at about ₹3.8 crore a year. Two quarters later, new joiners are still leaving at the same rate. Experienced staff, who weren't leaving much, are happier. The CFO asks why the money didn't work.",
+      outcome: "poor",
+      debrief: "One source of evidence, a practitioner's view, sent a large and permanent cost at the wrong cause. A week spent checking the measure and slicing the data would have shown the spike was among new joiners."
+    },
+    benchmark: {
+      text: "He replies that benchmarks don't meet his targets. The rise goes ahead anyway, and HR is seen as defending the status quo rather than solving his problem.",
+      outcome: "mixed",
+      debrief: "External benchmarks are context, not a diagnosis of your own problem. Bring your organisation's data and the people affected into the conversation, and frame it around his goal."
+    },
+    diagnose: {
+      text: "Your week shows that 12 of the 108 “resignations” were transfers; new joiners leave at 60% a year (80% under new branch managers); experienced staff at 20%; and leavers' pay position matches stayers'. How do you present it?",
+      choices: [
+        { label: "Lead with the decision: a ₹35 lakh pilot in seven branches against seven comparison branches, instead of a ₹3.8 crore rise", to: "pilot" },
+        { label: "Send the full 40-slide analysis, with every cut of the data, and let him draw his own conclusions", to: "deck" },
+        { label: "Recommend the ramp-up programme for all 40 branches at once, since the evidence is clear", to: "rollout" }
+      ]
+    },
+    pilot: {
+      text: "He agrees to the pilot and holds back the rise. After two quarters, new-joiner attrition in the pilot branches has fallen from 80% to 50% a year, against 78% in the comparison branches. The programme is extended to every branch.",
+      outcome: "good",
+      debrief: "You drew on all four sources, checked the measure, separated the groups, tested the pay story with medians and designed a fair test. You also passed LAMP's process test by leading with the decision."
+    },
+    deck: {
+      text: "He skims the first slides, sees “attrition 32%” and asks for a summary that never arrives. The rise goes ahead at the next board meeting.",
+      outcome: "poor",
+      debrief: "Sound analysis without a story fails LAMP's process test. Lead with what is happening, what it costs, why, and the decision you need, then offer the detail."
+    },
+    rollout: {
+      text: "The programme launches in every branch. Attrition falls, but the rival also stops hiring. Nobody can say how much the programme did, and the next budget review questions it.",
+      outcome: "mixed",
+      debrief: "Your diagnosis was sound, but without a comparison group you can't show cause. A pilot against similar branches is the strongest practical test of an HR intervention."
+    }
+  }}
+/>
+
+<Callout type="tip" title="Try it at work (about 30 minutes)">
+Pick one metric your organisation reports, such as attrition. Write down its exact definition: who counts, which base, which period and what is left out. Recalculate last quarter's figure from the raw HRMS data and see whether you get the published number. Then turn one current people worry into a PICOC question, and list which of the four sources of evidence you already hold and which you would need. The [HR metrics calculator](/toolkit/hr-metrics-calculator/) and the [people analytics tool](/toolkit/people-analytics/) will help with the sums.
+</Callout>

@@ -1,0 +1,257 @@
+---
+/**
+ * "Where this sits": what XLRI, CIPD and SHRM teach on this topic, how each one assesses
+ * it, and what changes in India, drawn as a paper map folded into four panels.
+ * <SchoolMap schools={entry.data.schools} />
+ *
+ * Two by two on wide screens; on phones the map is unfolded into one column. A unit
+ * code at the start of a line (5CO01, 7HR03) is set apart, and a closing bracket
+ * ("(Term 1, core)") is shown quieter, so the course names scan easily.
+ */
+import Icon from "../ui/Icon.astro";
+import { SCHOOLS } from "../../data/learn";
+import type { IconName } from "../../lib/icons";
+interface Props {
+  schools: { xlri: string[]; cipd: string[]; shrm: string[]; india: string[]; note?: string };
+  id?: string;
+  title?: string;
+}
+const { schools, id = "where-this-sits", title = "Where this sits" } = Astro.props;
+const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+const panels: { key: string; name: string; long: string; how: string; icon: IconName; items: string[] }[] = [
+  { key: "xlri", name: SCHOOLS.xlri.name, long: SCHOOLS.xlri.long, how: SCHOOLS.xlri.tests, icon: "briefcase", items: schools.xlri },
+  { key: "cipd", name: SCHOOLS.cipd.name, long: SCHOOLS.cipd.long, how: SCHOOLS.cipd.tests, icon: "edit", items: schools.cipd },
+  { key: "shrm", name: SCHOOLS.shrm.name, long: SCHOOLS.shrm.long, how: SCHOOLS.shrm.tests, icon: "checklist", items: schools.shrm },
+  { key: "india", name: "In India", long: "Law and practice that change the picture", how: "", icon: "map-pin", items: schools.india }
+];
+/** "5CO01 Organisational performance (LO2: …)" -> code, main text, quiet bracket. */
+function split(line: string) {
+  const m = /^\s*(\d[A-Z]{2,3}\d{2,3})\s+(.*)$/.exec(line);
+  const code = m ? m[1] : "";
+  let rest = m ? m[2] : line.trim();
+  let tail = "";
+  const b = /\s(\([^()]*\))\s*$/.exec(rest);
+  if (b && b.index > 0) {
+    tail = b[1];
+    rest = rest.slice(0, b.index);
+  }
+  return { code, rest, tail };
+}
+---
+
+<section class="sm" id={id} aria-labelledby={`${id}-h`}>
+  <h2 class="sm-h" id={`${id}-h`}>{title}</h2>
+  <p class="sm-intro">What each school teaches on this topic and how it tests it, and what is different in India.</p>
+  <div class="sm-map">
+    {
+      panels.map((p) => (
+        <div class:list={["sm-panel", `sm-${p.key}`]}>
+          <h3 class="sm-name" id={`${id}-${p.key}`}>
+            <span class="sm-ic" aria-hidden="true">
+              <Icon name={p.icon} size={18} />
+            </span>
+            {p.name}
+          </h3>
+          <p class="sm-long">{p.long}</p>
+          {p.how && (
+            <p class="sm-how">
+              <span class="sm-how-k">Assessed by</span> {lowerFirst(p.how)}
+            </p>
+          )}
+          {p.items.length > 0 ? (
+            <ul class="sm-items" role="list">
+              {p.items.map((line) => {
+                const { code, rest, tail } = split(line);
+                return (
+                  <li>
+                    {code && <span class="sm-code">{code}</span>}
+                    {rest}
+                    {tail && <span class="sm-tail"> {tail}</span>}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p class="sm-none">Not a separate topic in this syllabus.</p>
+          )}
+        </div>
+      ))
+    }
+  </div>
+  {
+    schools.note && (
+      <p class="sm-note">
+        <strong>How they differ.</strong> {schools.note}
+      </p>
+    )
+  }
+</section>
+
+<style>
+  .sm {
+    container-type: inline-size;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .sm .sm-h {
+    margin: 0;
+    font-size: var(--fs-lg);
+  }
+  .sm-intro {
+    margin-top: 0.3rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  /* A sheet folded in four: creases catch the light from the top left. */
+  .sm-map {
+    margin-top: 0.9rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.09),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.07),
+      5px 14px 26px -16px rgb(17 20 58 / 0.35);
+    overflow: hidden;
+  }
+  .sm-panel {
+    position: relative;
+    padding: 1rem 1.15rem 1.15rem;
+    min-width: 0;
+  }
+  .sm-panel + .sm-panel {
+    background-image: linear-gradient(180deg, rgb(17 20 58 / 0.07), rgb(17 20 58 / 0) 0.55rem);
+    box-shadow: inset 0 1px 0 rgb(17 20 58 / 0.1);
+  }
+  .sm .sm-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: var(--fs-md);
+    font-weight: 720;
+  }
+  .sm-ic {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: var(--neel-50);
+    color: var(--neel-700);
+    flex-shrink: 0;
+  }
+  .sm-india .sm-ic {
+    background: var(--haldi-50);
+    color: var(--accent-ink);
+  }
+  .sm-long {
+    margin-top: 0.3rem;
+    font-size: var(--fs-xs);
+    line-height: 1.4;
+    color: var(--ink-3);
+  }
+  .sm-how {
+    display: inline-block;
+    margin-top: 0.45rem;
+    padding: 0.1rem 0.5rem 0.15rem;
+    border: 1.5px dashed var(--neel-300);
+    border-radius: 6px;
+    font-size: var(--fs-xs);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .sm-how-k {
+    font-weight: 700;
+    color: var(--neel-800);
+  }
+  .sm-items {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+  }
+  .sm-items li {
+    position: relative;
+    padding-left: 0.95rem;
+  }
+  .sm-items li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--neel-400);
+  }
+  .sm-india .sm-items li::before {
+    background: var(--haldi-500);
+  }
+  .sm-code {
+    display: inline-block;
+    margin-right: 0.35rem;
+    padding: 0 0.3rem;
+    border-radius: 4px;
+    background: var(--sunken);
+    font-weight: 700;
+    font-size: 0.85em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .sm-tail {
+    color: var(--ink-3);
+  }
+  .sm-none {
+    margin-top: 0.75rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-3);
+  }
+  @container (min-width: 36rem) {
+    .sm-map {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    /* Vertical fold between the columns, horizontal fold between the rows. */
+    .sm-panel + .sm-panel {
+      background-image: none;
+      box-shadow: none;
+    }
+    .sm-panel:nth-child(2n) {
+      background-image: linear-gradient(90deg, rgb(17 20 58 / 0.07), rgb(17 20 58 / 0) 0.6rem);
+      box-shadow: inset 1px 0 0 rgb(17 20 58 / 0.1);
+    }
+    .sm-panel:nth-child(n + 3) {
+      border-top: 1px solid rgb(17 20 58 / 0.1);
+    }
+    .sm-panel:nth-child(n + 3)::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 0.55rem;
+      background: linear-gradient(180deg, rgb(17 20 58 / 0.06), rgb(17 20 58 / 0));
+      pointer-events: none;
+    }
+  }
+  .sm-note {
+    margin-top: 0.9rem;
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 65ch;
+  }
+  .sm-note strong {
+    color: var(--ink);
+  }
+  @media print {
+    .sm-map {
+      box-shadow: none;
+      border: 1px solid #999;
+    }
+    .sm-panel {
+      break-inside: avoid;
+    }
+  }
+</style>

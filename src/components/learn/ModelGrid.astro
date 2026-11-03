@@ -1,0 +1,52 @@
+---
+/**
+ * The "Key models" recap: every model card for a module, in a grid of index cards.
+ * <ModelGrid models={entry.data.models} />            ids become "model-<id>"
+ * <ModelGrid models={…} idPrefix="m02-" />             when two grids share a page
+ * Also used by the course-wide models library (/learn/models/).
+ */
+import ModelCard from "./ModelCard.astro";
+type Model = { id?: string; name: string; by: string; year: string; idea: string; use: string; watch?: string; cite?: string };
+interface Props {
+  models: Model[];
+  idPrefix?: string;
+  /** Heading element for each card's name. */
+  as?: "h2" | "h3" | "h4";
+}
+const { models, idPrefix = "model-", as = "h3" } = Astro.props;
+---
+
+{
+  models.length > 0 && (
+    <ul class="mg" role="list">
+      {models.map((m) => (
+        <li>
+          <ModelCard {...m} idPrefix={idPrefix} as={as} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .mg {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr));
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+  .mg > li {
+    min-width: 0;
+  }
+  @media print {
+    .mg {
+      display: block;
+    }
+    .mg > li + li {
+      margin-top: 0.75rem;
+    }
+  }
+</style>

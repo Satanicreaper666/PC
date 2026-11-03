@@ -22,7 +22,7 @@ const pinks = marked.filter((m) => m.pink).length;
 ---
 
 <div class="kn-wrap">
-  <dl class="kn" data-reveal-group>
+  <dl class:list={["kn", { four: marked.length === 4 }]} data-reveal-group>
     {
       marked.map((it, i) => (
         <div class="item" data-reveal>
@@ -102,6 +102,35 @@ const pinks = marked.filter((m) => m.pink).length;
   }
   @media (max-width: 560px) {
     .item + .item {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+  /* Four numbers sit two by two, or four across when there is room; never three and one. */
+  .kn-wrap {
+    container-type: inline-size;
+  }
+  .kn.four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kn.four .item:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  @container (min-width: 44rem) {
+    .kn.four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .kn.four .item:nth-child(3) {
+      padding-left: 1.1rem;
+      border-left: 1px solid var(--line);
+    }
+  }
+  @container (max-width: 22rem) {
+    .kn.four {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .kn.four .item {
       padding-left: 0;
       border-left: 0;
     }

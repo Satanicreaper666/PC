@@ -60,7 +60,7 @@ const toolsOf = (kind: string): ToolMeta[] => tools.filter((t) => t.data.kind ==
 const catalog = JSON.stringify({ drafts, checklists: toolsOf("checklist"), surveys: toolsOf("survey") }).replace(/</g, "\\u003c");
 
 /* Card templates for pinned items: one per kind of paper. */
-const cardArts = [...BOOK_IDS, "letter", "form", "policy", "calculator", "app", "checklist", "survey", "plan", "jd", "glossary"];
+const cardArts = [...BOOK_IDS, "letter", "form", "policy", "calculator", "app", "checklist", "survey", "plan", "jd", "glossary", "learn"];
 /* Icons for recently viewed pages that have no card: start pages, and anything else. */
 const extraIcons = [...AUDIENCES, "page"];
 

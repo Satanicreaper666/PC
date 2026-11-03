@@ -1,0 +1,158 @@
+---
+/**
+ * A theory or model at a glance, on a ruled index card: the name and who proposed it
+ * above the red rule, then the idea, when to use it and what to watch out for on the
+ * blue lines, and the citation along the foot.
+ * <ModelCard name="Expectancy theory" by="Victor Vroom" year="1964" idea="…" use="…" watch="…" cite="…" />
+ *
+ * The highlighters keep their one meaning each (docs/ART-DIRECTION.md): green for "use it
+ * when" (what to do), pink for "watch out" (a risk). An optional slot takes a small picture.
+ * Pass the model's `id` and the card gets the DOM id "model-<id>" (or `idPrefix` + id), so
+ * /learn/<module>/#model-<id> opens on it; the card shows a turmeric edge when targeted.
+ */
+interface Props {
+  name: string;
+  by: string;
+  year: string;
+  idea: string;
+  use: string;
+  watch?: string;
+  cite?: string;
+  /** The model's id from frontmatter; becomes the card's DOM id with `idPrefix`. */
+  id?: string;
+  idPrefix?: string;
+  /** Heading element for the name. */
+  as?: "h2" | "h3" | "h4";
+  class?: string;
+}
+const { name, by, year, idea, use, watch, cite, id, idPrefix = "model-", as: Tag = "h3", class: cls } = Astro.props;
+const domId = id ? `${idPrefix}${id}` : undefined;
+const hasPic = Astro.slots.has("default");
+---
+
+<article class:list={["mc", cls]} id={domId} data-learn="model">
+  <header class="mc-head">
+    <Tag class="mc-name">{name}</Tag>
+    <p class="mc-by">{by}{year && <>, <span class="mc-year">{year}</span></>}</p>
+  </header>
+  <dl class="mc-body">
+    <div class="mc-row">
+      <dt>The idea</dt>
+      <dd>{idea}</dd>
+    </div>
+    <div class="mc-row">
+      <dt><span class="hl hl-green hl-full">Use it when</span></dt>
+      <dd>{use}</dd>
+    </div>
+    {
+      watch && (
+        <div class="mc-row">
+          <dt><span class="hl hl-pink hl-full">Watch out</span></dt>
+          <dd>{watch}</dd>
+        </div>
+      )
+    }
+  </dl>
+  {
+    hasPic && (
+      <div class="mc-pic">
+        <slot />
+      </div>
+    )
+  }
+  {cite && <p class="mc-cite">{cite}</p>}
+</article>
+
+<style>
+  .mc {
+    --rule: 1.65rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.09),
+      1.5px 2px 0 rgb(17 20 58 / 0.07),
+      4px 12px 22px -14px rgb(17 20 58 / 0.3);
+    scroll-margin-top: calc(var(--header-h) + 1.5rem);
+    transition: box-shadow 200ms var(--ease);
+  }
+  /* Opened from a deep link: a turmeric edge, the way you'd pull a card half out of the box. */
+  .mc:target {
+    box-shadow:
+      0 0 0 2px var(--haldi-500),
+      2px 3px 0 rgb(17 20 58 / 0.1),
+      6px 16px 28px -12px rgb(17 20 58 / 0.35);
+  }
+  .mc-head {
+    padding: 0.85rem 1.1rem 0.6rem;
+    /* The red rule printed across an index card. */
+    border-bottom: 1.5px solid rgb(214 69 80 / 0.55);
+  }
+  .mc .mc-name {
+    margin: 0;
+    font-size: var(--fs-md);
+    font-weight: 680;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .mc-by {
+    margin-top: 0.15rem;
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    color: var(--ink-3);
+  }
+  .mc-year {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Blue ruled lines; every line of text sits on one. */
+  .mc-body {
+    flex: 1;
+    margin: 0;
+    padding: calc(var(--rule) * 0.35) 1.1rem calc(var(--rule) * 0.5);
+    font-size: var(--fs-sm);
+    line-height: var(--rule);
+    background-image: repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), rgb(76 86 190 / 0.16) calc(var(--rule) - 1px) var(--rule));
+    background-position: 0 calc(var(--rule) * 0.35 + 0.18rem);
+  }
+  .mc-row {
+    margin: 0;
+  }
+  .mc-row + .mc-row {
+    margin-top: calc(var(--rule) * 0.5);
+  }
+  .mc-row dt {
+    display: inline;
+    font-weight: 680;
+    color: var(--ink);
+    margin-right: 0.35rem;
+  }
+  .mc-row dd {
+    display: inline;
+    margin: 0;
+    color: var(--ink-2);
+  }
+  .mc-pic {
+    padding: 0 1.1rem 0.75rem;
+  }
+  .mc-cite {
+    padding: 0.55rem 1.1rem 0.75rem;
+    border-top: 1px dashed var(--line-strong);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--ink-3);
+    overflow-wrap: anywhere;
+  }
+  @media print {
+    .mc {
+      box-shadow: none;
+      border: 1px solid #999;
+      break-inside: avoid;
+    }
+    .mc-body {
+      background-image: none;
+    }
+  }
+</style>

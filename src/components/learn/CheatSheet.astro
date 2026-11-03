@@ -1,0 +1,254 @@
+---
+/**
+ * "Cheat sheet": the whole module on one sheet of ruled notepaper (notes and summaries,
+ * docs/ART-DIRECTION.md): the big idea, the summary lines, and the models to name.
+ * <CheatSheet title={d.title} label="Module 2" bigIdea={d.bigIdea} summary={d.summary} models={d.models} />
+ *
+ * "Print cheat sheet" prints this sheet alone, sized for one A4 page: the button puts
+ * .print-cheatsheet on <html> for as long as the print dialog is open, and the print
+ * rules below hide everything that doesn't contain the sheet.
+ */
+import Icon from "../ui/Icon.astro";
+interface Props {
+  title: string;
+  bigIdea: string;
+  summary: string[];
+  models?: { name: string; by: string; year: string }[];
+  /** "Module 2", printed above the title. */
+  label?: string;
+  /** The page address, printed at the foot of the sheet. */
+  url?: string;
+}
+const { title, bigIdea, summary, models = [], label, url } = Astro.props;
+---
+
+<div class="cs" data-cheatsheet>
+  <div class="cs-tools" data-print="hide">
+    <button type="button" class="btn btn-secondary btn-sm" data-print-cheatsheet>
+      <Icon name="printer" size={16} /> Print cheat sheet
+    </button>
+    <span class="cs-tools-note">One A4 page, this sheet only.</span>
+  </div>
+  <div class="cs-sheet notepaper">
+    <p class="cs-head">
+      PeopleCraft Learn{label && <>, {label}</>}
+    </p>
+    <p class="cs-title">{title}</p>
+    <div class="cs-sec">
+      <p class="cs-k hand">The big idea</p>
+      <p class="cs-big"><span class="hl">{bigIdea}</span></p>
+    </div>
+    <div class="cs-sec">
+      <p class="cs-k hand">In a minute</p>
+      <ol class="cs-lines" role="list">
+        {summary.map((s) => <li>{s}</li>)}
+      </ol>
+    </div>
+    {
+      models.length > 0 && (
+        <div class="cs-sec">
+          <p class="cs-k hand">Models to name</p>
+          <ul class="cs-models" role="list">
+            {models.map((m) => (
+              <li>
+                <span class="cs-mn">{m.name}</span>
+                <span class="cs-mb">
+                  {m.by}, {m.year}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+    {url && <p class="cs-url">{url}</p>}
+  </div>
+</div>
+
+<script>
+  // Print this sheet alone: a class on <html> while the print dialog is open.
+  const root = document.documentElement;
+  const clear = () => root.classList.remove("print-cheatsheet");
+  document.querySelectorAll<HTMLButtonElement>("[data-print-cheatsheet]").forEach((b) =>
+    b.addEventListener("click", () => {
+      root.classList.add("print-cheatsheet");
+      window.addEventListener("afterprint", clear, { once: true });
+      window.print();
+      // Some browsers return from print() before afterprint; never leave the class behind.
+      window.setTimeout(clear, 1000);
+    })
+  );
+</script>
+
+<style>
+  .cs-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .cs-tools-note {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .cs-sheet {
+    --rule: 1.85rem;
+    --margin-x: 2.6rem;
+    --rule-start: 0.55rem;
+    position: relative;
+    padding: 0.5rem clamp(1rem, 0.5rem + 2vw, 1.75rem) var(--rule) 3.4rem;
+    border-radius: 3px;
+    line-height: var(--rule);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07),
+      4px 12px 24px -14px rgb(17 20 58 / 0.25);
+  }
+  /* Punched holes, like a page from a ring binder. */
+  .cs-sheet::before,
+  .cs-sheet::after {
+    content: "";
+    position: absolute;
+    left: 0.95rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--canvas);
+    box-shadow: inset 1px 1.5px 2px rgb(17 20 58 / 0.22);
+  }
+  .cs-sheet::before {
+    top: calc(var(--rule) * 2);
+  }
+  .cs-sheet::after {
+    bottom: calc(var(--rule) * 2);
+  }
+  .cs-head {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .cs-title {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    line-height: var(--rule);
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .cs-sec {
+    margin-top: calc(var(--rule) * 0.5);
+  }
+  .cs-k {
+    font-size: 1.5rem;
+    line-height: var(--rule);
+  }
+  .cs-big {
+    font-size: var(--fs-md);
+    font-weight: 600;
+    line-height: var(--rule);
+  }
+  .cs-lines {
+    margin: 0;
+    padding-left: 1.3rem;
+    list-style: decimal;
+  }
+  .cs-lines li::marker {
+    color: var(--pen-ink);
+    font-weight: 700;
+  }
+  /* Like an index: the model on the left, who and when on the right. */
+  .cs-models {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .cs-models li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 1.25rem;
+    align-items: baseline;
+  }
+  .cs-mn {
+    font-weight: 650;
+  }
+  .cs-mb {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  @media (max-width: 34rem) {
+    .cs-sheet {
+      --margin-x: 1.9rem;
+      padding-left: 2.6rem;
+    }
+    .cs-sheet::before,
+    .cs-sheet::after {
+      left: 0.6rem;
+    }
+    .cs-models li {
+      grid-template-columns: 1fr;
+    }
+    .cs-models li + li {
+      margin-top: calc(var(--rule) * 0.5);
+    }
+    .cs-mb {
+      line-height: 1.3;
+      padding-bottom: calc(var(--rule) - 1.3em);
+      display: block;
+    }
+  }
+  .cs-url {
+    display: none;
+  }
+
+  /* ---------- Print this sheet alone, on one A4 page ---------- */
+  @media print {
+    :global(html.print-cheatsheet body *:not(:has([data-cheatsheet])):not([data-cheatsheet]):not([data-cheatsheet] *)) {
+      display: none !important;
+    }
+    :global(html.print-cheatsheet body),
+    :global(html.print-cheatsheet main),
+    :global(html.print-cheatsheet :has(> [data-cheatsheet])) {
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      background: none !important;
+      box-shadow: none !important;
+    }
+    :global(html.print-cheatsheet :has([data-cheatsheet])) {
+      display: block !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: none !important;
+      width: auto !important;
+      position: static !important;
+    }
+    .cs-sheet {
+      --rule: 1.55em;
+      font-size: 12pt;
+      padding: 0 0 0 0;
+      box-shadow: none;
+      background: none;
+      break-inside: avoid;
+    }
+    .cs-sheet::before,
+    .cs-sheet::after {
+      display: none;
+    }
+    .cs-title {
+      font-size: 19pt;
+    }
+    .cs-k {
+      font-size: 17pt;
+      color: #1f2b8f;
+    }
+    .cs-big {
+      font-size: 13.5pt;
+    }
+    .cs-url {
+      display: block;
+      margin-top: 1rem;
+      font-size: 8.5pt;
+      color: #555;
+    }
+  }
+</style>

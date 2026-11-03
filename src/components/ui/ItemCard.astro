@@ -36,7 +36,8 @@ const SHAPE: Record<string, string> = {
   survey: "pad",
   plan: "pad",
   jd: "badge",
-  glossary: "catalogue"
+  glossary: "catalogue",
+  learn: "pad"
 };
 const book = art in BOOKS ? (art as BookId) : undefined;
 const shape = book ? "book" : (SHAPE[art] ?? "sheet");

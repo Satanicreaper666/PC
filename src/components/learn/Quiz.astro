@@ -1,0 +1,661 @@
+---
+/**
+ * "Check yourself": questions that teach, marked the way a tutor marks a script.
+ * <Quiz items={entry.data.quiz} />                 the module's quiz, after the body
+ * <Quiz items={[…]} title="Quick check" />          a one- or two-question check in the body
+ * Item shape: docs/LEARN-GUIDE.md section 7 (knowledge | judgement | written).
+ *
+ * Knowledge and judgement items are radio groups. Choosing an answer marks it at once:
+ * a blue pen tick on the right (or best) option, a red pen cross on a wrong pick, the
+ * feedback for every option, and a verdict read out by screen readers. Arrow keys only
+ * move between options; Space or Enter (or a tap or click) checks one, so moving through
+ * the list never counts as answering. Judgement items say "Best response" and "Weaker
+ * response", never just colour. Written items get a drafting box (kept in this tab only)
+ * and a model answer. The running score counts answers right first time.
+ *
+ * Without JavaScript every question shows its options and a "Show the answer" fold
+ * with the answer and the feedback for every option. src/scripts/learn-quiz.ts does the rest.
+ */
+import PenTick from "../marks/PenTick.astro";
+import PenCross from "../marks/PenCross.astro";
+import { uid } from "./uid";
+
+type Item = {
+  id: string;
+  type: "knowledge" | "judgement" | "written";
+  level?: "core" | "advanced";
+  q: string;
+  options?: string[];
+  answer?: number;
+  feedback?: string[];
+  why: string;
+};
+interface Props {
+  items: Item[];
+  title?: string;
+}
+const { items, title } = Astro.props;
+const qid = uid("qz-");
+const LEVEL = { core: "Core (SHRM-CP, CIPD L5)", advanced: "Advanced (SHRM-SCP, CIPD L7)" } as const;
+const TYPE = { knowledge: "Knowledge", judgement: "Judgement", written: "Written" } as const;
+const letter = (i: number) => String.fromCharCode(65 + i);
+const isChoice = (it: Item) => it.type !== "written" && Array.isArray(it.options) && typeof it.answer === "number";
+const choiceCount = items.filter(isChoice).length;
+const counts = (["knowledge", "judgement", "written"] as const)
+  .map((t) => ({ t, n: items.filter((i) => i.type === t).length }))
+  .filter((c) => c.n > 0);
+const countLine = `${items.length} ${items.length === 1 ? "question" : "questions"}${
+  counts.length > 1 ? `: ${counts.map((c) => `${c.n} ${TYPE[c.t].toLowerCase()}`).join(", ")}` : ""
+}`;
+const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
+const modelText = (s: string) => s.replace(/^\s*model answer\s*[:.–—-]\s*/i, "");
+// What a tag on each option says once the question is answered.
+const optionTag = (it: Item, i: number) =>
+  it.type === "judgement" ? (i === it.answer ? "Best response" : "Weaker response") : i === it.answer ? "Correct answer" : "Incorrect";
+---
+
+<div class="quiz" id={qid} data-quiz data-total={choiceCount} data-no-terms>
+  {title && <h3 class="qz-title">{title}</h3>}
+  <div class="qz-bar">
+    <p class="qz-count">{countLine}</p>
+    <p class="qz-score" data-quiz-score hidden></p>
+  </div>
+
+  <ol class="qz-list" role="list">
+    {
+      items.map((it, qi) => {
+        const base = `${qid}-${it.id}`;
+        const level = LEVEL[it.level ?? "core"];
+        return (
+          <li class:list={["qz-item", `qz-${it.type}`, { "qz-adv": it.level === "advanced" }]} id={base} data-q={it.type} data-answer={isChoice(it) ? it.answer : undefined}>
+            <p class="qz-meta">
+              <span class="qz-num hand" aria-hidden="true">
+                {qi + 1}
+              </span>
+              <span class="qz-tags">
+                <span class="qz-type">{TYPE[it.type]}</span>
+                <span class="qz-level">{level}</span>
+              </span>
+            </p>
+
+            {isChoice(it) ? (
+              <fieldset class="qz-fs" aria-describedby={`${base}-hint`}>
+                <legend class="qz-q">
+                  <span class="visually-hidden">Question {qi + 1}. </span>
+                  {it.q}
+                </legend>
+                <p class="qz-hint" id={`${base}-hint`}>
+                  {it.type === "judgement" ? "Choose the response you would give." : "Choose one answer."}
+                  <span class="qz-keys"> Arrow keys move; Space or Enter checks.</span>
+                </p>
+                <ol class="qz-opts" role="list">
+                  {it.options!.map((o, oi) => (
+                    <li class:list={["qz-opt", { "is-key": oi === it.answer }]} data-i={oi}>
+                      <input class="qz-radio" type="radio" name={base} id={`${base}-${oi}`} value={oi} />
+                      <label class="qz-label" for={`${base}-${oi}`}>
+                        <span class="qz-bub" aria-hidden="true">
+                          <span class="qz-letter">{letter(oi)}</span>
+                          <PenTick class="qz-tick" />
+                          <PenCross class="qz-cross" />
+                        </span>
+                        <span class="qz-otext">
+                          <span class="visually-hidden">{letter(oi)}. </span>
+                          {o}
+                        </span>
+                      </label>
+                      <p class="qz-fb" hidden data-pagefind-ignore>
+                        <span class="qz-fbtag">{optionTag(it, oi)}</span>
+                        <span class="qz-mine" hidden>
+                          {it.type === "judgement" ? "Your choice" : "Your answer"}
+                        </span>
+                        {it.feedback?.[oi] && <span class="qz-fbtext">{it.feedback[oi]}</span>}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+                <div class="qz-verdict" data-verdict aria-live="polite" aria-atomic="true" data-pagefind-ignore />
+                <p class="qz-why" data-why hidden data-pagefind-ignore>
+                  <span class="qz-why-k">The principle</span> {it.why}
+                </p>
+                <details class="qz-key" data-key>
+                  <summary>{it.type === "judgement" ? "Show the best response" : "Show the answer"}</summary>
+                  <div class="qz-key-body">
+                    <p class="qz-key-ans">
+                      <strong>
+                        {it.type === "judgement" ? "Best response" : "Answer"}: {letter(it.answer!)}.
+                      </strong>{" "}
+                      {it.options![it.answer!]}
+                    </p>
+                    {it.feedback && (
+                      <ul class="qz-key-fb" role="list">
+                        {it.options!.map((_, oi) => (
+                          <li>
+                            <strong>
+                              {letter(oi)}. {optionTag(it, oi)}.
+                            </strong>{" "}
+                            {it.feedback![oi]}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <p class="qz-key-why">
+                      <strong>The principle.</strong> {it.why}
+                    </p>
+                  </div>
+                </details>
+              </fieldset>
+            ) : (
+              <div class="qz-written">
+                <p class="qz-q" id={`${base}-q`}>
+                  <span class="visually-hidden">Question {qi + 1}. </span>
+                  {it.q}
+                </p>
+                <label class="qz-wlabel" for={`${base}-draft`}>
+                  Draft your answer
+                </label>
+                <p class="qz-whint" id={`${base}-whint`}>
+                  Only for thinking it through: nothing you type is saved or sent anywhere.
+                </p>
+                <textarea class="qz-ta" id={`${base}-draft`} rows="7" spellcheck="true" aria-describedby={`${base}-q ${base}-whint`} data-draft />
+                <p class="qz-wc" data-wc>
+                  0 words
+                </p>
+                <details class="qz-model">
+                  <summary>Show model answer</summary>
+                  <div class="qz-model-body">
+                    <p class="qz-shape">
+                      A strong answer moves from a clear point, to theory or evidence, to how it applies here, to its limits, and ends with a
+                      conclusion.
+                    </p>
+                    <p class="qz-model-k">Model answer, {words(modelText(it.why))} words</p>
+                    <p class="qz-model-text">{modelText(it.why)}</p>
+                  </div>
+                </details>
+              </div>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+
+  {
+    choiceCount > 0 && (
+      <div class="qz-end" data-quiz-end>
+        <p class="qz-end-text" data-quiz-end-text aria-live="polite" />
+        <button type="button" class="btn btn-secondary btn-sm" data-quiz-reset hidden>
+          Try the questions again
+        </button>
+      </div>
+    )
+  }
+</div>
+
+<script>
+  import "../../scripts/learn-quiz";
+</script>
+
+<style>
+  .quiz {
+    --bub: 2rem;
+    display: grid;
+    gap: 0.25rem;
+  }
+  .quiz .qz-title {
+    margin: 0 0 0.25rem;
+    font-size: var(--fs-lg);
+  }
+  .qz-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-sm);
+  }
+  .qz-count {
+    color: var(--ink-2);
+  }
+  .qz-score {
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .qz-score :global(.qz-score-n) {
+    font-variant-numeric: tabular-nums;
+  }
+  .qz-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .qz-item {
+    position: relative;
+    padding: 1.4rem 0 1.5rem 2.6rem;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .qz-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  /* The question number, written in the margin in pen. */
+  .qz-num {
+    position: absolute;
+    left: 0;
+    top: 1.05rem;
+    width: 2rem;
+    font-size: 1.85rem;
+    line-height: 1;
+    text-align: center;
+    color: var(--pen-ink);
+    transform: rotate(-4deg);
+  }
+  .qz-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 620;
+    line-height: 1.4;
+  }
+  .qz-type,
+  .qz-level {
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    background: var(--sunken);
+    color: var(--ink-2);
+  }
+  .qz-adv .qz-level {
+    background: var(--neel-700);
+    color: #fff;
+  }
+  .qz-fs {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .qz-q {
+    padding: 0;
+    font-size: var(--fs-md);
+    font-weight: 620;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .qz-hint {
+    margin-top: 0.3rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  /* The keyboard hint shows once someone is moving through the options with keys. */
+  .qz-keys {
+    display: none;
+  }
+  .qz-fs:has(.qz-radio:focus-visible) .qz-keys {
+    display: inline;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .qz-opts {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .qz-opt {
+    position: relative;
+  }
+  .qz-radio {
+    position: absolute;
+    left: 0.85rem;
+    top: 0.95rem;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+  }
+  .qz-label {
+    display: grid;
+    grid-template-columns: var(--bub) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    min-height: 2.9rem;
+    padding: 0.45rem 0.75rem 0.45rem 0.45rem;
+    border: 1.5px solid var(--line);
+    border-radius: var(--r);
+    background: var(--paper);
+    cursor: pointer;
+    transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
+  }
+  .qz-label:hover {
+    border-color: var(--neel-400);
+    background: var(--neel-50);
+  }
+  .qz-radio:focus-visible + .qz-label {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .qz-otext {
+    padding-top: 0.2rem;
+    line-height: 1.45;
+  }
+  /* The answer bubble, with its letter. */
+  .qz-bub {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--bub);
+    height: var(--bub);
+    border-radius: 50%;
+    border: 2px solid var(--neel-400);
+    color: var(--neel-800);
+    font-size: var(--fs-xs);
+    font-weight: 750;
+    background: var(--paper);
+  }
+  .qz-radio:checked + .qz-label .qz-bub {
+    background: var(--neel-600);
+    border-color: var(--neel-600);
+    color: #fff;
+  }
+  .qz-radio:checked + .qz-label {
+    border-color: var(--neel-500);
+  }
+  .qz-bub :global(.pen) {
+    position: absolute;
+    display: none;
+    width: 2.1rem;
+    height: 2.1rem;
+    stroke-width: 2.8;
+  }
+
+  /* ---------- Marked (learn-quiz.ts adds .is-answered, .is-wrong and unhides the feedback) ---------- */
+  .qz-fb {
+    margin: 0.35rem 0 0.25rem calc(var(--bub) + 1.2rem);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .qz-fbtag {
+    margin-right: 0.4rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .qz-mine {
+    margin-right: 0.4rem;
+    padding: 0 0.4rem;
+    border-radius: 4px;
+    border: 1px solid currentColor;
+    font-size: 0.75rem;
+    font-weight: 650;
+    color: var(--ink-2);
+  }
+  .is-answered .qz-opt.is-key .qz-label {
+    border-color: var(--pen-ink);
+    background: var(--paper);
+  }
+  .is-answered .qz-opt.is-key .qz-bub {
+    background: var(--paper);
+    border-color: var(--pen-ink);
+    color: transparent;
+  }
+  .is-answered .qz-opt.is-key .qz-bub :global(.qz-tick) {
+    display: block;
+  }
+  /* Green highlighter on the best response: "what to do". */
+  .qz-judgement.is-answered .qz-opt.is-key .qz-fbtag {
+    padding: 0 0.25rem;
+    border-radius: 3px;
+    background: var(--hl-green);
+  }
+  .is-answered .qz-opt.is-wrong .qz-label {
+    border-color: var(--pen-red);
+    background: var(--bad-soft);
+  }
+  .is-answered .qz-opt.is-wrong .qz-bub {
+    background: var(--paper);
+    border-color: var(--pen-red);
+    color: transparent;
+  }
+  .is-answered .qz-opt.is-wrong .qz-bub :global(.qz-cross) {
+    display: block;
+  }
+  .is-answered .qz-opt.is-wrong .qz-fbtag {
+    color: var(--bad);
+  }
+  .is-answered .qz-opt:not(.is-key):not(.is-wrong) .qz-label {
+    border-style: dashed;
+  }
+  .is-answered .qz-opt:not(.is-key):not(.is-wrong) .qz-otext {
+    color: var(--ink-2);
+  }
+
+  /* The verdict, like a tutor's comment at the foot of the answer. It stays in the page while
+     empty, so screen readers already know the live region when the verdict is written in. */
+  .qz-verdict:empty {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .qz-verdict {
+    margin-top: 0.9rem;
+    padding: 0.7rem 0.9rem 0.75rem;
+    border-left: 3px solid var(--pen-ink);
+    background: var(--neel-50);
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+  }
+  .qz-verdict.is-wrong {
+    border-left-color: var(--pen-red);
+    background: var(--bad-soft);
+  }
+  .qz-verdict :global(.qz-v) {
+    font-weight: 750;
+    margin-right: 0.3rem;
+  }
+  .qz-why {
+    margin-top: 0.6rem;
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .qz-why-k {
+    font-weight: 700;
+    color: var(--ink);
+    margin-right: 0.3rem;
+  }
+
+  /* ---------- Without JavaScript: the answer behind a fold ---------- */
+  .qz-key {
+    margin-top: 0.75rem;
+    font-size: var(--fs-sm);
+  }
+  .qz-key summary,
+  .qz-model summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.2rem 0.75rem;
+    border: 1.5px solid var(--neel-400);
+    border-radius: var(--r);
+    font-weight: 620;
+    color: var(--neel-700);
+    cursor: pointer;
+    list-style: none;
+  }
+  .qz-key summary::-webkit-details-marker,
+  .qz-model summary::-webkit-details-marker {
+    display: none;
+  }
+  .qz-key summary:hover,
+  .qz-model summary:hover {
+    background: var(--neel-50);
+  }
+  .qz-key-body {
+    margin-top: 0.6rem;
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.75rem 0.9rem;
+    border-left: 3px solid var(--pen-ink);
+    background: var(--neel-50);
+    line-height: 1.5;
+  }
+  .qz-key-fb {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.3rem;
+    color: var(--ink-2);
+  }
+  .quiz:global([data-ready]) .qz-key {
+    display: none;
+  }
+
+  /* ---------- Written ---------- */
+  .qz-wlabel {
+    display: block;
+    margin-top: 0.9rem;
+    font-weight: 650;
+    font-size: var(--fs-sm);
+  }
+  .qz-whint {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .qz-ta {
+    display: block;
+    width: 100%;
+    margin-top: 0.4rem;
+    min-height: 9rem;
+    padding: 0.7rem 0.85rem;
+    border: 1.5px solid #8a8fa6;
+    border-radius: var(--r);
+    background: var(--paper);
+    font-size: var(--fs-base);
+    line-height: 1.6;
+    resize: vertical;
+  }
+  .qz-ta:focus {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-color: var(--neel-600);
+  }
+  .qz-wc {
+    margin-top: 0.3rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .qz-model {
+    margin-top: 0.6rem;
+    font-size: var(--fs-sm);
+  }
+  .qz-model-body {
+    margin-top: 0.7rem;
+    padding: 0.9rem 1rem 1rem;
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.09),
+      1.5px 2px 0 rgb(17 20 58 / 0.07);
+    display: grid;
+    gap: 0.55rem;
+  }
+  .qz-shape {
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    background: var(--sunken);
+    color: var(--ink-2);
+    font-size: var(--fs-xs);
+    line-height: 1.5;
+  }
+  .qz-model-k {
+    font-weight: 700;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .qz-model-text {
+    font-size: var(--fs-base);
+    line-height: 1.65;
+  }
+
+  .qz-end:not(.is-done) {
+    display: contents;
+  }
+  .qz-end {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: var(--r);
+    background: var(--canvas);
+  }
+  .qz-end-text {
+    font-weight: 650;
+  }
+
+  @media (max-width: 34rem) {
+    .qz-item {
+      padding-left: 2.1rem;
+    }
+    .qz-num {
+      width: 1.6rem;
+      font-size: 1.6rem;
+    }
+    .qz-q {
+      font-size: var(--fs-base);
+    }
+    .qz-fb {
+      margin-left: 0.5rem;
+    }
+  }
+  @media (forced-colors: active) {
+    .qz-label,
+    .qz-bub {
+      border: 1px solid CanvasText;
+    }
+  }
+  /* Printed: questions, options and the answer key; nothing interactive. */
+  @media print {
+    .qz-score,
+    .qz-end,
+    .qz-hint,
+    .qz-verdict,
+    .qz-why,
+    .qz-fb,
+    .qz-ta,
+    .qz-wc,
+    .qz-whint,
+    .qz-wlabel,
+    .qz-key summary,
+    .qz-model summary {
+      display: none !important;
+    }
+    .quiz:global([data-ready]) .qz-key {
+      display: block;
+    }
+    .qz-item {
+      break-inside: avoid;
+    }
+    .qz-label {
+      border: 0;
+      padding: 0.1rem 0;
+      min-height: 0;
+    }
+    .qz-key-body,
+    .qz-model-body {
+      background: none;
+      box-shadow: none;
+      border-left: 2px solid #999;
+    }
+  }
+</style>

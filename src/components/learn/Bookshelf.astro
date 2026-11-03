@@ -1,0 +1,180 @@
+---
+/**
+ * "Bookshelf": the books behind a module, as a pile of cloth-bound books lying on their
+ * sides. Each spine is woven (src/lib/weave.ts) with a sewn-on label carrying the title
+ * and author; why it's worth reading sits beside it. Never real covers.
+ * <Bookshelf books={entry.data.books} />
+ */
+import Weave from "../ui/Weave.astro";
+import type { WeaveStructure } from "../../lib/weave";
+type Book = { author: string; title: string; edition?: string; year?: string; why: string };
+interface Props {
+  books: Book[];
+}
+const { books } = Astro.props;
+// Four cloths from the site's papers, one per book in turn. Not the handbooks' own cloths.
+const CLOTHS: { structure: WeaveStructure; warp: string; weft: string; gap: string; accent?: string; accentCols?: number[]; accentRows?: number[] }[] = [
+  { structure: "twill", warp: "#2F3786", weft: "#4C56BE", gap: "#11143A", accent: "#EFAB22", accentRows: [2] },
+  { structure: "basket", warp: "#D99211", weft: "#F7C24D", gap: "#2A1B05" },
+  { structure: "herringbone", warp: "#949EE2", weft: "#BCC3EE", gap: "#252B68", accent: "#3B44A6", accentRows: [3] },
+  { structure: "plain", warp: "#252B68", weft: "#3B44A6", gap: "#11143A", accent: "#FCD98A", accentCols: [7, 19] }
+];
+// A hand-stacked pile: each book a little longer or shorter, a little left or right.
+const LAY = [
+  { len: 96, shift: 1 },
+  { len: 90, shift: 5 },
+  { len: 100, shift: 0 },
+  { len: 92, shift: 3 }
+];
+const meta = (b: Book) => [b.edition, b.year].filter(Boolean).join(", ");
+---
+
+<ol class="shelf" role="list">
+  {
+    books.map((b, i) => {
+      const c = CLOTHS[i % CLOTHS.length];
+      const lay = LAY[i % LAY.length];
+      return (
+        <li class="bk" style={`--len:${lay.len}%;--shift:${lay.shift}%;--z:${books.length - i}`}>
+          <div class="bk-spine">
+            <Weave
+              class="bk-cloth"
+              structure={c.structure}
+              cols={28}
+              rows={6}
+              cell={14}
+              warp={c.warp}
+              weft={c.weft}
+              gap={c.gap}
+              accent={c.accent}
+              accentCols={c.accentCols}
+              accentRows={c.accentRows}
+            />
+            <span class="bk-cap" aria-hidden="true" />
+            <span class="bk-label">
+              <cite class="bk-title">{b.title}</cite>
+              <span class="bk-by">
+                {b.author}
+                {meta(b) && <span class="bk-ed">, {meta(b)}</span>}
+              </span>
+            </span>
+          </div>
+          <p class="bk-why">{b.why}</p>
+        </li>
+      );
+    })
+  }
+</ol>
+
+<style>
+  .shelf {
+    container-type: inline-size;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .bk {
+    position: relative;
+    z-index: var(--z);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+  }
+  .bk + .bk {
+    margin-top: 1.25rem;
+  }
+  .bk-spine {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 4.6rem;
+    width: var(--len);
+    margin-left: var(--shift);
+    padding: 0.55rem 1.6rem;
+    border-radius: 4px 3px 3px 4px;
+    overflow: hidden;
+    isolation: isolate;
+    /* A bound book on a table: crisp edge, soft shadow down and right. */
+    box-shadow:
+      1.5px 2.5px 0 rgb(17 20 58 / 0.22),
+      6px 10px 16px -8px rgb(17 20 58 / 0.4);
+  }
+  .bk-spine :global(.bk-cloth) {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  /* Head and tail bands: the darker cloth where the boards fold. */
+  .bk-cap {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgb(0 0 0 / 0.38), rgb(0 0 0 / 0.08) 0.9rem, transparent 1.2rem),
+      linear-gradient(270deg, rgb(0 0 0 / 0.38), rgb(0 0 0 / 0.08) 0.9rem, transparent 1.2rem),
+      linear-gradient(180deg, rgb(255 255 255 / 0.14), transparent 30%, rgb(0 0 0 / 0.16));
+  }
+  /* The sewn-on label: white cloth with a running stitch inside its edge. */
+  .bk-label {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+    padding: 0.45rem 0.8rem 0.5rem;
+    border-radius: 3px;
+    background: var(--paper);
+    outline: 1.5px dashed var(--neel-300);
+    outline-offset: -5px;
+    box-shadow:
+      1px 1.5px 0 rgb(0 0 0 / 0.25),
+      3px 6px 10px -5px rgb(0 0 0 / 0.45);
+  }
+  .bk-title {
+    font-style: normal;
+    font-weight: 720;
+    font-size: var(--fs-sm);
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .bk-by {
+    font-size: var(--fs-xs);
+    line-height: 1.35;
+    color: var(--ink-2);
+  }
+  .bk-ed {
+    color: var(--ink-3);
+  }
+  .bk-why {
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+    color: var(--ink-2);
+    padding-left: var(--shift);
+  }
+  /* Wide: the pile on the left, the reasons beside each book. */
+  @container (min-width: 38rem) {
+    .bk {
+      grid-template-columns: minmax(0, 58%) minmax(0, 1fr);
+      gap: 0 1.5rem;
+      align-items: center;
+    }
+    .bk + .bk {
+      margin-top: 0;
+    }
+    .bk-spine {
+      min-height: 5rem;
+    }
+    .bk-why {
+      padding: 0.6rem 0;
+    }
+  }
+  @media print {
+    .bk-spine {
+      box-shadow: none;
+      border: 1px solid #999;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .bk {
+      break-inside: avoid;
+    }
+  }
+</style>

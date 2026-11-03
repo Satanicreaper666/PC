@@ -22,6 +22,7 @@ const ld = {
 const tabs = [
   { id: "", label: "Everything" },
   { id: "Handbooks", label: "Handbooks" },
+  { id: "Learn", label: "Learn" },
   { id: "Toolkit", label: "Toolkit" },
   { id: "JD library", label: "JD library" },
   { id: "Glossary", label: "Glossary" }
@@ -189,7 +190,8 @@ const suggestions: { q: string; hl: string }[] = [
   }
 
   /** "in the handbooks", "in the JD library": keeps acronyms as written. */
-  const where = (sectionName: string) => `the ${/^[A-Z]{2}/.test(sectionName) ? sectionName : sectionName.toLowerCase()}`;
+  const where = (sectionName: string) =>
+    sectionName === "Learn" ? "PeopleCraft Learn" : `the ${/^[A-Z]{2}/.test(sectionName) ? sectionName : sectionName.toLowerCase()}`;
 
   function setCounts(counts?: Record<string, number>, total = 0) {
     document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {

@@ -1,5 +1,64 @@
 # PeopleCraft rebuild: what changed and why
 
+## 4 November 2026: PeopleCraft Learn
+
+A free, visual, self-paced HR course at `/learn/`.
+
+**What it's built from**
+- What **XLRI** teaches in its PGDM (HRM), based on its 2025–2027 prospectuses.
+- What **CIPD** teaches in its Level 5 and Level 7 diplomas, based on the 2026 specifications and the Profession Map.
+- What **SHRM** tests in SHRM-CP and SHRM-SCP, based on the 2026 BASK and the 2026 Handbook.
+- The standard HR books, Indian law as in force on 4 November 2026, and 2025–26 practice.
+
+The research behind it (about 100,000 words, with sources and confidence tags) sits outside the repo, in the owner's `HRM/HR-Research_XLRI-CIPD-SHRM/` folder.
+
+**Who it's for:** HR professionals with 2–8 years' experience who are moving into business-partner or strategic roles, many of them preparing for SHRM or CIPD.
+
+**What's in it**
+- **20 modules and 3 guides** (`src/content/learn/`, new `learn` collection), each taking 20–35 minutes. Every module follows the same rhythm:
+  - a fictional Indian workplace situation;
+  - the big idea;
+  - pictures;
+  - a worked example;
+  - "Where experts disagree";
+  - "In India";
+  - a branching scenario;
+  - "Try it at work";
+  - check-yourself questions;
+  - model cards, a bookshelf and a printable cheat sheet.
+- **New diagrams:** Pyramid, Iceberg, Spectrum, Funnel and Venn, joining the existing library. **New learning components:**
+  - Quiz, with instant feedback and SHRM-style "best response" judgement questions;
+  - Scenario, a branching case that still works without JavaScript;
+  - Worked, ModelCard, SchoolMap, Bookshelf, CheatSheet and ModuleThread.
+- **Hub `/learn/`:**
+  - a woven course map of 6 blocks and 20 modules;
+  - a 2-minute "where to start" self-check;
+  - a guide to how a module works;
+  - the three guides: how the course works, which credential to take from India, and a map of what XLRI, CIPD and SHRM teach.
+- **`/learn/models/`:** every theory and model as a card, with an A–Z index and a filter.
+- **`/learn/practice/`:** every question in one practice bank, filterable by module, type and level, plus a random "mixed set of 10".
+- **Integration:**
+  - Learn is in the header, footer and home page, and in the start-here paths;
+  - `learn/…` refs work in `related`;
+  - Learn has its own search filter and OG image;
+  - new glossary terms are drawn from the modules.
+
+**Decisions**
+- **No progress tracking, CPD log or flashcards.** The owner chose quizzes, exam-style practice and branching scenarios. Nothing a learner does is stored or sent.
+- **Books are described, never quoted.** Each model carries its originator, year and citation. Writers used only DOIs and links they could confirm.
+- **Changing facts live in one data file.** Exam fees, windows and membership costs are in `src/data/credentials.ts`, with source, as-at date and confidence, just as statutory numbers are in `statutory.ts`.
+- **Law-heavy modules were reviewed independently.** Modules 8, 10, 11 and 12, plus the regulation claims in 16 and 17, were fact-reviewed by a separate agent before publishing.
+
+**Corrections to existing pages, found during the Learn research and review**
+- **Free annual health check-ups** (labour law chapters 03 and 09). The Central Rules 2026 apply them to employees aged 40 and above in dock work, mines and building or construction work, plus classes notified later. They do not cover all workers aged 40 and above. Wider coverage exists only in some state rules, many of them still drafts. Source: SCC Online summary of the OSH Central Rules 2026, 13 May 2026.
+- **Monthly pay date** (`wages.monthlyPayDay`). Code on Wages s.17(1) allows payment up to the 7th, so the text now says "by the 7th of the next month", not "before the 7th".
+- **Captions on phones.** Compare tables now stack into cards on phones, so the "scroll the table sideways" caption in the competency-model chapter was updated.
+- **Glossary.** 58 new terms from the Learn modules, bringing the total to 251.
+
+The writers' contract is `docs/LEARN-GUIDE.md`.
+
+---
+
 Rebuild completed 3 November 2026. It replaces the live site at peoplecraft.vercel.app, a 13-page static site:
 - the home page;
 - four handbook pages (labour law, TDS, recruitment, HR professional);

@@ -1,0 +1,486 @@
+---
+/**
+ * The models library: every theory and model taught in PeopleCraft Learn, pooled
+ * from each module's `models`, grouped by block and module, with an A to Z index
+ * and a filter. Each card links to the card on its module page (#model-<id>).
+ * Counts are worked out at build time. Without JavaScript everything shows.
+ */
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PageHero from "../../../components/site/PageHero.astro";
+import Icon from "../../../components/ui/Icon.astro";
+import ModelCard from "../../../components/learn/ModelCard.astro";
+import { allModels, coursePlan, modelHref, count } from "../../../lib/learn";
+import { breadcrumbLd } from "../../../lib/library";
+
+const [models, plan] = await Promise.all([allModels(), coursePlan()]);
+const moduleCount = new Set(models.map((m) => m.from.slug)).size;
+
+/* Grouped as the course runs: block, then module, then the module's own order. */
+const groups = plan
+  .map((b) => ({
+    block: b,
+    modules: b.modules
+      .map((m) => ({ m, list: models.filter((x) => x.from.n === m.n) }))
+      .filter((x) => x.list.length > 0)
+  }))
+  .filter((g) => g.modules.length > 0);
+
+/* The A to Z index: every model by name, first letter (numbers and symbols under "#"). */
+const letterOf = (s: string) => {
+  const c = s.normalize("NFD").replace(/^[^\p{L}\p{N}]+/u, "").charAt(0).toUpperCase();
+  return /[A-Z]/.test(c) ? c : "#";
+};
+const az = [...models].sort((a, b) => a.model.name.localeCompare(b.model.name, "en", { sensitivity: "base" }));
+const letters = Array.from(new Set(az.map((x) => letterOf(x.model.name)))).sort((a, b) => Number(a === "#") - Number(b === "#") || a.localeCompare(b));
+const alphabet = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ", ...(letters.includes("#") ? ["#"] : [])];
+const letterId = (l: string) => `az-${l === "#" ? "num" : l}`;
+const searchText = (x: (typeof models)[number]) =>
+  [x.model.name, x.model.by, x.model.year, x.model.idea, x.model.use, x.model.watch ?? "", `module ${x.from.n}`, x.from.title].join(" ").toLowerCase();
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Learn", href: "/learn/" },
+  { name: "Models library", href: "/learn/models/" }
+];
+const abs = (href: string) => new URL(href, Astro.site).toString();
+const ld = [
+  breadcrumbLd(Astro.site, trail),
+  {
+    "@context": "https://schema.org",
+    "@type": "DefinedTermSet",
+    name: "PeopleCraft Learn: models library",
+    description: "The HR and organisational behaviour theories and models taught in PeopleCraft Learn, each with the idea, when to use it and its main limitation.",
+    url: abs("/learn/models/"),
+    inLanguage: "en-IN",
+    hasDefinedTerm: models.map(({ model, from }) => ({
+      "@type": "DefinedTerm",
+      name: model.name,
+      termCode: model.id,
+      description: model.idea,
+      url: abs(modelHref(from, model)),
+      inDefinedTermSet: abs("/learn/models/")
+    }))
+  }
+];
+const description = `${count(models.length, "HR theory and model", "HR theories and models")} in one place, each with the idea, when to use it, what to watch for and a link to the module that teaches it.`;
+---
+
+<BaseLayout title="HR models and theories: the models library" description={description} jsonLd={ld} image="/og/learn.png">
+  <div data-pagefind-body data-pagefind-meta="kind:Models library" data-pagefind-filter="section:Learn">
+    <PageHero
+      title="Models library"
+      lede={models.length
+        ? `${count(models.length, "theory and model", "theories and models")} from ${count(moduleCount, "module")} of the course, each with the idea in a sentence, when to use it and what to watch for. Every card links to the module that teaches it.`
+        : "The theories and models from each module will collect here as modules are published."}
+      trail={trail}
+    />
+
+    {
+      models.length > 0 && (
+        <>
+          <div class="bar" data-mm-bar data-pagefind-ignore>
+            <div class="bar-in">
+              <label class="find">
+                <Icon name="search" size={18} />
+                <span class="visually-hidden">Filter the models</span>
+                <input type="search" placeholder="Filter by name, author or idea, e.g. Herzberg" autocomplete="off" data-mm-filter />
+              </label>
+              <nav class="letters" aria-label="Jump to the A to Z index">
+                {alphabet.map((l) =>
+                  letters.includes(l) ? (
+                    <a href={`#${letterId(l)}`} data-mm-letter={l}>
+                      {l}
+                    </a>
+                  ) : (
+                    <span aria-hidden="true">{l}</span>
+                  )
+                )}
+              </nav>
+              <p class="tiny muted count" data-mm-count aria-live="polite" />
+            </div>
+          </div>
+
+          <div class="layout">
+            <details class="index" open data-mm-index data-pagefind-ignore>
+              <summary>A to Z index of all {models.length}</summary>
+              <nav aria-label="Models from A to Z">
+                {letters.map((l) => (
+                  <div class="ix-group" data-ix-group>
+                    <p class="ix-l" id={letterId(l)}>
+                      {l === "#" ? "Numbers and symbols" : l}
+                    </p>
+                    <ul>
+                      {az
+                        .filter((x) => letterOf(x.model.name) === l)
+                        .map((x) => (
+                          <li data-ix={x.model.id}>
+                            <a href={`#m-${x.model.id}`}>{x.model.name}</a>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                ))}
+              </nav>
+            </details>
+
+            <div class="groups">
+              {groups.map((g) => (
+                <section class="blk" aria-labelledby={`blk-${g.block.id}`} data-mm-block>
+                  <h2 class="blk-t" id={`blk-${g.block.id}`}>
+                    <span class="blk-l">Block {g.block.letter}</span>
+                    {g.block.title}
+                  </h2>
+                  {g.modules.map(({ m, list }) => (
+                    <section class="mod" aria-labelledby={`mod-${m.n}`} data-mm-module>
+                      <h3 class="mod-t" id={`mod-${m.n}`}>
+                        <a href={m.href}>
+                          <span class="mod-n">Module {m.n}</span>
+                          {m.title}
+                        </a>
+                      </h3>
+                      <ul class="cards" role="list">
+                        {list.map((x) => (
+                          <li class="mm" id={`m-${x.model.id}`} data-mm data-mm-id={x.model.id} data-text={searchText(x)}>
+                            <ModelCard name={x.model.name} by={x.model.by} year={x.model.year} idea={x.model.idea} use={x.model.use} watch={x.model.watch} cite={x.model.cite} as="h4" />
+                            <a class="mm-go" href={modelHref(x.from, x.model)}>
+                              <span class="visually-hidden">{x.model.name}: </span>
+                              See it taught in Module {x.from.n}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ))}
+                </section>
+              ))}
+              <p class="none" data-mm-none hidden>
+                No model matches that filter. Try a surname or one word, or <button type="button" class="link clear" data-mm-clear>show all models</button>.
+              </p>
+            </div>
+          </div>
+        </>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<script>
+  const bar = document.querySelector<HTMLElement>("[data-mm-bar]");
+  const input = document.querySelector<HTMLInputElement>("[data-mm-filter]");
+  const count = document.querySelector<HTMLElement>("[data-mm-count]");
+  const none = document.querySelector<HTMLElement>("[data-mm-none]");
+  const index = document.querySelector<HTMLDetailsElement>("[data-mm-index]");
+  const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-mm]"));
+  const total = cards.length;
+
+  if (bar && input && count && index) {
+    // The index is a side pane on wide screens and a closed drawer on narrow ones.
+    const wide = window.matchMedia("(min-width: 1100px)");
+    const fit = () => (index.open = wide.matches);
+    fit();
+    wide.addEventListener("change", fit);
+
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      const words = q.split(/\s+/).filter(Boolean);
+      let shown = 0;
+      for (const c of cards) {
+        const ok = words.every((w) => c.dataset.text!.includes(w));
+        c.hidden = !ok;
+        if (ok) shown++;
+        const ix = index.querySelector<HTMLElement>(`[data-ix="${c.dataset.mmId}"]`);
+        if (ix) ix.hidden = !ok;
+      }
+      document.querySelectorAll<HTMLElement>("[data-mm-module]").forEach((m) => (m.hidden = !m.querySelector("[data-mm]:not([hidden])")));
+      document.querySelectorAll<HTMLElement>("[data-mm-block]").forEach((b) => (b.hidden = !b.querySelector("[data-mm-module]:not([hidden])")));
+      index.querySelectorAll<HTMLElement>("[data-ix-group]").forEach((g) => (g.hidden = !g.querySelector("li:not([hidden])")));
+      count.textContent = q ? `Showing ${shown} of ${total}` : `${total} models`;
+      if (none) none.hidden = shown > 0;
+    };
+    input.addEventListener("input", apply);
+    document.querySelector("[data-mm-clear]")?.addEventListener("click", () => {
+      input.value = "";
+      apply();
+      input.focus();
+    });
+    apply();
+
+    // A letter opens the index at that letter: inside the side pane on wide screens, on the page otherwise.
+    bar.querySelectorAll<HTMLAnchorElement>("[data-mm-letter]").forEach((a) =>
+      a.addEventListener("click", (e) => {
+        const target = document.getElementById(a.hash.slice(1));
+        if (!target) return;
+        e.preventDefault();
+        index.open = true;
+        const pane = index.querySelector<HTMLElement>("nav");
+        if (wide.matches && pane) pane.scrollTo({ top: target.offsetTop - pane.offsetTop - 8 });
+        else target.scrollIntoView({ block: "start" });
+        target.parentElement?.querySelector<HTMLAnchorElement>("li:not([hidden]) a")?.focus({ preventScroll: wide.matches });
+      })
+    );
+  }
+</script>
+
+<style>
+  .bar {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 5;
+    padding-block: 0.75rem;
+    background: rgb(255 255 255 / 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar-in {
+    width: min(100% - 2 * var(--gutter), var(--wrap));
+    margin-inline: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.25rem;
+  }
+  .find {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.8rem;
+    min-height: 2.6rem;
+    flex: 1 1 18rem;
+    max-width: 26rem;
+    border: 1.5px solid #7d83a1;
+    border-radius: var(--r);
+    background: var(--paper);
+    color: var(--ink-3);
+  }
+  .find:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgb(59 68 166 / 0.18);
+  }
+  .find input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    min-height: 2.4rem;
+  }
+  .letters {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .letters a,
+  .letters span {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 2rem;
+    border-radius: 6px;
+    font-size: var(--fs-sm);
+    font-weight: 620;
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  .letters span {
+    color: #9aa0b8;
+    font-weight: 500;
+  }
+  .letters a:hover {
+    background: var(--neel-50);
+    color: var(--primary);
+  }
+  .count {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .layout {
+    width: min(100% - 2 * var(--gutter), var(--wrap));
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 3rem;
+    padding-block: 2rem var(--section);
+  }
+  /* The A to Z index: a side pane that keeps its place while the cards scroll. */
+  .index {
+    position: sticky;
+    top: calc(var(--header-h) + 5rem);
+    align-self: start;
+  }
+  .index summary {
+    display: none;
+  }
+  .index nav {
+    max-height: calc(100vh - var(--header-h) - 7rem);
+    overflow-y: auto;
+    padding: 0.25rem 0.5rem 1.5rem 0;
+    font-size: var(--fs-sm);
+    scrollbar-width: thin;
+  }
+  .ix-group + .ix-group {
+    margin-top: 0.9rem;
+  }
+  .ix-l {
+    font-size: var(--fs-xs);
+    font-weight: 750;
+    color: var(--neel-600);
+    scroll-margin-top: calc(var(--header-h) + 6rem);
+  }
+  .index ul {
+    list-style: none;
+    margin: 0.2rem 0 0;
+    padding: 0;
+    border-left: 2px solid var(--line);
+  }
+  .index li a {
+    display: block;
+    margin-left: -2px;
+    padding: 0.2rem 0 0.2rem 0.7rem;
+    border-left: 2px solid transparent;
+    color: var(--ink-2);
+    text-decoration: none;
+    line-height: 1.3;
+  }
+  .index li a:hover,
+  .index li a:focus-visible {
+    color: var(--ink);
+    border-left-color: var(--accent);
+  }
+
+  .groups {
+    display: grid;
+    gap: 3rem;
+    min-width: 0;
+  }
+  .blk-t {
+    display: grid;
+    gap: 0.1rem;
+    font-size: var(--fs-xl);
+    font-stretch: 106%;
+    letter-spacing: -0.02em;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--neel-700);
+  }
+  .blk-l {
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    font-stretch: 100%;
+    letter-spacing: 0;
+    color: var(--ink-3);
+  }
+  .mod {
+    margin-top: 1.6rem;
+  }
+  .mod-t {
+    font-size: var(--fs-md);
+    line-height: 1.3;
+  }
+  .mod-t a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .mod-t a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .mod-n {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .cards {
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    gap: 1.1rem 1rem;
+  }
+  .mm {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    scroll-margin-top: calc(var(--header-h) + 6rem);
+  }
+  /* Reached from the index: ringed in turmeric until you move on. */
+  .mm:target {
+    outline: 3px solid var(--haldi-300);
+    outline-offset: 5px;
+    border-radius: 6px;
+  }
+  .mm-go {
+    justify-self: start;
+    margin-top: 0.4rem;
+    padding: 0.2rem 0.1rem;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-underline-offset: 3px;
+  }
+  .mm-go:hover {
+    text-decoration-color: currentColor;
+  }
+  .none {
+    color: var(--ink-2);
+  }
+  .clear {
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  @media (max-width: 1099px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+    .index {
+      position: static;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: var(--paper);
+    }
+    .index summary {
+      display: list-item;
+      padding: 0.75rem 1rem;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .index nav {
+      max-height: none;
+      overflow: visible;
+      padding: 0 1rem 1rem;
+      columns: 2 12rem;
+      column-gap: 1.5rem;
+    }
+    .ix-group {
+      break-inside: avoid;
+    }
+  }
+  @media (max-width: 640px) {
+    .bar {
+      position: static;
+    }
+    /* One line of letters that scrolls sideways, rather than three rows. */
+    .letters {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      width: 100%;
+      scrollbar-width: thin;
+    }
+    .letters a,
+    .letters span {
+      flex: none;
+      width: 1.9rem;
+      height: 2.4rem;
+    }
+    .count {
+      margin-left: 0;
+    }
+  }
+</style>

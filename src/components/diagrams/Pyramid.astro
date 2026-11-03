@@ -1,0 +1,179 @@
+---
+/**
+ * A pyramid of levels, apex first: Maslow, Kirkpatrick, Carroll's CSR pyramid.
+ * <Pyramid levels={[{ label: "Self-actualisation", note: "becoming what you can be" }, …, { label: "Physiological" }]} />
+ *
+ * Cut from strips of indigo paper, darkest at the base, with the words beside each strip
+ * (never squeezed into the narrow apex), joined by a dotted leader. A level marked
+ * `accent` is turmeric paper lifted off the page: the level this page is about.
+ * The strips are stacked from the base up when the diagram scrolls into view.
+ */
+type Level = { label: string; note?: string; accent?: boolean };
+interface Props {
+  levels: Level[];
+  label?: string;
+}
+const { levels, label } = Astro.props;
+const n = Math.max(levels.length, 1);
+// The apex is almost a point; each strip's top and bottom follow one straight slope.
+const APEX = 0.08;
+const width = (k: number) => APEX + (1 - APEX) * (k / n);
+const pct = (v: number) => Number((v * 100).toFixed(2));
+// Paper from light (apex) to dark (base).
+const RAMP = ["--neel-200", "--neel-300", "--neel-400", "--neel-500", "--neel-600", "--neel-700", "--neel-800"];
+const fill = (i: number) => RAMP[n === 1 ? 4 : Math.round((i * (RAMP.length - 1)) / (n - 1))];
+const rows = levels.map((l, i) => {
+  const t = width(i);
+  const b = width(i + 1);
+  // x of the strip's right edge at mid-height, as a % of the art column: where the leader starts.
+  const edge = pct(0.5 + (t + b) / 4);
+  const pts = [
+    [50 - pct(t) / 2, 0],
+    [50 + pct(t) / 2, 0],
+    [50 + pct(b) / 2, 100],
+    [50 - pct(b) / 2, 100]
+  ]
+    .map(([x, y]) => `${Number(x.toFixed(2))},${y}`)
+    .join(" ");
+  return { ...l, i, pts, edge, fill: fill(i) };
+});
+---
+
+<div class="pyr" data-diagram="pyramid" data-draw role="group" aria-label={label ?? "Pyramid, read from the top level down to the base"} style={`--n:${n}`}>
+  <ol class="pyr-rows" role="list">
+    {
+      rows.map((r) => (
+        <li class:list={["pyr-row", { accent: r.accent }]} style={`--i:${r.i};--up:${n - 1 - r.i};--edge:${r.edge}%;--fill:var(${r.fill})`}>
+          <span class="pyr-art" aria-hidden="true">
+            <svg class="pyr-strip" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
+              <polygon points={r.pts} />
+            </svg>
+          </span>
+          <span class="pyr-text">
+            <span class="pyr-label">
+              {r.label}
+              {r.accent && <span class="visually-hidden"> (the level this page is about)</span>}
+            </span>
+            {r.note && <span class="pyr-note" set:html={r.note} />}
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .pyr {
+    container-type: inline-size;
+  }
+  .pyr-rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    /* Every row as tall as the tallest, so all the strips share one slope. */
+    grid-auto-rows: minmax(3.1rem, 1fr);
+    row-gap: 4px;
+  }
+  .pyr-row {
+    display: grid;
+    grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+    align-items: center;
+  }
+  .pyr-art {
+    position: relative;
+    align-self: stretch;
+    display: block;
+    filter: var(--paper-1);
+  }
+  /* The dotted leader from the strip's edge to its words. */
+  .pyr-art::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--edge) + 6px);
+    right: 0.35rem;
+    top: 50%;
+    border-top: 1.5px dotted var(--neel-400);
+  }
+  .pyr-strip {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .pyr-strip polygon {
+    fill: var(--fill);
+    stroke: var(--neel-800);
+    stroke-opacity: 0.35;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .accent .pyr-art {
+    filter: var(--paper-3);
+    transform: translate(-1px, -2px);
+    z-index: 1;
+  }
+  .accent .pyr-strip polygon {
+    fill: var(--haldi-400);
+    stroke: var(--haldi-700);
+    stroke-opacity: 0.6;
+  }
+  .pyr-text {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.35rem 0 0.35rem 0.5rem;
+    min-width: 0;
+  }
+  .pyr-label {
+    font-weight: 650;
+    font-size: var(--fs-sm);
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  .accent .pyr-label {
+    text-decoration: underline 2px var(--haldi-500);
+    text-underline-offset: 4px;
+  }
+  .pyr-note {
+    font-size: var(--fs-xs);
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+  @container (max-width: 26rem) {
+    .pyr-row {
+      grid-template-columns: minmax(0, 36%) minmax(0, 1fr);
+    }
+    .pyr-art::after {
+      right: 0.15rem;
+    }
+  }
+
+  /* Stacked from the base up, once, when scrolled to (site.ts adds .draw). The words never move. */
+  :global(html.js-anim) .pyr:not(:global(.draw)):not(:global(.drawn)) .pyr-art {
+    opacity: 0;
+  }
+  .pyr:global(.draw) .pyr-art {
+    animation: pyr-in 0.5s var(--ease-out) both;
+    animation-delay: calc(var(--up) * 0.13s);
+  }
+  @keyframes pyr-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  @media print {
+    .pyr .pyr-art {
+      opacity: 1 !important;
+      animation: none !important;
+      filter: none;
+      transform: none;
+    }
+    .pyr {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+</style>

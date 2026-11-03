@@ -1,0 +1,51 @@
+---
+/**
+ * The disclaimer at the foot of a Learn page. Modules that touch the law use the site's
+ * law disclaimer (components/content/Disclaimer.astro); the rest get a general one in
+ * the same style, because that component has no "general" kind.
+ * <LearnDisclaimer kind="law" />   or   <LearnDisclaimer kind="general" />
+ */
+import Disclaimer from "../content/Disclaimer.astro";
+import Icon from "../ui/Icon.astro";
+interface Props {
+  kind?: "law" | "general";
+}
+const { kind = "general" } = Astro.props;
+---
+
+{
+  kind === "law" ? (
+    <Disclaimer kind="law" />
+  ) : (
+    <aside class="disclaimer" aria-label="Disclaimer">
+      <Icon name="info" size={18} />
+      <p>
+        This is a learning resource: it explains HR ideas and practice in plain words and is not professional or legal advice. Practice
+        differs by organisation and sector, and the law changes, so check the official source before you act on a specific case.{" "}
+        <a href="/disclaimer/">Read the full disclaimer</a>.
+      </p>
+    </aside>
+  )
+}
+
+<style>
+  .disclaimer {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.9rem 1rem;
+    border-radius: var(--r);
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+  .disclaimer :global(svg) {
+    margin-top: 0.15rem;
+    color: var(--ink-3);
+  }
+  a {
+    color: var(--primary);
+    text-underline-offset: 3px;
+  }
+</style>
