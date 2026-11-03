@@ -253,7 +253,7 @@ export function mountPeopleAnalytics(root: HTMLElement) {
   keepBox.addEventListener("change", () => {
     if (keepBox.checked) {
       if (saveSession()) {
-        keepNote.textContent = "(on this device only, until you untick this)";
+        keepNote.textContent = "(on this device only, until you untick this; leave it unticked on a shared computer)";
         announce("Kept in this browser. Untick the box to delete it.");
       } else {
         keepBox.checked = false;

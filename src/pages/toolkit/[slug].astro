@@ -14,6 +14,7 @@ import ChecklistTool from "../../components/tools/ChecklistTool.astro";
 import SurveyTool from "../../components/tools/SurveyTool.astro";
 import ToolGlance from "../../components/glance/ToolGlance.astro";
 import PinButton from "../../components/desk/PinButton.astro";
+import Share from "../../components/ui/Share.astro";
 import { mdxComponents } from "../../components/content/mdx";
 import { STAGE_INFO, TOOL_KIND_INFO, audienceList } from "../../data/taxonomy";
 import { allTools, toolUrl, toolFacts, resolveRefs, breadcrumbLd, faqLd, type Tool } from "../../lib/library";
@@ -86,6 +87,7 @@ const ld = [appLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean
             <span class="chip chip-audience"><Icon name="people" size={15} /> For {audienceList(d.audiences)}</span>
             <span class="chip chip-good"><Icon name="lock" size={15} /> Works in your browser; nothing is uploaded</span>
             <PinButton item={{ href: toolUrl(entry), title: d.title, kind: kind.label, art: d.kind, code: d.code, description: d.description, meta: toolFacts(entry) }} />
+            <Share title={d.title} />
           </div>
         </div>
         <ToolGlance entry={entry} />

@@ -1,0 +1,66 @@
+---
+/**
+ * Share this page: a WhatsApp link (wa.me, opened only when clicked, so nothing
+ * loads from WhatsApp) and a Share button that opens the phone's share sheet, or
+ * copies the link where there isn't one. HR people pass tools around in WhatsApp
+ * groups; this makes that one tap.
+ *
+ *   <Share title="Gratuity calculator" />
+ */
+import Icon from "./Icon.astro";
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+const url = new URL(Astro.url.pathname, Astro.site).toString();
+const wa = `https://wa.me/?text=${encodeURIComponent(`${title} (PeopleCraft): ${url}`)}`;
+---
+
+<span class="share" data-share data-share-title={title} data-share-url={url} data-print="hide" data-pagefind-ignore>
+  <a class="btn btn-ghost btn-sm" href={wa} target="_blank" rel="noopener">
+    <Icon name="message" size={16} /> WhatsApp<span class="visually-hidden"> (opens WhatsApp)</span>
+  </a>
+  <button class="btn btn-ghost btn-sm" type="button" data-share-btn>
+    <Icon name="share" size={16} /> <span data-share-label>Share</span>
+  </button>
+  <span class="visually-hidden" role="status" aria-live="polite" data-share-status></span>
+</span>
+
+<script>
+  for (const box of document.querySelectorAll<HTMLElement>("[data-share]")) {
+    const btn = box.querySelector<HTMLButtonElement>("[data-share-btn]");
+    const label = box.querySelector<HTMLElement>("[data-share-label]");
+    const status = box.querySelector<HTMLElement>("[data-share-status]");
+    const title = box.dataset.shareTitle ?? document.title;
+    const url = box.dataset.shareUrl ?? location.href;
+    if (label && !navigator.share) label.textContent = "Copy link";
+    btn?.addEventListener("click", async () => {
+      try {
+        if (navigator.share) {
+          await navigator.share({ title, url });
+          return;
+        }
+        await navigator.clipboard.writeText(url);
+        if (label) label.textContent = "Link copied";
+        if (status) status.textContent = "Link copied";
+        window.setTimeout(() => {
+          if (label) label.textContent = "Copy link";
+        }, 2000);
+      } catch {
+        /* share sheet dismissed, or clipboard blocked: nothing to do */
+      }
+    });
+  }
+</script>
+
+<style>
+  .share {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .share .btn {
+    --btn-fg: var(--ink-2);
+    --btn-bd: var(--line-strong);
+  }
+</style>

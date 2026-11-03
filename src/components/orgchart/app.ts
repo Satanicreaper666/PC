@@ -272,7 +272,7 @@ export function mountOrgChart(root: HTMLElement) {
     const note = q("[data-keep-note]");
     if (keepBox.checked) {
       if (saveSession()) {
-        note.textContent = "(on this device only, until you untick this)";
+        note.textContent = "(on this device only, until you untick this; leave it unticked on a shared computer)";
         announce("Kept in this browser. Untick the box to delete it.");
       } else {
         keepBox.checked = false;

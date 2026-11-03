@@ -13,6 +13,7 @@ import BookThread from "../../../components/ui/BookThread.astro";
 import TermLinks from "../../../components/content/TermLinks.astro";
 import SpotIcon from "../../../components/art/SpotIcon.astro";
 import PinButton from "../../../components/desk/PinButton.astro";
+import Share from "../../../components/ui/Share.astro";
 import SectionLinks from "../../../components/desk/SectionLinks.astro";
 import { mdxComponents } from "../../../components/content/mdx";
 import { BOOKS } from "../../../data/books";
@@ -90,6 +91,7 @@ const ld = [articleLd, breadcrumbLd(Astro.site, trail), faqLd(entry.data.faq)].f
                 meta: `Chapter ${entry.data.chapter}, ${minutes} min read`
               }}
             />
+            <Share title={entry.data.title} />
           </span>
           <SectionLinks />
         </div>
