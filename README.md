@@ -111,7 +111,7 @@ scripts/              make-assets.cjs, check-links.mjs, make-preview.mjs, render
 | A "marked-up desk": highlighters, pen marks, notepaper and sticky notes, each with one meaning | Pages read the way an expert would mark them: yellow for the number to remember, pink for a deadline or risk, green for what to do, blue for a defined term |
 | Every page header carries a picture of its own data (book position, letter sections, calculator inputs, role level) | The empty half of the header now helps the reader decide whether this is the right page |
 | SVG for icons, scenes and covers; three.js only for the home hero, with a still image for phones and reduced motion | Crisp on any screen and fast on budget phones; WebGL only where depth earns its weight |
-| Everything a reader saves stays in their browser: pins, drafts, company details, people, checklist owners, survey answers, calculator scenarios | No accounts to run or breach. Every key starts with `pc-`, so the privacy page's one button clears it all |
+| Everything a reader saves stays in their browser: pins, drafts, company details, people, checklist owners, survey answers, calculator scenarios | No accounts to run or breach. Every key starts with `pc-` or `peoplecraft`, and the privacy page's one button clears both (a test checks every key the code defines) |
 | Pinned and recently opened pages work offline (`public/sw.js`), network first | HR work happens on factory floors and weak mobile data. Online, a page is always the newest; offline, the saved copy opens |
 | Calculators show their working and compare saved scenarios | HR has to explain a number to an employee or to Finance, and a number without its working can't be checked |
 
