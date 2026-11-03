@@ -1,0 +1,918 @@
+---
+/**
+ * My desk: one page that gathers what this reader pinned, started, read and opened,
+ * from this browser's storage only (src/scripts/desk.ts, src/components/desk/).
+ * Nothing about the reader is known to the server, so the page is built empty and
+ * src/components/desk/desk-page.ts lays the desk out in the browser.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/site/PageHero.astro";
+import Icon from "../components/ui/Icon.astro";
+import ItemCard from "../components/ui/ItemCard.astro";
+import SpotIcon from "../components/art/SpotIcon.astro";
+import StickyNote from "../components/marks/StickyNote.astro";
+import PenTick from "../components/marks/PenTick.astro";
+import PinIcon from "../components/desk/PinIcon.astro";
+import DeskClear from "../components/desk/DeskClear.astro";
+import DeskShelf from "../components/desk/DeskShelf.astro";
+import { BOOKS, BOOK_IDS } from "../data/books";
+import { TOOL_KIND_INFO, AUDIENCES } from "../data/taxonomy";
+import { isBlankJd, jdFields } from "../components/jds/jd-template";
+import { allChapters, allTools, allJds, chapterUrl, toolUrl, jdUrl, bookUrl, resolveRefs } from "../lib/library";
+import { nameFieldOf, personSlots } from "../scripts/people";
+import { hash, type BookMeta, type DraftMeta, type ToolMeta } from "../components/desk/shared";
+
+const [chapters, tools, jds] = await Promise.all([allChapters(), allTools(), allJds()]);
+
+/* Reading progress: every handbook, every chapter. */
+const books: BookMeta[] = BOOK_IDS.map((id) => ({
+  id,
+  title: BOOKS[id].title,
+  href: bookUrl(id),
+  chapters: chapters.filter((c) => c.data.book === id).map((c) => ({ n: c.data.chapter, title: c.data.title, href: chapterUrl(c) }))
+})).filter((b) => b.chapters.length > 0);
+
+/* In progress: what a saved draft or checklist belongs to. A field's default is sent as a
+   hash only, so a draft holding nothing but the pre-filled values isn't counted. */
+type Field = { id: string; label: string; type?: string; required?: boolean; default?: string; options?: string[] };
+function fieldMeta(fields: Field[]) {
+  const def: Record<string, string> = {};
+  for (const f of fields) {
+    let v = f.default ?? "";
+    if (f.type === "select" && !(f.options ?? []).includes(v)) v = "";
+    if (v.trim()) def[f.id] = hash(v.trim());
+  }
+  return { req: fields.filter((f) => f.required).map((f) => f.id), def, n: fields.length, nameField: nameFieldOf(personSlots(fields)) };
+}
+const drafts: DraftMeta[] = [
+  ...tools
+    .filter((t) => t.data.kind === "letter" || t.data.kind === "form" || t.data.kind === "policy")
+    .map((t) => ({ tpl: t.id, title: t.data.title, href: toolUrl(t), kind: TOOL_KIND_INFO[t.data.kind].label, ...fieldMeta(t.data.fields) })),
+  ...jds.map((j) => ({
+    tpl: `jd-${j.id}`,
+    title: isBlankJd(j) ? "Blank job description" : `${j.data.title} job description`,
+    href: `${jdUrl(j)}#fill-in`,
+    kind: "Job description",
+    ...fieldMeta(jdFields(j))
+  }))
+];
+const toolsOf = (kind: string): ToolMeta[] => tools.filter((t) => t.data.kind === kind).map((t) => ({ id: t.id, title: t.data.title, href: toolUrl(t) }));
+const catalog = JSON.stringify({ drafts, checklists: toolsOf("checklist"), surveys: toolsOf("survey") }).replace(/</g, "\\u003c");
+
+/* Card templates for pinned items: one per kind of paper. */
+const cardArts = [...BOOK_IDS, "letter", "form", "policy", "calculator", "app", "checklist", "survey", "plan", "jd", "glossary"];
+/* Icons for recently viewed pages that have no card: start pages, and anything else. */
+const extraIcons = [...AUDIENCES, "page"];
+
+/* Empty states point at a few good first things. */
+const pinIdeas = await resolveRefs(["toolkit/take-home-salary-calculator", "toolkit/offer-letter", "toolkit/gratuity-calculator"]);
+const startIdeas = await resolveRefs(["toolkit/offer-letter", "toolkit/onboarding-checklist", "jds/blank-job-description"]);
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "My desk", href: "/desk/" }
+];
+---
+
+<BaseLayout title="My desk" description="Your pinned pages, drafts in progress, chapters read and recently viewed pages, kept in this browser only." noindex>
+  <PageHero title="My desk" lede="What you pinned, the letters and checklists you started, how far you've read, and what you opened lately." trail={trail}>
+    <p class="kept">
+      <span class="chip chip-good"><Icon name="lock" size={15} /> Kept in this browser only</span>
+      <span class="small kept-more">Nothing is sent anywhere. Another phone or computer has its own desk. <a href="/privacy/#your-desk">What's kept, and how to clear it</a></span>
+    </p>
+    <nav slot="aside" class="glance" aria-label="On your desk">
+      <a class="g g-card" href="#pinned">
+        <span class="g-pin" aria-hidden="true"></span>
+        <span class="g-n" data-glance="pins">0</span>
+        <span class="g-l">pinned</span>
+      </a>
+      <a class="g g-note" href="#in-progress">
+        <span class="g-n" data-glance="progress">0</span>
+        <span class="g-l">in progress</span>
+      </a>
+      <a class="g g-thread" href="#reading">
+        <span class="g-knots" aria-hidden="true" data-glance-knots><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="g-n" data-glance="read">0</span>
+        <span class="g-l">chapters read</span>
+      </a>
+      <a class="g g-list" href="#recent">
+        <span class="g-n" data-glance="recent">0</span>
+        <span class="g-l">recently viewed</span>
+      </a>
+    </nav>
+  </PageHero>
+
+  <div class="wrap desk" data-desk>
+    <p class="no-storage" data-no-storage hidden>
+      <Icon name="alert" size={20} />
+      <span>This browser isn't letting PeopleCraft keep anything, perhaps because of private browsing or a storage setting, so your desk stays empty. Every page and tool still works.</span>
+    </p>
+
+    <div class="desk-main">
+      <section class="dsec" id="pinned" aria-labelledby="pinned-h">
+        <div class="dsec-head">
+          <div>
+            <h2 id="pinned-h" tabindex="-1">Pinned <span class="dsec-n" data-count="pins" aria-hidden="true"></span></h2>
+            <p class="dsec-sub">Chapters, tools, job descriptions and terms you keep coming back to.</p>
+          </div>
+          <DeskClear what="pins" ask="Clear pins" yes="Remove all pins" />
+        </div>
+        <div class="board">
+          <ul class="pins" data-list="pins" aria-labelledby="pinned-h"></ul>
+          <div class="empty empty-board" data-empty="pins">
+            <div class="slot" aria-hidden="true"><PinIcon size={28} /></div>
+            <div class="empty-text">
+              <p class="empty-t">Nothing pinned yet</p>
+              <p>
+                Press <strong>Pin to desk</strong> at the top of a chapter, tool or job description, or the pin beside a glossary term. It lands here as a
+                card, one tap away.
+              </p>
+              {
+                pinIdeas.length > 0 && (
+                  <p class="ideas">
+                    <span>Often pinned:</span>
+                    {pinIdeas.map((r) => (
+                      <a href={r.href}>{r.title}</a>
+                    ))}
+                  </p>
+                )
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dsec" id="in-progress" aria-labelledby="progress-h">
+        <div class="dsec-head">
+          <div>
+            <h2 id="progress-h" tabindex="-1">In progress <span class="dsec-n" data-count="progress" aria-hidden="true"></span></h2>
+            <p class="dsec-sub">Drafts of letters, forms and job descriptions, checklists you've started ticking, and team surveys collecting answers.</p>
+          </div>
+          <DeskClear what="progress" ask="Clear drafts" yes="Delete them" />
+        </div>
+        <ul class="notes" data-list="progress" aria-labelledby="progress-h"></ul>
+        <div class="empty" data-empty="progress">
+          <StickyNote color="yellow" title="Nothing half-done" tilt={-1} class="empty-note" label="Nothing in progress">
+            <p>
+              Start filling in a letter, form or job description, or tick a checklist, and it waits here with how far you got. Drafts never leave this
+              browser.
+            </p>
+            {
+              startIdeas.length > 0 && (
+                <ul class="note-ideas">
+                  {startIdeas.map((r) => (
+                    <li>
+                      <a href={r.href}>{r.title}</a>
+                    </li>
+                  ))}
+                </ul>
+              )
+            }
+          </StickyNote>
+        </div>
+      </section>
+    </div>
+
+    <div class="desk-side">
+      <section class="dsec" id="reading" aria-labelledby="reading-h">
+        <div class="dsec-head">
+          <div>
+            <h2 id="reading-h" tabindex="-1">Reading progress</h2>
+            <p class="dsec-sub" data-reading-help>
+              A chapter counts as read when you reach its Sources, or most of the way down. Each knot is a chapter.
+            </p>
+          </div>
+          <DeskClear what="read" ask="Reset" yes="Reset progress" />
+        </div>
+        <DeskShelf books={books} />
+      </section>
+
+      <section class="dsec" id="recent" aria-labelledby="recent-h">
+        <div class="dsec-head">
+          <div>
+            <h2 id="recent-h" tabindex="-1">Recently viewed</h2>
+            <p class="dsec-sub">The last 12 chapters, tools and job descriptions you opened, newest first.</p>
+          </div>
+          <DeskClear what="recent" ask="Clear list" yes="Clear the list" />
+        </div>
+        <ol class="recent" data-list="recent" aria-labelledby="recent-h"></ol>
+        <div class="empty empty-recent" data-empty="recent">
+          <p>
+            Nothing yet. Open a chapter, a tool or a job description and it's listed here, so you can find it again without searching. The main
+            sections are always in the menu.
+          </p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  {/* Pieces desk-page.ts copies to lay out the desk. */}
+  {
+    cardArts.map((art) => (
+      <template data-card-tpl={art}>
+        <ItemCard href="/desk/" art={art} kind="Kind" code="Code" title="Title" description="Description" meta="Meta" />
+      </template>
+    ))
+  }
+  {
+    extraIcons.map((art) => (
+      <template data-icon-tpl={art}>
+        <SpotIcon name={art} size={30} />
+      </template>
+    ))
+  }
+  <template data-pin-tpl>
+    <li class="pinned">
+      <button type="button" class="unpin">
+        <span class="pushpin" aria-hidden="true"></span>
+        <span class="unpin-tip" aria-hidden="true">Unpin</span>
+      </button>
+    </li>
+  </template>
+  <template data-undo-tpl>
+    <li class="undo-slip">
+      <p><span data-undo-text></span></p>
+      <button type="button" class="btn btn-secondary btn-sm" data-undo><Icon name="refresh" size={15} /> Undo</button>
+    </li>
+  </template>
+  <template data-note-tpl>
+    <li class="note">
+      <span class="tape" aria-hidden="true"></span>
+      <p class="mood hand" aria-hidden="true"></p>
+      <h3 class="note-t"><a href="/desk/"></a></h3>
+      <p class="note-who"></p>
+      <p class="note-k"></p>
+      <span class="note-bar" aria-hidden="true"><span></span></span>
+      <p class="note-c"><PenTick class="note-tick" /><span></span></p>
+    </li>
+  </template>
+  <template data-recent-tpl>
+    <li class="rv">
+      <span class="rv-ic" aria-hidden="true"></span>
+      <span class="rv-text">
+        <a class="rv-t" href="/desk/"></a>
+        <span class="rv-k"></span>
+      </span>
+      <time class="rv-when"></time>
+    </li>
+  </template>
+  <script type="application/json" id="desk-catalog" set:html={catalog} />
+</BaseLayout>
+
+<script>
+  import "../components/desk/desk-page";
+</script>
+
+<style>
+  .kept {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-top: 0.25rem;
+  }
+  .kept-more {
+    color: var(--ink-2);
+    max-width: 52ch;
+  }
+  .kept-more a {
+    color: var(--primary);
+    font-weight: 600;
+    text-underline-offset: 3px;
+  }
+
+  /* ---------- The hero picture: the desk in four pieces of stationery, each a link to its section ---------- */
+  .glance {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem 1rem;
+    padding: 0.5rem 0.25rem 0.25rem;
+  }
+  .g {
+    position: relative;
+    display: grid;
+    align-content: end;
+    gap: 0.1rem;
+    min-height: 6.4rem;
+    padding: 0.8rem 1rem 0.75rem;
+    color: var(--ink);
+    text-decoration: none;
+    transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0));
+    transition: transform 200ms var(--ease-out);
+  }
+  .g:hover {
+    --lift: -2px;
+  }
+  .g-n {
+    font-size: var(--fs-xl);
+    font-weight: 720;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .g-l {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  /* An index card, pinned. */
+  .g-card {
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.08),
+      3px 8px 14px -6px rgb(17 20 58 / 0.18);
+    --rot: -1.2deg;
+  }
+  .g-pin {
+    position: absolute;
+    top: -0.35rem;
+    left: 50%;
+    width: 0.95rem;
+    height: 0.95rem;
+    margin-left: -0.475rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow:
+      inset 1.5px 1.5px 0 var(--haldi-200),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.2),
+      3px 5px 6px rgb(17 20 58 / 0.16);
+  }
+  /* A sticky note. */
+  .g-note {
+    border-radius: 2px 2px 3px 12px / 2px 2px 3px 6px;
+    background: #fff3a6;
+    box-shadow:
+      0 1px 1px rgb(17 20 58 / 0.08),
+      3px 8px 14px -6px rgb(17 20 58 / 0.28),
+      inset 0 -2px 0 #f2df6f;
+    --rot: 1deg;
+  }
+  .g-note .g-l {
+    color: var(--ink);
+  }
+  /* A strip with a thread of knots. */
+  .g-thread {
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.08);
+  }
+  .g-knots {
+    position: absolute;
+    top: 0.85rem;
+    left: 1rem;
+    right: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .g-knots::before {
+    content: "";
+    position: absolute;
+    left: 0.3rem;
+    right: 0.3rem;
+    top: calc(50% - 2px);
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--neel-500) 0 var(--knots, 0%), var(--neel-200) var(--knots, 0%));
+  }
+  .g-knots i {
+    position: relative;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    border: 2px solid var(--neel-600);
+    background: var(--paper);
+  }
+  .g-knots i.on {
+    background: var(--neel-500);
+    border-color: var(--neel-500);
+  }
+  /* A ruled slip: the list of pages opened. */
+  .g-list {
+    border-radius: 3px;
+    background-color: var(--paper);
+    background-image: repeating-linear-gradient(180deg, transparent 0 0.85rem, rgb(76 86 190 / 0.14) 0.85rem calc(0.85rem + 1px));
+    background-size: 100% 2.6rem;
+    background-position: 0 0.55rem;
+    background-repeat: no-repeat;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.08);
+    --rot: -0.6deg;
+  }
+  .g:focus-visible {
+    outline-offset: 4px;
+  }
+
+  /* ---------- The desk ---------- */
+  .desk {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 25rem);
+    gap: 3rem;
+    align-items: start;
+    padding-block: 2.5rem var(--section);
+  }
+  .no-storage {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.85rem 1rem;
+    border-radius: var(--r);
+    background: var(--warn-soft);
+    color: var(--warn);
+    font-weight: 560;
+  }
+  .no-storage :global(svg) {
+    margin-top: 0.15rem;
+  }
+  .desk-main,
+  .desk-side {
+    display: grid;
+    gap: 3rem;
+    min-width: 0;
+  }
+  .dsec {
+    display: grid;
+    gap: 1.1rem;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .dsec-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem 1rem;
+  }
+  .dsec-head > div:first-child {
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
+  .dsec-head > :global(.dclear) {
+    flex: 0 0 auto;
+  }
+  .dsec-head h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-size: var(--fs-lg);
+  }
+  .dsec-head h2:focus {
+    outline: none;
+  }
+  .dsec-head h2:focus-visible {
+    outline: 2px solid var(--focus);
+  }
+  .dsec-n {
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .dsec-sub {
+    margin-top: 0.2rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    max-width: 52ch;
+  }
+
+  /* ---------- Pinned: index cards pinned to a cloth board ---------- */
+  .board {
+    position: relative;
+    padding: 1.75rem 1.25rem 1.5rem;
+    border-radius: var(--r-lg);
+    background-color: var(--neel-50);
+    /* A fine plain weave: the cloth the cards are pinned to. */
+    background-image:
+      repeating-linear-gradient(0deg, rgb(59 68 166 / 0.06) 0 2px, transparent 2px 5px),
+      repeating-linear-gradient(90deg, rgb(59 68 166 / 0.05) 0 2px, transparent 2px 5px);
+    box-shadow:
+      inset 0 0 0 1px rgb(17 20 58 / 0.07),
+      inset 1px 2px 6px rgb(17 20 58 / 0.08);
+  }
+  .pins {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+    gap: 1.25rem 1rem;
+  }
+  .pins:empty {
+    display: none;
+  }
+  .pinned {
+    position: relative;
+    display: grid;
+    transform: rotate(var(--tilt, 0deg));
+  }
+  .pinned :global(.lib-card) {
+    padding-top: 0.9rem;
+  }
+  .unpin {
+    position: absolute;
+    z-index: 2;
+    top: 0.25rem;
+    left: 50%;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-left: -1.375rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+  }
+  .pushpin {
+    width: 1.05rem;
+    height: 1.05rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow:
+      inset 1.5px 1.5px 0 var(--haldi-200),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.2),
+      3px 6px 6px rgb(17 20 58 / 0.16);
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease);
+  }
+  .unpin-tip {
+    position: absolute;
+    left: calc(50% + 0.85rem);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    background: var(--neel-950);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms var(--ease);
+  }
+  .unpin:hover .pushpin,
+  .unpin:focus-visible .pushpin {
+    transform: translate(-1px, -2px);
+    box-shadow:
+      inset 1.5px 1.5px 0 var(--haldi-200),
+      2.5px 4px 0 rgb(17 20 58 / 0.16),
+      4px 9px 8px rgb(17 20 58 / 0.18);
+  }
+  .unpin:hover .unpin-tip,
+  .unpin:focus-visible .unpin-tip {
+    opacity: 1;
+  }
+  .undo-slip {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    padding: 1rem 1.15rem;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: 6px;
+    background: rgb(255 255 255 / 0.7);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .undo-slip :global(strong) {
+    color: var(--ink);
+  }
+
+  /* Empty states */
+  .empty[hidden] {
+    display: none;
+  }
+  .empty-board {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .slot {
+    display: grid;
+    place-items: center;
+    height: 7.5rem;
+    border: 2px dashed var(--neel-300);
+    border-radius: 6px;
+    color: var(--neel-400);
+    background: rgb(255 255 255 / 0.55);
+    transform: rotate(-1.5deg);
+  }
+  .empty-text {
+    display: grid;
+    gap: 0.5rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    max-width: 50ch;
+  }
+  .empty-t {
+    font-size: var(--fs-md);
+    font-weight: 680;
+    color: var(--ink);
+  }
+  .ideas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    align-items: baseline;
+  }
+  .ideas span {
+    font-weight: 600;
+    color: var(--ink-3);
+    font-size: var(--fs-xs);
+  }
+  .ideas a,
+  .note-ideas a {
+    color: var(--primary);
+    font-weight: 600;
+    text-underline-offset: 3px;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+  }
+  .ideas a:hover,
+  .note-ideas a:hover {
+    text-decoration-color: currentColor;
+  }
+  .empty :global(.empty-note) {
+    max-width: 26rem;
+    margin: 0.75rem 0 0 0.5rem;
+  }
+  .note-ideas {
+    margin: 0.6rem 0 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .empty-recent p {
+    padding: 1rem 1.15rem;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: 6px;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+
+  /* ---------- In progress: sticky notes (yellow: something to act on) ---------- */
+  .notes {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+    gap: 1.75rem 1.25rem;
+  }
+  .notes:empty {
+    display: none;
+  }
+  .note {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-height: 11rem;
+    padding: 1.4rem 1.2rem 1.1rem;
+    border-radius: 2px 2px 3px 14px / 2px 2px 3px 6px;
+    background:
+      linear-gradient(170deg, rgb(255 255 255 / 0.35), transparent 40%),
+      #fff3a6;
+    transform: rotate(var(--tilt, -0.5deg));
+    box-shadow:
+      0 1px 1px rgb(17 20 58 / 0.08),
+      3px 8px 14px -6px rgb(17 20 58 / 0.28),
+      inset 0 -2px 0 #f2df6f;
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease);
+  }
+  .note:hover {
+    transform: rotate(var(--tilt, -0.5deg)) translateY(-3px);
+    box-shadow:
+      0 1px 1px rgb(17 20 58 / 0.08),
+      5px 14px 20px -8px rgb(17 20 58 / 0.32),
+      inset 0 -2px 0 #f2df6f;
+  }
+  .note.done {
+    background:
+      linear-gradient(170deg, rgb(255 255 255 / 0.35), transparent 40%),
+      #d6f5dc;
+    box-shadow:
+      0 1px 1px rgb(17 20 58 / 0.08),
+      3px 8px 14px -6px rgb(17 20 58 / 0.28),
+      inset 0 -2px 0 #ade6ba;
+  }
+  .tape {
+    position: absolute;
+    top: -0.6rem;
+    left: 50%;
+    width: 4.8rem;
+    height: 1.3rem;
+    margin-left: -2.4rem;
+    transform: rotate(calc(var(--tilt, -0.5deg) * -3 - 2deg));
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.8), rgb(246 247 252 / 0.72));
+    box-shadow:
+      0 0 0 0.5px rgb(17 20 58 / 0.1),
+      0 1px 2px rgb(17 20 58 / 0.16);
+  }
+  .mood {
+    font-size: 1.45rem;
+    line-height: 1;
+    color: var(--pen-ink);
+  }
+  .note-t {
+    margin-top: 0.15rem;
+    font-size: var(--fs-md);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .note-t a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  /* The whole note opens the draft. */
+  .note-t a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .note:hover .note-t a {
+    text-decoration: underline;
+    text-decoration-color: var(--pen-ink);
+    text-underline-offset: 3px;
+  }
+  .note-t a:focus-visible {
+    outline: none;
+  }
+  .note:has(.note-t a:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+  .note-who {
+    font-size: var(--fs-sm);
+    font-weight: 620;
+    color: var(--ink);
+  }
+  .note-k {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .note-bar {
+    display: block;
+    flex-shrink: 0;
+    margin-top: auto;
+    height: 7px;
+    border-radius: 999px;
+    background: rgb(59 68 166 / 0.16);
+    overflow: hidden;
+  }
+  .note-bar > span {
+    display: block;
+    height: 100%;
+    width: var(--p, 0%);
+    border-radius: 999px;
+    background: var(--neel-600);
+  }
+  .note-c {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .note-c :global(.note-tick) {
+    display: none;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .note.done .note-c :global(.note-tick) {
+    display: inline-block;
+  }
+
+  /* ---------- Recently viewed: a list, newest first ---------- */
+  .recent {
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem 0;
+    border-radius: 4px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.06);
+  }
+  .recent:empty {
+    display: none;
+  }
+  .rv {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.55rem 0.9rem;
+  }
+  .rv + .rv {
+    border-top: 1px solid var(--line);
+  }
+  .rv:hover {
+    background: var(--canvas);
+  }
+  .rv-ic {
+    width: 2.25rem;
+    height: 2.25rem;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.07),
+      1px 2px 0 rgb(17 20 58 / 0.08);
+  }
+  .rv-ic :global(svg) {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .rv-text {
+    display: grid;
+    min-width: 0;
+  }
+  .rv-t {
+    font-size: var(--fs-sm);
+    font-weight: 640;
+    line-height: 1.3;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .rv-t::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  .rv:hover .rv-t {
+    color: var(--primary);
+  }
+  .rv-t:focus-visible {
+    outline: none;
+  }
+  .rv:has(.rv-t:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+    border-radius: 4px;
+  }
+  .rv-k {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    font-weight: 560;
+  }
+  .rv-when {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 1023px) {
+    .desk {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .dsec-head {
+      flex-wrap: wrap;
+    }
+    .empty-board {
+      grid-template-columns: 1fr;
+    }
+    .slot {
+      height: 4.5rem;
+      width: 8rem;
+    }
+    .board {
+      padding: 1.5rem 0.9rem 1.25rem;
+    }
+    .glance {
+      gap: 0.9rem 0.75rem;
+    }
+    .g {
+      min-height: 5.6rem;
+      padding: 0.7rem 0.85rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .g,
+    .note,
+    .pushpin {
+      transition: none;
+    }
+    .g:hover {
+      --lift: 0;
+    }
+    .note:hover {
+      transform: rotate(var(--tilt, -0.5deg));
+    }
+  }
+</style>

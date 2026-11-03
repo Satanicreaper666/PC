@@ -1,0 +1,261 @@
+---
+/** Interview kit for one JD: questions with what a strong answer shows, then strong and warning signals. */
+import Icon from "../ui/Icon.astro";
+import Callout from "../content/Callout.astro";
+import PenTick from "../marks/PenTick.astro";
+import PenCross from "../marks/PenCross.astro";
+
+interface Props {
+  /** Role name, used in the printed heading. */
+  role: string;
+  interview: { q: string; look?: string }[];
+  green: string[];
+  red: string[];
+  blank?: boolean;
+}
+const { role, interview, green, red, blank = false } = Astro.props;
+---
+
+<section class="jd-kit" id="interview-kit" aria-labelledby="kit-title">
+  <p class="print-title">Interview kit: {role}</p>
+  <div class="kit-head">
+    <h2 id="kit-title">Interview kit</h2>
+    <button class="btn btn-secondary btn-sm" type="button" data-print-kit data-print="hide">
+      <Icon name="printer" size={16} />
+      Print the kit
+    </button>
+  </div>
+  <p class="intro">
+    Ask every candidate the same questions in the same order. Each interviewer scores the answers on their own, against what a strong
+    answer shows, before the panel meets. Record the evidence on the <a href="/toolkit/interview-evaluation-form/">interview evaluation form</a>.
+  </p>
+  {blank && <p class="intro">Replace the part in square brackets, and add one question for each technical skill the role needs.</p>}
+
+  <ol class="qs">
+    {
+      interview.map((it) => (
+        <li class="q">
+          <p class="q-text">{it.q}</p>
+          {it.look && (
+            <div class="look">
+              <p class="look-h">
+                <span class="hl hl-green hl-full" data-mark>What a strong answer shows</span>
+              </p>
+              <p>{it.look}</p>
+            </div>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="signals">
+    {
+      green.length > 0 && (
+        <div class="sig sig-good">
+          <h3>Strong signals</h3>
+          <ul class="marked">
+            {green.map((g) => (
+              <li>
+                <PenTick />
+                <span>{g}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+    {
+      red.length > 0 && (
+        <div class="sig sig-warn">
+          <h3>Warning signs</h3>
+          <ul class="marked">
+            {red.map((r) => (
+              <li>
+                <PenCross />
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+  </div>
+  <p class="fair">
+    Treat these as prompts for follow-up questions, not as a verdict. Check each one against evidence from the interview, a work sample
+    or a reference, and never against personal details such as age, gender, marital status, family plans, religion or caste.
+  </p>
+  <Callout type="note" title="If you set a work sample">
+    Keep it short: two to three hours at most for a take-home task, or pay for anything longer. Give every candidate the same brief, time
+    and scoring guide, and never ask for real work you will use.
+  </Callout>
+</section>
+
+<style>
+  .jd-kit {
+    display: grid;
+    gap: 1.1rem;
+    min-width: 0;
+  }
+  .print-title {
+    display: none;
+  }
+  .kit-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1rem;
+  }
+  h2 {
+    font-size: var(--fs-xl);
+  }
+  .intro {
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+  .intro a {
+    color: var(--primary);
+    font-weight: 560;
+    text-underline-offset: 3px;
+  }
+  .qs {
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.85rem;
+    counter-reset: q;
+  }
+  .q {
+    counter-increment: q;
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+  }
+  .q-text {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+  .q-text::before {
+    content: counter(q);
+    display: grid;
+    place-items: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 999px;
+    background: var(--neel-700);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  .look {
+    margin-left: 2.6rem;
+    padding: 0.7rem 0.9rem 0.8rem;
+    border-left: 3px solid var(--neel-300);
+    background: var(--canvas);
+    border-radius: 0 var(--r) var(--r) 0;
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .look-h {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink);
+    margin-bottom: 0.35rem;
+  }
+  .signals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+  }
+  .sig {
+    padding: 1rem 1.1rem 1.1rem;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+  }
+  .sig-good {
+    background: var(--good-soft);
+    border-color: color-mix(in srgb, var(--good) 22%, transparent);
+  }
+  .sig-warn {
+    background: var(--warn-soft);
+    border-color: color-mix(in srgb, var(--warn) 22%, transparent);
+  }
+  .sig h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: var(--fs-base);
+  }
+  .sig-good h3 {
+    color: var(--good);
+  }
+  .sig-warn h3 {
+    color: var(--warn);
+  }
+  /* A pen tick or cross in place of each bullet; the list's heading says what they mean. */
+  .marked {
+    list-style: none;
+    margin: 0.65rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+  .marked li {
+    display: grid;
+    grid-template-columns: 1.35rem minmax(0, 1fr);
+    column-gap: 0.45rem;
+    align-items: start;
+  }
+  .marked li :global(.pen) {
+    width: 1.3rem;
+    height: 1.3rem;
+    margin-top: 0.05rem;
+  }
+  .fair {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+  @media (max-width: 480px) {
+    .look {
+      margin-left: 0;
+    }
+  }
+  @media print {
+    /* Marks print whole, even if they never scrolled into view. */
+    .jd-kit :global(.pen-stroke) {
+      stroke-dashoffset: 0 !important;
+    }
+    .print-title {
+      display: block;
+      font-size: 16pt;
+      font-weight: 650;
+    }
+    .kit-head {
+      display: none;
+    }
+    .q,
+    .sig {
+      break-inside: avoid;
+    }
+    .q-text::before {
+      background: none;
+      color: #000;
+      border: 1px solid #000;
+    }
+  }
+</style>

@@ -1,0 +1,461 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import CalcScenarios from "../calc/CalcScenarios.astro";
+import Num from "../calc/Num.astro";
+import Icon from "../ui/Icon.astro";
+---
+
+<CalcShell id="salary-band-designer" resultLabel="Your grade structure" inputsLabel="Design the structure" scenarios="external">
+  <Fragment slot="inputs">
+    <Num name="grades" label="Number of grades" value="6" suffix="grades" help="Between 2 and 12." />
+    <Num
+      name="mid1"
+      label="Midpoint of the lowest grade (annual CTC)"
+      prefix="₹"
+      value="4,00,000"
+      help="Target pay for someone fully competent in the role, for example the market median from your salary survey, adjusted for your pay policy."
+    />
+    <Num name="prog" label="Midpoint progression between grades" value="25" suffix="%" help="How much each grade's midpoint rises over the one below." />
+    <div class="two">
+      <Num name="spreadLow" label="Range spread, lowest grade" value="40" suffix="%" />
+      <Num name="spreadHigh" label="Range spread, highest grade" value="60" suffix="%" />
+    </div>
+    <p class="hint">Spread = (maximum − minimum) ÷ minimum. Grades in between move evenly from one spread to the other.</p>
+    <div class="group-wrap">
+      <fieldset class="group">
+        <legend>Check a salary <span>optional</span></legend>
+        <div class="two">
+          <Num name="checkGrade" label="Grade" value="3" />
+          <Num name="checkPay" label="Annual CTC" prefix="₹" value="6,00,000" />
+        </div>
+      </fieldset>
+    </div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="range" data-out="range"></span>
+    <span class="sub" data-out="summary"></span>
+  </Fragment>
+  <div slot="visual" class="chart" data-chart>
+    <ul class="legend" aria-hidden="true">
+      <li><span class="k-bar"></span>Range, minimum to maximum</li>
+      <li><span class="k-mid"></span>Midpoint</li>
+      <li data-k-check><span class="k-dot"></span>Salary you checked</li>
+    </ul>
+    <div class="plot" data-plot></div>
+    <div class="tip" role="tooltip" hidden></div>
+  </div>
+</CalcShell>
+
+<section class="table-area" data-table-area aria-labelledby="sbd-table-title">
+  <div class="table-head">
+    <h2 id="sbd-table-title" class="t">Grade table</h2>
+    <button class="btn btn-secondary btn-sm" type="button" data-csv><Icon name="download" size={16} /> Download CSV</button>
+  </div>
+  <div class="tw" role="region" tabindex="0" aria-labelledby="sbd-table-title">
+    <table class="grades">
+      <caption class="visually-hidden">Minimum, midpoint and maximum annual CTC for each grade, with range spread and overlap with the next grade</caption>
+      <thead>
+        <tr>
+          <th scope="col">Grade</th>
+          <th scope="col">Minimum</th>
+          <th scope="col">Midpoint</th>
+          <th scope="col">Maximum</th>
+          <th scope="col">Spread</th>
+          <th scope="col">Overlap with next grade</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+  </div>
+</section>
+<CalcScenarios id="salary-band-designer" external />
+
+<script>
+  import { bindCalculator, inr, num, type CalcLine } from "../../scripts/calc-kit";
+  import { designBands, checkPay, niceTicks, type Grade } from "../../lib/calc/salary-band-designer";
+
+  const root = document.querySelector<HTMLElement>('[data-calc="salary-band-designer"]')!;
+  const chart = root.querySelector<HTMLElement>("[data-chart]")!;
+  const plot = chart.querySelector<HTMLElement>("[data-plot]")!;
+  const tip = chart.querySelector<HTMLElement>(".tip")!;
+  const tableArea = document.querySelector<HTMLElement>("[data-table-area]")!;
+  const rowsEl = tableArea.querySelector<HTMLElement>("[data-rows]")!;
+  const SVG = "http://www.w3.org/2000/svg";
+
+  let last: { grades: Grade[]; check: { grade: number; pay: number } | null } = { grades: [], check: null };
+
+  const lakh = (n: number) => {
+    if (n >= 1e7) return `₹${num(n / 1e7, 2)} crore`;
+    if (n >= 1e5) return `₹${num(n / 1e5, 2)} lakh`;
+    return inr(n);
+  };
+
+  function el<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number>, parent?: Element) {
+    const e = document.createElementNS(SVG, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+    parent?.appendChild(e);
+    return e;
+  }
+
+  function draw() {
+    const { grades, check } = last;
+    plot.replaceChildren();
+    if (!grades.length) return;
+    const W = Math.max(280, plot.clientWidth);
+    const rowH = 32;
+    const barH = 16;
+    const left = 62;
+    const right = 12;
+    const top = 6;
+    const axisH = 34;
+    const H = top + grades.length * rowH + axisH;
+    const lo = Math.min(grades[0].min, check?.pay ?? Infinity);
+    const hi = Math.max(grades[grades.length - 1].max, check?.pay ?? 0);
+    const ticks = niceTicks(lo, hi, W < 420 ? 4 : 6);
+    const d0 = ticks[0];
+    const d1 = ticks[ticks.length - 1];
+    const x = (v: number) => left + ((v - d0) / (d1 - d0)) * (W - left - right);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "group", "aria-label": "Band chart. The grade table below lists every value." });
+    // gridlines and axis labels
+    const unit = d1 >= 1e7 ? 1e7 : 1e5;
+    for (const t of ticks) {
+      el("line", { x1: x(t), x2: x(t), y1: top, y2: top + grades.length * rowH, class: "grid" }, svg);
+      const lab = el("text", { x: x(t), y: top + grades.length * rowH + 16, class: "tick", "text-anchor": "middle" }, svg);
+      lab.textContent = num(t / unit, 1);
+    }
+    const ax = el("text", { x: W - right, y: H - 2, class: "axis", "text-anchor": "end" }, svg);
+    ax.textContent = unit === 1e7 ? "₹ crore a year" : "₹ lakh a year";
+    // bars, highest grade at the top
+    grades.forEach((g, k) => {
+      const row = grades.length - 1 - k;
+      const cy = top + row * rowH + rowH / 2;
+      const name = el("text", { x: 0, y: cy + 4, class: "gname" }, svg);
+      name.textContent = `Grade ${g.grade}`;
+      const label = `Grade ${g.grade}: ${inr(g.min)} to ${inr(g.max)}, midpoint ${inr(g.mid)}, spread ${num(g.spreadPct, 1)}%`;
+      const grp = el("g", { class: "band", tabindex: 0, role: "img", "aria-label": label, "data-tip": label }, svg);
+      el("rect", { x: x(g.min) - 2, y: cy - rowH / 2 + 2, width: x(g.max) - x(g.min) + 4, height: rowH - 4, class: "hit" }, grp);
+      el("rect", { x: x(g.min), y: cy - barH / 2, width: Math.max(2, x(g.max) - x(g.min)), height: barH, rx: 4, class: "bar" }, grp);
+      el("rect", { x: x(g.mid) - 1, y: cy - barH / 2 - 3, width: 2, height: barH + 6, class: "mid" }, grp);
+      if (check && check.grade === g.grade) {
+        const r = checkPay(g, check.pay);
+        const dotLabel = `Salary you checked: ${inr(check.pay)}, compa-ratio ${num(r.compaRatio, 2)}`;
+        const dot = el("circle", { cx: x(check.pay), cy, r: 6, class: "dot", tabindex: 0, role: "img", "aria-label": dotLabel, "data-tip": dotLabel }, svg);
+        dot.appendChild(document.createElementNS(SVG, "title")).textContent = dotLabel;
+      }
+    });
+    plot.appendChild(svg);
+  }
+
+  function showTip(target: Element, clientX?: number) {
+    const t = target.closest<SVGElement | HTMLElement>("[data-tip]");
+    if (!t) return hideTip();
+    tip.textContent = t.getAttribute("data-tip");
+    tip.hidden = false;
+    const cb = chart.getBoundingClientRect();
+    const tb = t.getBoundingClientRect();
+    const cx = (clientX ?? tb.left + tb.width / 2) - cb.left;
+    tip.style.left = `${Math.max(0, Math.min(cb.width - tip.offsetWidth, cx - tip.offsetWidth / 2))}px`;
+    tip.style.top = `${tb.top - cb.top - tip.offsetHeight - 6}px`;
+  }
+  function hideTip() {
+    tip.hidden = true;
+  }
+  chart.addEventListener("pointermove", (e) => showTip(e.target as Element, e.clientX));
+  chart.addEventListener("pointerleave", hideTip);
+  chart.addEventListener("focusin", (e) => showTip(e.target as Element));
+  chart.addEventListener("focusout", hideTip);
+  new ResizeObserver(() => draw()).observe(plot);
+
+  function renderTable(grades: Grade[]) {
+    rowsEl.replaceChildren(
+      ...[...grades].reverse().map((g) => {
+        const tr = document.createElement("tr");
+        const th = document.createElement("th");
+        th.scope = "row";
+        th.textContent = `Grade ${g.grade}`;
+        const cells = [inr(g.min), inr(g.mid), inr(g.max), `${num(g.spreadPct, 1)}%`, g.overlapPct === null ? "Top grade" : g.overlapPct >= 0 ? `${num(g.overlapPct, 0)}%` : `None: gap of ${inr(g.gapToNext)}`];
+        tr.append(th, ...cells.map((c) => Object.assign(document.createElement("td"), { textContent: c })));
+        return tr;
+      })
+    );
+  }
+
+  tableArea.querySelector("[data-csv]")?.addEventListener("click", () => {
+    const head = "Grade,Minimum,Midpoint,Maximum,Spread %,Overlap with next grade %";
+    const lines = last.grades.map((g) => [g.grade, Math.round(g.min), Math.round(g.mid), Math.round(g.max), g.spreadPct.toFixed(1), g.overlapPct === null ? "" : g.overlapPct.toFixed(1)].join(","));
+    const blob = new Blob([[head, ...lines].join("\n")], { type: "text/csv" });
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "salary-bands.csv" });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  bindCalculator("salary-band-designer", (v) => {
+    const r = designBands({
+      grades: v.num("grades"),
+      firstMidpoint: v.num("mid1"),
+      progressionPct: v.num("prog"),
+      spreadLowPct: v.num("spreadLow"),
+      spreadHighPct: v.num("spreadHigh")
+    });
+    if (!r.ok) {
+      last = { grades: [], check: null };
+      draw();
+      tableArea.hidden = true;
+      return { outputs: { range: "", summary: "" }, message: r.message };
+    }
+    tableArea.hidden = false;
+    const cg = Math.floor(v.num("checkGrade"));
+    const cp = v.num("checkPay");
+    const g = r.grades.find((x) => x.grade === cg);
+    const check = g && cp > 0 ? { grade: cg, pay: cp } : null;
+    last = { grades: r.grades, check };
+    draw();
+    renderTable(r.grades);
+    chart.querySelector<HTMLElement>("[data-k-check]")!.hidden = !check;
+
+    const overlaps = r.grades.map((x) => x.overlapPct).filter((o): o is number => o !== null);
+    const oMin = Math.min(...overlaps);
+    const oMax = Math.max(...overlaps);
+    const overlapText = oMax < 0 ? "grades don't overlap" : Math.round(oMin) === Math.round(oMax) ? `neighbouring grades overlap ${num(oMin, 0)}%` : `neighbouring grades overlap ${num(Math.max(0, oMin), 0)}% to ${num(oMax, 0)}%`;
+
+    const lines: CalcLine[] = [];
+    const notes = [
+      "Overlap of about a third to a half lets people grow in a grade without a promotion. Very high overlap blurs the difference between grades; a gap makes promotions jump.",
+      "Check each midpoint against current market data for the roles in that grade before you use the structure."
+    ];
+    if (check && g) {
+      const c = checkPay(g, check.pay);
+      lines.push(
+        { label: `Grade ${g.grade} range`, value: `${lakh(g.min)} to ${lakh(g.max)}`, note: `Midpoint ${inr(g.mid)}` },
+        { label: "Compa-ratio", value: num(c.compaRatio, 2), note: "Pay ÷ midpoint" },
+        { label: "Range penetration", value: `${num(c.penetrationPct, 0)}%`, note: "0% is the minimum, 100% the maximum" },
+        { label: "Position", value: c.text.replace(/^In the |^/, "").replace(/^./, (s) => s.toUpperCase()), strong: true, tone: c.position === "below" || c.position === "above" ? ("bad" as const) : undefined },
+        ...(c.position === "below" ? [{ label: "Increase to reach the minimum", value: inr(c.distance), tone: "bad" as const }] : []),
+        ...(c.position === "above" ? [{ label: "Above the maximum by", value: inr(c.distance), tone: "bad" as const }] : [])
+      );
+      if (c.position === "above") notes.unshift("Pay above the maximum is often called red-circled. Many companies hold base pay and give one-off payments until the range catches up.");
+      if (c.position === "below") notes.unshift("Pay below the minimum is often called green-circled. Plan to bring it to the minimum, in steps if the gap is large.");
+    } else if (cg || cp) {
+      notes.unshift(`To check a salary, enter a grade from 1 to ${r.grades.length} and an annual CTC.`);
+    }
+    return {
+      outputs: {
+        range: `${lakh(r.lowest)} to ${lakh(r.highest)}`,
+        summary: `${r.grades.length} grades; midpoints rise ${num(v.num("prog"), 1)}% a grade; ${overlapText}.`
+      },
+      lines,
+      notes
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: end;
+  }
+  .hint {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    line-height: 1.45;
+    margin-top: -0.4rem;
+  }
+  .group {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .group-wrap {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .group legend {
+    padding: 0;
+    margin-bottom: 0.6rem;
+    font-weight: 650;
+    font-size: var(--fs-sm);
+  }
+  .group legend span {
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+  .group legend span::before {
+    content: " · ";
+  }
+  .range {
+    font-size: var(--fs-xl);
+    font-weight: 660;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--neel-800);
+  }
+  .chart {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+  .legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .k-bar {
+    width: 18px;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--c1);
+  }
+  .k-mid {
+    width: 2px;
+    height: 14px;
+    background: var(--ink);
+  }
+  .k-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--c2);
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--line-strong);
+  }
+  .plot {
+    width: 100%;
+    min-height: 2rem;
+  }
+  .plot :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .plot :global(.grid) {
+    stroke: var(--line);
+    stroke-width: 1;
+  }
+  .plot :global(.tick) {
+    font-size: 12px;
+    fill: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .plot :global(.axis) {
+    font-size: 12px;
+    fill: var(--ink-3);
+  }
+  .plot :global(.gname) {
+    font-size: 13px;
+    font-weight: 560;
+    fill: var(--ink-2);
+  }
+  .plot :global(.hit) {
+    fill: transparent;
+  }
+  .plot :global(.bar) {
+    fill: var(--c1);
+    transition: fill 150ms;
+  }
+  .plot :global(.band:hover .bar),
+  .plot :global(.band:focus-visible .bar) {
+    fill: var(--neel-500);
+  }
+  .plot :global(.band:focus-visible),
+  .plot :global(.dot:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .plot :global(.mid) {
+    fill: var(--ink);
+  }
+  .plot :global(.dot) {
+    fill: var(--c2);
+    stroke: var(--paper);
+    stroke-width: 2;
+  }
+  .tip {
+    position: absolute;
+    z-index: 5;
+    max-width: 19rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--r-sm);
+    background: var(--ink);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    line-height: 1.35;
+    pointer-events: none;
+    box-shadow: var(--shadow-float);
+  }
+  .table-area {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    display: grid;
+    gap: 0.75rem;
+  }
+  .table-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .table-head .t {
+    font-size: var(--fs-md);
+  }
+  .tw {
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .grades {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .grades th,
+  .grades :global(td),
+  .grades :global(th) {
+    padding: 0.55rem 0.85rem;
+    text-align: right;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line);
+  }
+  .grades thead th {
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-weight: 620;
+    border-bottom-color: var(--line-strong);
+  }
+  .grades thead th:first-child,
+  .grades :global(tbody th) {
+    text-align: left;
+  }
+  .grades :global(tbody th) {
+    font-weight: 620;
+  }
+  .grades :global(tbody tr:last-child > *) {
+    border-bottom: 0;
+  }
+  @media print {
+    .tip,
+    [data-csv] {
+      display: none;
+    }
+  }
+</style>

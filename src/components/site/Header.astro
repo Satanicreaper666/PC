@@ -1,0 +1,450 @@
+---
+import Logo from "../ui/Logo.astro";
+import Icon from "../ui/Icon.astro";
+import PinIcon from "../desk/PinIcon.astro";
+import { BUILD_ID } from "../desk/build";
+import { NAV } from "../../data/site";
+import { AUDIENCES, AUDIENCE_INFO } from "../../data/taxonomy";
+
+const path = Astro.url.pathname;
+// Only the most specific matching item is current ("People analytics", not also "Toolkit").
+const current = [...NAV].filter((n) => path === n.href || path.startsWith(n.href)).sort((a, b) => b.href.length - a.href.length)[0]?.href;
+const isCurrent = (href: string) => href === current;
+const onDesk = path === "/desk/";
+---
+
+<header class="site-header" data-header data-build={BUILD_ID}>
+  <div class="wrap bar">
+    <a class="brand" href="/" aria-label="PeopleCraft home">
+      <Logo size={28} />
+    </a>
+
+    <nav class="primary" aria-label="Library">
+      <ul>
+        {
+          NAV.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="tools">
+      <button class="search-trigger" type="button" data-search-open aria-haspopup="dialog" aria-label="Search the library">
+        <Icon name="search" size={18} />
+        <span class="search-text">Search the library</span>
+        <kbd class="kbd" aria-hidden="true">/</kbd>
+      </button>
+      <a class="desk-link" href="/desk/" aria-current={onDesk ? "page" : undefined}>
+        <PinIcon size={19} />
+        <span class="desk-label">My desk<span class="visually-hidden" data-desk-count-text></span></span>
+        <span class="desk-count" data-desk-count aria-hidden="true" hidden>0</span>
+      </a>
+      <a class="btn btn-sm start" href="/start/">Start here</a>
+      <button class="menu-btn" type="button" data-menu-open aria-expanded="false" aria-controls="mobile-menu">
+        <Icon name="menu" size={22} />
+        <span class="visually-hidden">Open menu</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" data-menu hidden>
+    <div class="mobile-top wrap">
+      <Logo size={28} tone="inverse" />
+      <button class="menu-close" type="button" data-menu-close>
+        <Icon name="x" size={24} />
+        <span class="visually-hidden">Close menu</span>
+      </button>
+    </div>
+    <nav class="wrap mobile-nav" aria-label="Library">
+      <ul class="mobile-primary">
+        {
+          NAV.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mobile-label">Start here as</p>
+      <ul class="mobile-start">
+        {
+          AUDIENCES.map((a) => (
+            <li>
+              <a href={AUDIENCE_INFO[a].path}>{AUDIENCE_INFO[a].label}</a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="mobile-desk" href="/desk/" aria-current={onDesk ? "page" : undefined}>
+        <PinIcon size={20} />
+        <span>My desk<span class="visually-hidden" data-desk-count-text></span></span>
+        <span class="mobile-count" data-desk-count aria-hidden="true" hidden>0</span>
+        <span class="mobile-desk-note">Pins, drafts and reading progress, kept in this browser</span>
+      </a>
+      <button class="btn btn-accent mobile-search" type="button" data-search-open>
+        <Icon name="search" size={18} /> Search the library
+      </button>
+    </nav>
+  </div>
+</header>
+{/* Short confirmations (pinned, link copied, chapter read), from src/scripts/desk.ts. Outside the header so it sits against the screen. */}
+<div class="desk-toast" role="status" data-desk-toast data-print="hide"></div>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 1px solid transparent;
+    transition: border-color 200ms var(--ease);
+  }
+  /* The frosted glass is on a layer behind the bar, not on the header itself: a backdrop-filter on the
+     header would make it the box the fixed phone menu is placed in, and cut the menu to the bar's height. */
+  .site-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgb(255 255 255 / 0.94);
+    backdrop-filter: saturate(1.2) blur(12px);
+    -webkit-backdrop-filter: saturate(1.2) blur(12px);
+  }
+  .site-header.scrolled {
+    border-bottom-color: var(--line);
+  }
+  .bar {
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+  }
+  .brand {
+    text-decoration: none;
+    border-radius: 8px;
+  }
+  .primary {
+    margin-inline-start: var(--s-3);
+  }
+  .primary ul {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .primary a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0 0.8rem;
+    border-radius: var(--r);
+    color: var(--ink-2);
+    font-weight: 560;
+    font-size: var(--fs-sm);
+    text-decoration: none;
+    transition: color 150ms, background-color 150ms;
+  }
+  .primary a:hover {
+    color: var(--ink);
+    background: var(--canvas);
+  }
+  .primary a[aria-current="page"] {
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--accent);
+    border-radius: 0;
+  }
+  .tools {
+    margin-inline-start: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.5rem;
+    min-width: 15rem;
+    padding: 0 0.75rem;
+    border: 1.5px solid var(--line);
+    border-radius: var(--r);
+    background: var(--canvas);
+    color: var(--ink-3);
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    transition: border-color 150ms;
+  }
+  .search-trigger:hover {
+    border-color: var(--line-strong);
+    color: var(--ink-2);
+  }
+  .search-text {
+    flex: 1;
+    text-align: left;
+  }
+  .kbd {
+    display: inline-flex;
+    min-width: 1.4rem;
+    justify-content: center;
+    padding: 0 0.35rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: var(--paper);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-3);
+    font-family: inherit;
+  }
+  /* My desk: a pushpin, the words, and how many things are pinned. */
+  .desk-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.5rem;
+    padding: 0 0.7rem;
+    border-radius: var(--r);
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 150ms, background-color 150ms;
+  }
+  .desk-link:hover {
+    color: var(--ink);
+    background: var(--canvas);
+  }
+  .desk-link[aria-current="page"] {
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--accent);
+    border-radius: 0;
+  }
+  .desk-count,
+  .mobile-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.3rem;
+    height: 1.3rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--neel-950);
+    font-size: 0.75rem;
+    font-weight: 720;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0.5px 1px 0 rgb(17 20 58 / 0.25);
+  }
+  .menu-btn,
+  .menu-close {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: var(--r);
+    background: transparent;
+    cursor: pointer;
+  }
+  .menu-btn:hover {
+    background: var(--canvas);
+  }
+
+  /* Mobile menu: full-screen neel panel (Aralya pattern) */
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--neel-950);
+    color: #fff;
+    overflow-y: auto;
+    --logo-bg: var(--neel-950);
+  }
+  .mobile-top {
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .menu-close {
+    display: inline-flex;
+    color: #fff;
+  }
+  .menu-close:hover {
+    background: rgb(255 255 255 / 0.08);
+  }
+  .mobile-nav {
+    padding-block: var(--s-5) var(--s-8);
+  }
+  .mobile-primary,
+  .mobile-start {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .mobile-primary a {
+    display: block;
+    padding: 0.55rem 0;
+    font-size: 2rem;
+    font-weight: 620;
+    font-stretch: 106%;
+    letter-spacing: -0.02em;
+    color: #fff;
+    text-decoration: none;
+  }
+  .mobile-primary a[aria-current="page"] {
+    color: var(--haldi-300);
+  }
+  .mobile-label {
+    margin-top: var(--s-6);
+    color: var(--neel-300);
+    font-size: var(--fs-sm);
+  }
+  .mobile-start a {
+    display: block;
+    padding: 0.5rem 0;
+    color: #e9ebf7;
+    font-size: var(--fs-md);
+    text-decoration: none;
+  }
+  .mobile-search {
+    margin-top: var(--s-6);
+    width: 100%;
+  }
+  .mobile-desk {
+    margin-top: var(--s-6);
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 0.25rem 0.6rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: var(--r-lg);
+    color: #fff;
+    font-size: var(--fs-md);
+    font-weight: 620;
+    text-decoration: none;
+  }
+  .mobile-desk:hover {
+    background: rgb(255 255 255 / 0.06);
+  }
+  .mobile-desk[aria-current="page"] {
+    border-color: var(--haldi-300);
+  }
+  .mobile-desk .mobile-count {
+    justify-self: start;
+  }
+  .mobile-desk-note {
+    grid-column: 1 / -1;
+    color: var(--neel-200);
+    font-size: var(--fs-sm);
+    font-weight: 450;
+  }
+
+  /* Confirmations: a slip of paper at the bottom of the screen. */
+  .desk-toast {
+    position: fixed;
+    z-index: 70;
+    left: 50%;
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+    max-width: min(32rem, calc(100vw - 2rem));
+    padding: 0.7rem 1.1rem;
+    border-radius: 4px;
+    background: var(--neel-950);
+    color: #fff;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    line-height: 1.4;
+    text-align: center;
+    box-shadow:
+      1.5px 2.5px 0 rgb(17 20 58 / 0.14),
+      3px 10px 22px -6px rgb(17 20 58 / 0.4);
+    opacity: 0;
+    transform: translate(-50%, 0.75rem);
+    pointer-events: none;
+    transition:
+      opacity 180ms var(--ease),
+      transform 260ms var(--ease-out);
+  }
+  .desk-toast:empty {
+    padding: 0;
+  }
+  .desk-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .desk-toast {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 1080px) {
+    .search-trigger {
+      min-width: 0;
+    }
+    .search-text,
+    .search-trigger .kbd {
+      display: none;
+    }
+    /* The pushpin alone; the words stay for screen readers. */
+    .desk-link {
+      width: 2.5rem;
+      padding: 0;
+      justify-content: center;
+    }
+    .desk-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+    .desk-count {
+      position: absolute;
+      top: 0.05rem;
+      right: -0.15rem;
+      min-width: 1.15rem;
+      height: 1.15rem;
+      font-size: 0.6875rem;
+    }
+  }
+  @media (max-width: 860px) {
+    .primary,
+    .start {
+      display: none;
+    }
+    .menu-btn {
+      display: inline-flex;
+    }
+    .search-trigger {
+      border: 0;
+      background: transparent;
+      width: 2.75rem;
+      height: 2.75rem;
+      justify-content: center;
+      padding: 0;
+    }
+    .tools {
+      gap: 0.15rem;
+    }
+    .desk-link {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+    .desk-link[aria-current="page"] {
+      border-radius: var(--r);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+  }
+</style>

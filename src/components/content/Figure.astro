@@ -1,0 +1,50 @@
+---
+/**
+ * Wrapper for every diagram: a title above, the drawing, and a caption that
+ * says how to read it. `wide` lets the figure break out of the text column.
+ */
+interface Props {
+  title: string;
+  caption?: string;
+  id?: string;
+  wide?: boolean;
+}
+const { title, caption, id, wide = false } = Astro.props;
+---
+
+<figure class:list={["figure", { wide }]} id={id}>
+  <p class="fig-title">{title}</p>
+  <div class="fig-body"><slot /></div>
+  {caption && <figcaption set:html={caption} />}
+</figure>
+
+<style>
+  .figure {
+    margin: 2rem 0;
+    padding: 1.25rem 1.25rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+  }
+  .fig-title {
+    font-weight: 650;
+    font-size: var(--fs-md);
+    letter-spacing: -0.01em;
+  }
+  .fig-body {
+    margin-top: 1rem;
+  }
+  figcaption {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+  @media print {
+    .figure {
+      break-inside: avoid;
+    }
+  }
+</style>

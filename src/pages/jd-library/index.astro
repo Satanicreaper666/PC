@@ -1,0 +1,807 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/site/Breadcrumbs.astro";
+import Icon from "../../components/ui/Icon.astro";
+import Callout from "../../components/content/Callout.astro";
+import LevelLadder from "../../components/jds/LevelLadder.astro";
+import { BLANK_JD_ID, LEVEL_INFO, LEVEL_ORDER, levelCounts } from "../../components/jds/jd-template";
+import { allJds, jdUrl, breadcrumbLd, type Jd } from "../../lib/library";
+
+const all = await allJds();
+const blank = all.find((j) => j.id === BLANK_JD_ID);
+const jds = all.filter((j) => j.id !== BLANK_JD_ID);
+
+const tally = (key: "industry" | "function") => {
+  const m = new Map<string, number>();
+  for (const j of jds) m.set(j.data[key], (m.get(j.data[key]) ?? 0) + 1);
+  return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+};
+const industries = tally("industry");
+const functions = tally("function");
+const levels = LEVEL_ORDER.map((l) => [l, jds.filter((j) => j.data.level === l).length] as const).filter(([, n]) => n > 0);
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const byLevelThenTitle = (a: Jd, b: Jd) => LEVEL_INFO[a.data.level].rank - LEVEL_INFO[b.data.level].rank || a.data.title.localeCompare(b.data.title);
+const groups = functions.map(([f]) => ({ key: f, items: jds.filter((j) => j.data.function === f).sort(byLevelThenTitle) }));
+const counts = levelCounts(jds);
+const STEPS = [1, 2, 3, 4, 5, 6];
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "JD library", href: "/jd-library/" }
+];
+const ld = [
+  breadcrumbLd(Astro.site, trail),
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "PeopleCraft JD library",
+    description: "Job descriptions for roles in India, each with an interview kit and competencies, ready to fill in and download.",
+    inLanguage: "en-IN",
+    hasPart: all.map((j) => ({ "@type": "WebPage", name: `${j.data.title}${j.id === BLANK_JD_ID ? "" : " job description"}`, url: new URL(jdUrl(j), Astro.site).toString() }))
+  }
+];
+---
+
+<BaseLayout
+  title="JD library: job description templates for India"
+  description={`${jds.length} job descriptions for roles in India, each with an interview kit and competencies. Fill in your company's details and download it as Word.`}
+  jsonLd={ld}
+  image="/og/jd-library.png"
+>
+  <header class="hub-head band">
+    <div class="wrap">
+      <Breadcrumbs trail={trail} />
+      <div class="hero-split hub-split">
+        <div class="hub-text">
+          <h1 class="display">JD library</h1>
+          <p class="lede">
+            {jds.length} job descriptions for roles across Indian workplaces, from medical representative to CHRO. Each comes with interview
+            questions, what a strong answer shows and the competencies to score. Fill in your company's details and download it as Word; nothing
+            you type leaves your browser.
+          </p>
+          <div class="hero-cta">
+            {
+              blank && (
+                <a class="btn btn-accent" href={jdUrl(blank)}>
+                  <Icon name="edit" size={18} />
+                  Start from a blank JD
+                </a>
+              )
+            }
+            <a class="btn btn-secondary" href="/handbooks/recruitment/writing-job-descriptions/">
+              <Icon name="book" size={18} />
+              How to write a good JD
+            </a>
+          </div>
+        </div>
+        <div class="hub-glance" data-hub-glance data-pagefind-ignore data-print="hide">
+          <h2 class="glance-label" id="by-level">{jds.length} roles by level</h2>
+          <LevelLadder counts={counts} bars compact hash="#find" label={`${jds.length} roles by level. Each opens the JDs at that level.`} />
+          <p class="spread">
+            Across{" "}
+            <a href="/jd-library/?group=function#find" data-group-link="function"><strong>{functions.length}</strong> functions</a>{" "}
+            and{" "}
+            <a href="/jd-library/?group=industry#find" data-group-link="industry"><strong>{industries.length}</strong> industries</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap filters" id="find" data-jd-filters data-pagefind-ignore>
+    <label class="find">
+      <Icon name="search" size={18} />
+      <span class="visually-hidden">Filter job descriptions</span>
+      <input type="search" placeholder="Filter by role or skill, e.g. payroll, sales" data-q autocomplete="off" />
+    </label>
+    <div class="picks">
+      <label class="pick">
+        <span class="pick-label">Function</span>
+        <select class="control" data-facet="function">
+          <option value="">All functions ({jds.length})</option>
+          {functions.map(([v, n]) => <option value={v}>{v} ({n})</option>)}
+        </select>
+      </label>
+      <label class="pick">
+        <span class="pick-label">Industry</span>
+        <select class="control" data-facet="industry">
+          <option value="">All industries ({jds.length})</option>
+          {industries.map(([v, n]) => <option value={v}>{v} ({n})</option>)}
+        </select>
+      </label>
+      <label class="pick">
+        <span class="pick-label">Level</span>
+        <select class="control" data-facet="level">
+          <option value="">All levels ({jds.length})</option>
+          {levels.map(([v, n]) => <option value={v}>{LEVEL_INFO[v].label} ({n})</option>)}
+        </select>
+      </label>
+    </div>
+    <div class="bar">
+      <div class="group-by" role="group" aria-label="Group the list by">
+        <span class="tiny muted" aria-hidden="true">Group by</span>
+        <button type="button" class="seg" aria-pressed="true" data-group="function">Function</button>
+        <button type="button" class="seg" aria-pressed="false" data-group="industry">Industry</button>
+      </div>
+      <p class="count tiny muted" data-count aria-live="polite"></p>
+      <button type="button" class="clear small" data-clear hidden>Clear filters</button>
+    </div>
+  </div>
+
+  <div class="wrap results" data-pagefind-ignore>
+    {
+      blank && (
+        <a class="blank-card" href={jdUrl(blank)}>
+          <svg class="blank-sheet" viewBox="0 0 40 48" aria-hidden="true" focusable="false">
+            <path class="bs-paper" d="M6 2.75h22l8.25 8.25V43.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4.75a2 2 0 0 1 2-2Z" />
+            <path class="bs-fold" d="M28 2.75V9a2 2 0 0 0 2 2h6.25Z" />
+            <circle class="bs-acc" cx="10.5" cy="10.5" r="2.3" />
+            {[16.5, 22.5, 28.5, 34.5, 40.5].map((y) => (
+              <circle class="bs-knot" cx="10.5" cy={y} r="1.9" />
+            ))}
+            <path class="bs-line" d="M15.5 10.5h10M15.5 16.5h14M15.5 22.5h11M15.5 34.5h9M15.5 40.5h13" />
+            <path class="bs-dash" d="M15.5 28.5h13" />
+          </svg>
+          <span>
+            <span class="t">No role that fits? Start from a blank JD</span>
+            <span class="d">A template with the six parts every good job description needs, prompts for each part and an interview kit for any role.</span>
+          </span>
+        </a>
+      )
+    }
+    <div class="groups" data-groups>
+      {
+        groups.map((g) => (
+          <section class="grp" data-grp aria-labelledby={`g-${slug(g.key)}`} id={`function-${slug(g.key)}`}>
+            <h2 id={`g-${slug(g.key)}`}>
+              {g.key} <span class="n" data-grp-n>{g.items.length}</span>
+            </h2>
+            <ul class="grid">
+              {g.items.map((j) => (
+                <li
+                  data-jd
+                  data-industry={j.data.industry}
+                  data-function={j.data.function}
+                  data-level={j.data.level}
+                  data-rank={LEVEL_INFO[j.data.level].rank}
+                  data-title={j.data.title}
+                  data-text={`${j.data.title} ${j.data.function} ${j.data.industry} ${j.data.summary} ${j.data.competencies.map((c) => c.name).join(" ")} ${j.data.keywords.join(" ")}`.toLowerCase()}
+                >
+                  <a class="card" href={jdUrl(j)}>
+                    <span class="t">{j.data.title}</span>
+                    <span class="lvl">
+                      <span class="steps" aria-hidden="true">
+                        {STEPS.map((n) => (
+                          <i class:list={[n <= LEVEL_INFO[j.data.level].rank && "on"]} />
+                        ))}
+                      </span>
+                      {LEVEL_INFO[j.data.level].label}
+                    </span>
+                    <span class="d">{j.data.summary}</span>
+                    <span class="m">
+                      <span class="exp">{j.data.experience}</span>
+                      <span class="sep" aria-hidden="true">·</span>
+                      <span class="m-ind">{j.data.industry}</span>
+                      <span class="m-fn">{j.data.function}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+    <p class="none" data-none hidden>
+      No job descriptions match. Try a shorter word, <button type="button" class="link" data-clear>clear the filters</button>{blank && <>, or <a class="link" href={jdUrl(blank)}>start from a blank JD</a></>}.
+    </p>
+  </div>
+
+  <div class="wrap-narrow notes" data-pagefind-ignore>
+    <Callout type="note" title="Why there are no salary figures">
+      <p>
+        Pay for the same title varies widely by company size, city and sector, and published salary numbers are rarely sourced well enough to
+        rely on. Each JD has a pay range field for your own figures. Set the range from your pay data or a survey you trust, and check it against
+        your grades with the <a href="/toolkit/salary-band-designer/">salary band designer</a>.
+      </p>
+    </Callout>
+  </div>
+</BaseLayout>
+
+<script>
+  type Facet = "industry" | "function" | "level";
+  const FACETS: Facet[] = ["function", "industry", "level"];
+  const root = document.querySelector<HTMLElement>("[data-jd-filters]");
+  const groupsEl = document.querySelector<HTMLElement>("[data-groups]");
+  if (root && groupsEl) {
+    const q = root.querySelector<HTMLInputElement>("[data-q]")!;
+    const selects = Object.fromEntries(FACETS.map((f) => [f, root.querySelector<HTMLSelectElement>(`[data-facet="${f}"]`)!])) as Record<Facet, HTMLSelectElement>;
+    const groupBtns = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-group]"));
+    const count = root.querySelector<HTMLElement>("[data-count]")!;
+    const clears = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-clear]"));
+    const none = document.querySelector<HTMLElement>("[data-none]")!;
+    const items = Array.from(document.querySelectorAll<HTMLLIElement>("[data-jd]"));
+    // The header's level ladder and its "functions" / "industries" links filter in place.
+    const rungs = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-hub-glance] a[data-level]"));
+    const groupLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-group-link]"));
+    // Remember each option's label without its count, so counts can be rewritten.
+    for (const s of Object.values(selects)) for (const o of Array.from(s.options)) o.dataset.base = o.textContent!.replace(/\s*\(\d+\)$/, "");
+
+    const params = new URLSearchParams(location.search);
+    const state = {
+      q: params.get("q") ?? "",
+      group: params.get("group") === "industry" ? "industry" : "function",
+      industry: "",
+      function: "",
+      level: ""
+    } as { q: string; group: "industry" | "function" } & Record<Facet, string>;
+    for (const f of FACETS) {
+      const v = params.get(f) ?? "";
+      if (v && Array.from(selects[f].options).some((o) => o.value === v)) state[f] = v;
+    }
+    q.value = state.q;
+
+    const matches = (li: HTMLElement, skip?: Facet) => {
+      const text = state.q.trim().toLowerCase();
+      if (text && !text.split(/\s+/).every((w) => li.dataset.text!.includes(w))) return false;
+      return FACETS.every((f) => f === skip || !state[f] || li.dataset[f] === state[f]);
+    };
+
+    const regroup = () => {
+      const key = state.group;
+      groupsEl.classList.toggle("by-industry", key === "industry");
+      const buckets = new Map<string, HTMLLIElement[]>();
+      for (const li of items) {
+        const k = li.dataset[key]!;
+        if (!buckets.has(k)) buckets.set(k, []);
+        buckets.get(k)!.push(li);
+      }
+      const ordered = [...buckets.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+      const frag = document.createDocumentFragment();
+      for (const [k, list] of ordered) {
+        const id = `${key}-${k.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+        const sec = document.createElement("section");
+        sec.className = "grp";
+        sec.id = id;
+        sec.dataset.grp = "";
+        sec.setAttribute("aria-labelledby", `h-${id}`);
+        const h = document.createElement("h2");
+        h.id = `h-${id}`;
+        h.append(`${k} `);
+        const n = document.createElement("span");
+        n.className = "n";
+        n.dataset.grpN = "";
+        h.append(n);
+        const ul = document.createElement("ul");
+        ul.className = "grid";
+        list.sort((a, b) => Number(a.dataset.rank) - Number(b.dataset.rank) || a.dataset.title!.localeCompare(b.dataset.title!));
+        ul.append(...list);
+        sec.append(h, ul);
+        frag.append(sec);
+      }
+      groupsEl.replaceChildren(frag);
+      groupBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.group === key)));
+    };
+
+    const apply = () => {
+      let shown = 0;
+      for (const li of items) {
+        const ok = matches(li);
+        li.hidden = !ok;
+        if (ok) shown++;
+      }
+      groupsEl.querySelectorAll<HTMLElement>("[data-grp]").forEach((sec) => {
+        const visible = sec.querySelectorAll("[data-jd]:not([hidden])").length;
+        sec.hidden = visible === 0;
+        const n = sec.querySelector<HTMLElement>("[data-grp-n]");
+        if (n) n.textContent = String(visible);
+      });
+      // Each facet's counts reflect the other filters, so a choice never leads to an empty list.
+      for (const f of FACETS) {
+        for (const o of Array.from(selects[f].options)) {
+          const n = items.filter((li) => matches(li, f) && (!o.value || li.dataset[f] === o.value)).length;
+          o.textContent = `${o.dataset.base} (${n})`;
+          o.disabled = n === 0 && o.value !== state[f] && o.value !== "";
+        }
+        selects[f].value = state[f];
+      }
+      const filtered = !!(state.q.trim() || FACETS.some((f) => state[f]));
+      count.textContent = filtered ? `Showing ${shown} of ${items.length}` : `${items.length} job descriptions`;
+      none.hidden = shown > 0;
+      clears.forEach((b) => (b.hidden = b.closest("[data-none]") ? false : !filtered));
+      const sp = new URLSearchParams();
+      if (state.q.trim()) sp.set("q", state.q.trim());
+      for (const f of FACETS) if (state[f]) sp.set(f, state[f]);
+      if (state.group !== "function") sp.set("group", state.group);
+      const qs = sp.toString();
+      history.replaceState(null, "", `${location.pathname}${qs ? `?${qs}` : ""}${location.hash}`);
+      // Turmeric on the ladder marks the level being shown.
+      for (const a of rungs) {
+        if (a.dataset.level === state.level) a.setAttribute("aria-current", "true");
+        else a.removeAttribute("aria-current");
+      }
+    };
+
+    // A plain click filters here and moves to the filters; other clicks open the link as usual.
+    const plainClick = (e: MouseEvent) => e.button === 0 && !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey);
+    const toFilters = (focusTo: HTMLElement) => {
+      const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      root.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+      focusTo.focus({ preventScroll: true });
+    };
+    rungs.forEach((a) =>
+      a.addEventListener("click", (e) => {
+        const v = a.dataset.level ?? "";
+        if (!plainClick(e) || !Array.from(selects.level.options).some((o) => o.value === v)) return;
+        e.preventDefault();
+        state.level = v;
+        apply();
+        toFilters(selects.level);
+      })
+    );
+    groupLinks.forEach((a) =>
+      a.addEventListener("click", (e) => {
+        if (!plainClick(e)) return;
+        e.preventDefault();
+        state.group = a.dataset.groupLink === "industry" ? "industry" : "function";
+        regroup();
+        apply();
+        toFilters(groupBtns.find((b) => b.dataset.group === state.group) ?? selects.function);
+      })
+    );
+
+    q.addEventListener("input", () => {
+      state.q = q.value;
+      apply();
+    });
+    for (const f of FACETS)
+      selects[f].addEventListener("change", () => {
+        state[f] = selects[f].value;
+        apply();
+      });
+    groupBtns.forEach((b) =>
+      b.addEventListener("click", () => {
+        state.group = b.dataset.group === "industry" ? "industry" : "function";
+        regroup();
+        apply();
+      })
+    );
+    clears.forEach((b) =>
+      b.addEventListener("click", () => {
+        state.q = "";
+        q.value = "";
+        for (const f of FACETS) state[f] = "";
+        apply();
+        q.focus();
+      })
+    );
+    if (state.group !== "function") regroup();
+    apply();
+  }
+</script>
+
+<style>
+  .hub-head {
+    padding-block: 2rem 2.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .hub-split {
+    margin-top: 0.9rem;
+  }
+  .hub-text {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .hub-text h1 {
+    max-width: 20ch;
+  }
+
+  /* The header glance: the library's 50 roles by level, as a ladder whose rungs run on as bars. */
+  .hub-glance {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .hub-glance > .glance-label {
+    padding-left: calc(5.6rem + 0.3rem);
+  }
+  .spread {
+    padding-left: calc(5.6rem + 0.3rem);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .spread a {
+    color: var(--ink-2);
+    font-weight: 560;
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  .spread a:hover {
+    color: var(--primary);
+    text-decoration-color: currentColor;
+  }
+  .spread strong {
+    color: var(--ink);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+  .filters {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 5;
+    display: grid;
+    grid-template-columns: minmax(14rem, 1fr) auto;
+    align-items: end;
+    gap: 0.75rem 1rem;
+    padding-block: 1rem;
+    background: rgb(255 255 255 / 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .find {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.8rem;
+    min-height: 2.875rem;
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--r);
+    color: var(--ink-3);
+    background: var(--paper);
+  }
+  .find:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgb(59 68 166 / 0.18);
+  }
+  .find input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    min-height: 2.6rem;
+    color: var(--ink);
+  }
+  .picks {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(9rem, 13rem));
+    gap: 0.6rem;
+  }
+  .pick {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+  .pick-label {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .pick .control {
+    min-height: 2.6rem;
+    padding-block: 0.35rem;
+    font-size: 1rem; /* 16px or more stops iOS zooming on focus */
+    text-overflow: ellipsis;
+  }
+  .bar {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+  .group-by {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .seg {
+    min-height: 2.25rem;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    cursor: pointer;
+  }
+  .seg:hover {
+    border-color: var(--neel-300);
+  }
+  .seg[aria-pressed="true"] {
+    background: var(--neel-700);
+    border-color: var(--neel-700);
+    color: #fff;
+  }
+  .count {
+    margin-left: auto;
+  }
+  .clear {
+    border: 0;
+    background: none;
+    padding: 0.25rem 0;
+    color: var(--primary);
+    font-weight: 560;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .results {
+    display: grid;
+    gap: 2.5rem;
+    padding-block: 2rem 2.5rem;
+  }
+  /* A blank sheet: dashed, because it's yours to fill in. */
+  .blank-card {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border: 1.5px dashed var(--neel-300);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      transform 180ms var(--ease-out),
+      box-shadow 180ms var(--ease-out),
+      border-color 180ms var(--ease);
+  }
+  .blank-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--neel-600);
+    box-shadow: var(--shadow-lift);
+  }
+  .blank-sheet {
+    flex: none;
+    width: 2.5rem;
+    height: 3rem;
+    overflow: visible;
+  }
+  .bs-paper {
+    fill: var(--paper);
+    stroke: var(--neel-600);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+  .bs-fold {
+    fill: var(--neel-100);
+    stroke: var(--neel-600);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+  .bs-knot {
+    fill: var(--paper);
+    stroke: var(--neel-600);
+    stroke-width: 1.3;
+  }
+  .bs-acc {
+    fill: var(--haldi-400);
+    stroke: var(--haldi-700);
+    stroke-width: 1.2;
+  }
+  .bs-line,
+  .bs-dash {
+    fill: none;
+    stroke: var(--neel-200);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .bs-dash {
+    stroke-dasharray: 3 2.5;
+    stroke-linecap: butt;
+  }
+  .blank-card .t {
+    display: block;
+    font-weight: 700;
+    font-size: var(--fs-md);
+    line-height: 1.3;
+  }
+  .blank-card .d {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .groups {
+    display: grid;
+    gap: 2.75rem;
+  }
+  .groups :global(.grp h2) {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: var(--fs-lg);
+    margin-bottom: 1rem;
+    scroll-margin-top: calc(var(--header-h) + 9rem);
+  }
+  .groups :global(.n) {
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .groups :global(.grid) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: 0.75rem;
+  }
+  /* A JD card: paper with a hairline outline, the level as a six-step mark, the title first. */
+  .card {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 0.45rem;
+    padding: 0.95rem 1.15rem 0.85rem;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+    background: var(--paper);
+    text-decoration: none;
+    color: inherit;
+    transition:
+      transform 180ms var(--ease-out),
+      box-shadow 180ms var(--ease-out),
+      border-color 180ms var(--ease);
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-lift);
+  }
+  .card:hover .t {
+    color: var(--primary);
+  }
+  /* The title comes first in the link's name; the level mark still sits on top. */
+  .lvl {
+    order: -1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink-2);
+  }
+  /* Six small bars, filled up to the role's level: a tiny ladder. */
+  .steps {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 1rem;
+  }
+  .steps i {
+    width: 5px;
+    border-radius: 1px;
+    background: var(--neel-100);
+  }
+  .steps i:nth-child(1) {
+    height: 30%;
+  }
+  .steps i:nth-child(2) {
+    height: 40%;
+  }
+  .steps i:nth-child(3) {
+    height: 55%;
+  }
+  .steps i:nth-child(4) {
+    height: 70%;
+  }
+  .steps i:nth-child(5) {
+    height: 85%;
+  }
+  .steps i:nth-child(6) {
+    height: 100%;
+  }
+  .steps i.on {
+    background: var(--neel-600);
+  }
+  .t {
+    font-size: var(--fs-md);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    transition: color 150ms var(--ease);
+  }
+  .d {
+    align-self: start; /* a stretched grid item would show text past the clamp */
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .m {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.45rem;
+    margin-top: 0.3rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    color: var(--ink-3);
+  }
+  .exp {
+    color: var(--ink-2);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  .sep {
+    color: var(--line-strong);
+  }
+  /* Show the dimension the list is not grouped by. */
+  .m-fn,
+  .groups:global(.by-industry) .m-ind {
+    display: none;
+  }
+  .groups:global(.by-industry) .m-fn {
+    display: inline;
+  }
+  .none {
+    color: var(--ink-2);
+  }
+  .link {
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+  }
+  .notes {
+    padding-bottom: var(--section);
+  }
+  .notes a {
+    color: var(--primary);
+    font-weight: 560;
+    text-underline-offset: 3px;
+  }
+  @media (max-width: 63.99rem) {
+    .hub-glance {
+      max-width: 30rem;
+      gap: 0.5rem;
+    }
+    .hub-glance > .glance-label,
+    .spread {
+      padding-left: 0;
+    }
+  }
+  @media (max-width: 960px) {
+    .filters {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .picks {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 640px) {
+    .filters {
+      position: static;
+    }
+    .picks {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .count {
+      margin-left: 0;
+      width: 100%;
+    }
+    .blank-card {
+      align-items: flex-start;
+    }
+  }
+</style>

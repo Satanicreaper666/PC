@@ -1,0 +1,24 @@
+---
+/**
+ * The fill-in JD: hands a template-shaped entry to the shared TemplateTool, so
+ * the live preview, drafts, Copy, Print and Word export all come from the same
+ * engine as the toolkit letters (src/scripts/template-engine.ts, docx-export.ts).
+ */
+import TemplateTool, { type TemplateSource } from "../tools/TemplateTool.astro";
+import type { Jd } from "../../lib/library";
+import { isBlankJd, jdBody, jdFields } from "./jd-template";
+
+interface Props {
+  entry: Jd;
+}
+const { entry } = Astro.props;
+const title = isBlankJd(entry) ? "Job description" : `${entry.data.title} job description`;
+// "letter" hides optional paragraphs that are left empty, which suits a job advert.
+const template: TemplateSource = {
+  id: `jd-${entry.id}`,
+  body: jdBody(entry),
+  data: { title, kind: "letter", fields: jdFields(entry) }
+};
+---
+
+<TemplateTool entry={template} />

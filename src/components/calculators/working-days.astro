@@ -1,0 +1,116 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Pick from "../calc/Pick.astro";
+import DateIn from "../calc/DateIn.astro";
+import { WEEKLY_OFF_LABELS } from "../../lib/calc/working-days";
+---
+
+<CalcShell id="working-days" resultLabel="Working days" bars>
+  <Fragment slot="inputs">
+    <div class="two">
+      <DateIn name="from" label="From" value="2026-11-01" />
+      <DateIn name="to" label="To" value="2026-11-30" help="Both dates are counted." />
+    </div>
+    <Pick
+      name="off"
+      label="Weekly offs"
+      style="select"
+      value="sun_2_4_sat"
+      options={Object.entries(WEEKLY_OFF_LABELS).map(([value, label]) => ({ value, label }))}
+    />
+    <label class="check">
+      <input type="checkbox" name="national" value="1" checked />
+      <span>Count 26 January, 15 August and 2 October as holidays</span>
+    </label>
+    <div class="field">
+      <label class="field-label" for="f-holidays">Other holidays (optional)</label>
+      <textarea class="control" id="f-holidays" name="holidays" rows="4" placeholder={"One date per line, for example:\n25 Dec 2026\n2026-11-09"} aria-describedby="f-holidays-help"></textarea>
+      <span class="field-help" id="f-holidays-help">Paste your company's holiday list. Dates like 25 Dec 2026, 25/12/2026 or 2026-12-25 work, with or without the holiday's name.</span>
+    </div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="days">0</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+
+<script>
+  import { bindCalculator, num } from "../../scripts/calc-kit";
+  import { countWorkingDays, nationalHolidays, parseHolidays, parseISO, shortDate, WEEKLY_OFF_LABELS } from "../../lib/calc/working-days";
+  import type { WeeklyOff } from "../../lib/calc/working-days";
+
+  // An unticked checkbox is left out of a shared link. A link that carries the dates but
+  // not "national" was made with the box unticked, so untick it before the kit restores the rest.
+  const box = document.querySelector<HTMLInputElement>('[data-calc="working-days"] input[name="national"]');
+  const fromUrl = new URLSearchParams(location.search);
+  if (box && fromUrl.has("from") && !fromUrl.has("national")) box.checked = false;
+
+  bindCalculator("working-days", (v) => {
+    const from = v.str("from");
+    const to = v.str("to");
+    const s = parseISO(from);
+    const e = parseISO(to);
+    if (s === null || e === null) return { outputs: { days: "0", sub: "" }, message: "Enter both dates." };
+    if (e < s) return { outputs: { days: "0", sub: "" }, message: "The end date is before the start date. Swap them." };
+    if (e - s > 3660) return { outputs: { days: "0", sub: "" }, message: "Choose a range of ten years or less." };
+    const pattern = v.str("off", "sun_2_4_sat") as WeeklyOff;
+    const typed = parseHolidays(v.raw("holidays"));
+    const fy = Number(from.slice(0, 4));
+    const ty = Number(to.slice(0, 4));
+    const holidays = [...typed.dates, ...(v.bool("national") ? nationalHolidays(fy, ty) : [])];
+    const r = countWorkingDays(from, to, pattern, holidays);
+    const notes: string[] = [];
+    if (typed.invalid.length) notes.push(`Could not read: ${typed.invalid.slice(0, 5).join(", ")}${typed.invalid.length > 5 ? "…" : ""}. Use a date like 25 Dec 2026.`);
+    if (r.holidaysOnWeeklyOffs) notes.push(`${r.holidaysOnWeeklyOffs} holiday${r.holidaysOnWeeklyOffs === 1 ? "" : "s"} fell on a weekly off and ${r.holidaysOnWeeklyOffs === 1 ? "is" : "are"} not counted twice.`);
+    notes.push("Whether weekly offs and holidays between two leave days count as leave (the 'sandwich' rule) depends on your leave policy.");
+    return {
+      working: [
+        { label: "Calendar days", formula: `${shortDate(from)} to ${shortDate(to)}, both days counted`, result: num(r.calendarDays, 0) },
+        { label: "Working days", formula: `${num(r.calendarDays, 0)} − ${num(r.weeklyOffs, 0)} weekly offs − ${num(r.holidays, 0)} holidays on working days`, result: num(r.workingDays, 0) }
+      ],
+      outputs: { days: num(r.workingDays, 0), sub: `working days out of ${num(r.calendarDays, 0)} calendar days, with ${WEEKLY_OFF_LABELS[pattern]} off` },
+      lines: [
+        { label: "Calendar days", value: num(r.calendarDays, 0) },
+        { label: "Weekly offs", value: num(r.weeklyOffs, 0) },
+        { label: "Holidays on working days", value: num(r.holidays, 0) },
+        { label: "Working days", value: num(r.workingDays, 0), strong: true },
+        ...(r.months.length > 1 && r.months.length <= 24 ? r.months.map((m) => ({ label: m.label, value: num(m.workingDays, 0), note: `${m.calendarDays} days, ${m.weeklyOffs} off, ${m.holidays} holidays` })) : [])
+      ],
+      bars: [
+        { label: "Working days", value: r.workingDays, display: num(r.workingDays, 0) },
+        { label: "Weekly offs", value: r.weeklyOffs, display: num(r.weeklyOffs, 0) },
+        { label: "Holidays", value: r.holidays, display: num(r.holidays, 0) }
+      ],
+      notes
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  .check {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    cursor: pointer;
+  }
+  .check input {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: 0.15rem;
+    accent-color: var(--neel-700);
+    flex: none;
+  }
+  @media (max-width: 420px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,69 @@
+---
+title: Working days calculator
+description: Count the working days between two dates with Sundays, Sundays and 2nd and 4th Saturdays, or Saturdays and Sundays off, minus the holidays you list.
+kind: calculator
+calculator: working-days
+glance:
+  inputs: ["From date", "To date", "Weekly offs", "National holidays", "Other holidays"]
+  output: "Working days"
+  formula: "Working days = calendar days − weekly offs − holidays"
+stage: pay
+audiences: [employees, hr, founders]
+order: 60
+checked: 2026-11-02
+useWhen: You are planning leave, checking how many days a month has for payroll, or counting working days to a deadline.
+tips:
+  - "Paste your company's <strong>holiday list</strong> into the holidays box. Each state and company has its own list."
+  - "For leave planning, enter the first and last day of the leave. The answer is the number of leave days you would use if weekly offs and holidays are not counted as leave."
+  - "Check your leave policy for the 'sandwich' rule, which can count weekly offs between two leave days as leave."
+sources:
+  - title: The Occupational Safety, Health and Working Conditions Code, 2020, sections 25 and 26 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/22041/1/2020-37.pdf
+    publisher: Ministry of Law and Justice
+  - title: Government makes the four Labour Codes effective (21 November 2025)
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2192463
+    publisher: Press Information Bureau
+related: [toolkit/leave-application, toolkit/leave-policy, toolkit/leave-encashment-calculator, toolkit/notice-period-calculator, toolkit/annual-hr-calendar, handbooks/labour-law/03-leave-and-working-hours]
+faq:
+  - q: How many working days are there in November 2026?
+    a: 25 with only Sundays off, 23 with Sundays and the 2nd and 4th Saturdays off, and 21 with Saturdays and Sundays off, before any holidays.
+  - q: Which Saturdays are the 2nd and 4th Saturdays?
+    a: The Saturdays that fall between the 8th and 14th, and between the 22nd and 28th, of the month.
+  - q: Does the calculator include public holidays?
+    a: Only the ones you add. You can tick 26 January, 15 August and 2 October and paste your company's holiday list.
+  - q: Are both the start and end dates counted?
+    a: Yes. A range from 2 November to 2 November is one day.
+keywords: [working days calculator, working days between two dates india, business days calculator india, 2nd and 4th saturday holiday, working days in a month, leave days calculator]
+---
+
+## How it is worked out
+
+<Figure title="Working days in a date range" caption="Count every day in the range, then take away weekly offs and holidays that fall on working days.">
+  <Formula
+    result={{ value: "Working days" }}
+    parts={[{ value: "Calendar days", label: "start and end both counted" }, { op: "−" }, { value: "Weekly offs", label: "by your pattern" }, { op: "−" }, { value: "Holidays", label: "on working days only" }]}
+    example="Example: November 2026 has 30 days. With Sundays and the 2nd and 4th Saturdays off there are 7 weekly offs, leaving 23 working days."
+  />
+</Figure>
+
+A holiday that falls on a weekly off is counted once, as a weekly off. The 2nd and 4th Saturdays are the Saturdays dated 8 to 14 and 22 to 28 in each month.
+
+<Figure title="The same month under three weekly-off patterns" caption="Working days in November 2026 before holidays. Compare the columns to see what each pattern costs in days.">
+  <Compare
+    columns={["Sundays off", "Sundays, 2nd and 4th Saturdays off", "Saturdays and Sundays off"]}
+    rows={[
+      { label: "Weekly offs", values: ["5", "7", "9"] },
+      { label: "Working days", values: ["25", "23", "21"] }
+    ]}
+  />
+</Figure>
+
+## Using it for leave
+
+To see how many days of leave a holiday will take, enter the first and last day of the trip and your holiday list. The result is the leave you would use if your policy does not count weekly offs and holidays inside the leave. Some policies apply a "sandwich" rule, counting a weekly off or holiday as leave when there is leave on both sides of it; check yours.
+
+<Callout type="note" title="Working hours and weekly rest">
+Under the OSH Code and its Central Rules, a worker works no more than <Fact id="osh.daysPerWeek" /> a week, <Fact id="osh.dailyHours" /> a day and <Fact id="osh.weeklyHours" /> a week. Which day is the weekly off, and which holidays are paid, come from state law and company policy, so the calculator asks for them.
+</Callout>
+
+This calculator uses no statutory rates. Its dates come from the calendar and from the weekly offs and holidays you enter.

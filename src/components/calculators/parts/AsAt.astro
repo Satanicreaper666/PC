@@ -1,0 +1,143 @@
+---
+/**
+ * "Rates and limits as at …" with the statutory values a calculator uses and
+ * their sources, read from src/data/statutory.ts.
+ *   <AsAt ids={["epf.wageCeiling", "epf.employeeRate"]} />
+ * Pass `rows` for values that are not in STAT (professional-tax slabs).
+ */
+import { AS_AT_DISPLAY, stat } from "../../../data/statutory";
+import type { StatSource } from "../../../data/statutory";
+
+interface Row {
+  value: string;
+  label: string;
+  law: string;
+  source: StatSource;
+  confidence?: string;
+}
+interface Props {
+  ids?: string[];
+  rows?: Row[];
+  note?: string;
+}
+const { ids = [], rows = [], note } = Astro.props;
+const all: Row[] = [
+  ...ids.map((id) => {
+    const f = stat(id);
+    return { value: f.display, label: f.label, law: f.law, source: f.source, confidence: f.confidence };
+  }),
+  ...rows
+];
+const confidenceText: Record<string, string> = {
+  high: "Checked against the law or an official page",
+  "medium-high": "Checked against reliable sources that quote the notification",
+  medium: "From secondary sources; confirm before relying on it",
+  low: "Not confirmed"
+};
+---
+
+<aside class="asat" aria-label="Rates and limits used">
+  <details>
+    <summary>
+      <span class="when">Rates and limits as at {AS_AT_DISPLAY}</span>
+      <span class="hint">See the {all.length} values this calculator uses and their sources</span>
+    </summary>
+    <div class="tbl">
+      <table>
+        <thead>
+          <tr><th scope="col">Value</th><th scope="col">What it is</th><th scope="col">Law and source</th></tr>
+        </thead>
+        <tbody>
+          {
+            all.map((r) => (
+              <tr>
+                <td class="v">{r.value}</td>
+                <td>
+                  {r.label}
+                  {r.confidence && r.confidence !== "high" && <span class="conf">{confidenceText[r.confidence]}</span>}
+                </td>
+                <td>
+                  {r.law}. <a href={r.source.url} rel="noopener">{r.source.title}</a>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    {note && <p class="note" set:html={note} />}
+  </details>
+</aside>
+
+<style>
+  .asat {
+    margin-top: 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg, 12px);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+  }
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+  }
+  .when {
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .hint {
+    color: var(--ink-2);
+    font-size: var(--fs-xs);
+  }
+  .tbl {
+    overflow-x: auto;
+    padding: 0 1rem 0.75rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-xs);
+    line-height: 1.45;
+  }
+  th {
+    text-align: left;
+    font-weight: 650;
+    color: var(--ink-2);
+    padding: 0.4rem 0.6rem 0.4rem 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  td {
+    vertical-align: top;
+    padding: 0.45rem 0.6rem 0.45rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+  }
+  td.v {
+    font-weight: 650;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .conf {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--warn);
+  }
+  td a {
+    color: var(--primary);
+    font-weight: 560;
+  }
+  .note {
+    padding: 0 1rem 0.85rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  @media (max-width: 640px) {
+    td.v {
+      white-space: normal;
+    }
+  }
+</style>

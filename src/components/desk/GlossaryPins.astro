@@ -1,0 +1,72 @@
+---
+/**
+ * A small pin on every glossary term ([data-gl-term] with its h3[id]), so a reader
+ * can keep the terms they look up on My desk. Added in the browser: 190-odd
+ * buttons would weigh down the page for readers without JavaScript, who can't pin anyway.
+ * src/scripts/desk.ts handles the click (any button[data-pin]).
+ */
+import PinIcon from "./PinIcon.astro";
+---
+
+<template data-term-pin-tpl>
+  <button type="button" class="term-pin" aria-pressed="false" data-print="hide"><PinIcon size={18} /></button>
+</template>
+
+<script>
+  import { syncPins } from "../../scripts/desk";
+
+  const tpl = document.querySelector<HTMLTemplateElement>("template[data-term-pin-tpl]");
+  if (tpl) {
+    document.querySelectorAll<HTMLElement>("[data-gl-term]").forEach((term) => {
+      const h = term.querySelector<HTMLElement>("h3[id]");
+      const name = h?.textContent?.replace(/\s+/g, " ").trim();
+      if (!h || !name) return;
+      const btn = tpl.content.firstElementChild!.cloneNode(true) as HTMLButtonElement;
+      const card = {
+        href: `/glossary/#${h.id}`,
+        title: name,
+        kind: "Glossary",
+        art: "glossary",
+        description: term.querySelector(".short")?.textContent?.trim() || undefined,
+        meta: term.querySelector(".exp")?.textContent?.trim() || undefined
+      };
+      btn.dataset.pin = JSON.stringify(card);
+      btn.setAttribute("aria-label", `Pin ${name} to My desk`);
+      term.classList.add("has-pin");
+      // After the headword, so the pin comes next when tabbing through the term.
+      (term.querySelector(".tk") ?? h).after(btn);
+    });
+    syncPins();
+  }
+</script>
+
+<style>
+  :global(.term.has-pin) {
+    position: relative;
+    padding-right: 2.9rem;
+  }
+  .term-pin {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.2rem;
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition:
+      background-color 150ms var(--ease),
+      color 150ms var(--ease);
+  }
+  .term-pin:hover {
+    color: var(--primary);
+    background: var(--neel-50);
+  }
+  .term-pin[aria-pressed="true"] {
+    color: var(--neel-800);
+  }
+</style>

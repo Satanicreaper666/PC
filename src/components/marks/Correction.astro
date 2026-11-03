@@ -1,0 +1,88 @@
+---
+/**
+ * The law changed: the old name is covered with correction tape and the current one is
+ * written over it in pen. <Correction old="Form 16">Form 130</Correction>
+ * Screen readers hear "Form 130 (previously Form 16)".
+ */
+interface Props {
+  old: string;
+  class?: string;
+}
+const { old, class: cls } = Astro.props;
+---
+
+<span class:list={["correction", cls]} data-mark>
+  <span class="old" aria-hidden="true">{old}</span>
+  <span class="tape" aria-hidden="true"></span>
+  <span class="new"><slot /></span>
+  <span class="visually-hidden"> (previously {old})</span>
+</span>
+
+<style>
+  .correction {
+    position: relative;
+    display: inline-grid;
+    vertical-align: baseline;
+    margin: 1em 0.1em 0;
+  }
+  .old,
+  .tape,
+  .new {
+    grid-area: 1 / 1;
+  }
+  .old {
+    color: var(--ink-3);
+    padding-inline: 0.25em;
+  }
+  /* Correction tape: chalky white, a little wider than the words, with a soft edge. */
+  .tape {
+    margin: 0.08em -0.05em 0.02em;
+    border-radius: 2px;
+    background: rgb(252 252 250 / 0.72);
+    box-shadow:
+      0 0 0 0.5px rgb(17 20 58 / 0.12),
+      0.5px 1px 1.5px rgb(17 20 58 / 0.18);
+    transform-origin: left center;
+    transition: transform 380ms var(--ease-draw);
+  }
+  /* The current name, written above the taped-over one. */
+  .new {
+    position: absolute;
+    left: 50%;
+    bottom: 62%;
+    padding-inline: 0.3em;
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 1.3em;
+    line-height: 1;
+    color: var(--pen-ink);
+    transform: translateX(-50%) rotate(-3deg);
+    white-space: nowrap;
+    transition: opacity 300ms 300ms;
+  }
+  :global(html.js-anim) .correction:not(:global(.drawn)) .tape {
+    transform: scaleX(0);
+  }
+  :global(html.js-anim) .correction:not(:global(.drawn)) .new {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js-anim) .correction:not(:global(.drawn)) .tape {
+      transform: none;
+    }
+    :global(html.js-anim) .correction:not(:global(.drawn)) .new {
+      opacity: 1;
+    }
+  }
+  @media print {
+    .old,
+    .tape {
+      display: none;
+    }
+    .new {
+      font-family: inherit;
+      font-size: 1em;
+      transform: none;
+    }
+  }
+</style>

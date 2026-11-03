@@ -1,0 +1,72 @@
+---
+/**
+ * A paper-cut spot icon (docs/ART-DIRECTION.md, "Icons"): two or three layers
+ * of cut paper on a 48 × 48 board, with real cast shadows from one light at
+ * the top left. For 30–96px; use the line set in src/lib/icons.ts below that.
+ *
+ *   <SpotIcon name="letter" size={64} label="Optional meaning" />
+ *
+ * Decorative unless `label` is given. The ground is transparent: the paper
+ * tile it sits on belongs to the caller (see ItemCard), so set the size you
+ * want the cut-out to fill, and a width/height in CSS overrides it.
+ * Names (24): recruit onboard grow pay exit lead · calculator letter form
+ * policy checklist survey plan app · hr founders employees students ·
+ * labour-law tds recruitment hr-professional · jd glossary. An unknown name
+ * draws a plain sheet.
+ *
+ * Inside a link, hovering or focusing the link lifts the turmeric piece a
+ * hair higher off the paper.
+ */
+import { iconSvg } from "./lib/icons.ts";
+interface Props {
+  name: string;
+  size?: number;
+  label?: string;
+  class?: string;
+}
+const { name, size = 64, label, class: cls } = Astro.props;
+---
+
+<svg
+  class:list={["spot", cls]}
+  width={size}
+  height={size}
+  viewBox="0 0 48 48"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  role={label ? "img" : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : "true"}
+  set:html={iconSvg(name)}
+/>
+
+<style>
+  .spot {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    /* Cast shadows fall a little outside the board, onto the tile. */
+    overflow: visible;
+  }
+  .spot :global(.p1) {
+    filter: var(--paper-1);
+  }
+  .spot :global(.p2) {
+    filter: var(--paper-2);
+  }
+  .spot :global(.p3) {
+    filter: var(--paper-3);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .spot :global(.s) {
+      transition:
+        transform 240ms var(--ease-out, ease-out),
+        filter 240ms var(--ease-out, ease-out);
+    }
+    :global(a:hover) .spot :global(.s),
+    :global(a:focus-visible) .spot :global(.s) {
+      transform: translate(-0.4px, -1.1px);
+      filter: drop-shadow(2px 3.4px 0 rgb(17 20 58 / 0.13)) drop-shadow(3.6px 7.5px 6.5px rgb(17 20 58 / 0.15));
+    }
+  }
+</style>

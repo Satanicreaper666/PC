@@ -1,0 +1,145 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import DateIn from "../calc/DateIn.astro";
+import AsAt from "./parts/AsAt.astro";
+---
+
+<CalcShell id="gratuity" resultLabel="Gratuity payable" bars>
+  <Fragment slot="inputs">
+    <Num
+      name="wages"
+      label="Last drawn monthly wages"
+      prefix="₹"
+      value="60,000"
+      help="Basic pay, dearness allowance and other pay the Labour Codes count as wages (a special allowance usually counts). Leave out HRA, conveyance, overtime, commission and bonus, unless together they are more than half of total pay; then add the excess."
+    />
+    <div class="two">
+      <DateIn name="doj" label="Date of joining" value="2019-04-01" />
+      <DateIn name="lwd" label="Last working day" value="2026-10-31" />
+    </div>
+    <Pick name="type" label="Type of employment" options={[{ value: "permanent", label: "Permanent" }, { value: "fixed_term", label: "Fixed-term" }]} />
+    <Pick
+      name="reason"
+      label="Why is employment ending?"
+      style="select"
+      options={[
+        { value: "resignation", label: "Resignation" },
+        { value: "retirement", label: "Retirement or superannuation" },
+        { value: "termination", label: "Termination, including retrenchment" },
+        { value: "contract_expiry", label: "Fixed-term contract ended" },
+        { value: "death", label: "Death" },
+        { value: "disablement", label: "Disablement" }
+      ]}
+    />
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="amount">₹0</span>
+    <span class="sub" data-out="status"></span>
+  </Fragment>
+</CalcShell>
+<AsAt ids={["gratuity.daysPerYear", "gratuity.divisor", "gratuity.minYears", "gratuity.fixedTermMinYears", "gratuity.partYearMonths", "gratuity.ceiling", "gratuity.paymentDays"]} />
+
+<script>
+  import { bindCalculator, inr, num, type CalcStep } from "../../scripts/calc-kit";
+  import { computeGratuity, gratuityRules, roundRupee } from "../../lib/calc/gratuity";
+  import type { EmploymentType, GratuityReason } from "../../lib/calc/gratuity";
+  import { addMonthsClamped, longDate, parseISO, shortDate } from "../../lib/calc/working-days";
+  import { stat } from "../../data/statutory";
+  const rules = gratuityRules();
+  const rupees = (n: number) => inr(roundRupee(n));
+  const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  const codesFrom = stat("wages.halfRule").from ?? "2025-11-21";
+  const nearMissDays = stat("gratuity.continuousServiceDays").value as number;
+
+  bindCalculator("gratuity", (v) => {
+    const type = v.str("type", "permanent") as EmploymentType;
+    const reason = v.str("reason", "resignation") as GratuityReason;
+    const doj = v.str("doj");
+    const lwd = v.str("lwd");
+    const r = computeGratuity({ wages: v.num("wages"), doj, lwd, type, reason });
+    if (r.status !== "ok") return { outputs: { amount: "₹0", status: "" }, message: r.message };
+    const s = r.service;
+    const served = s.years + s.months / 12 + s.days / 365;
+    const noMinimum = reason === "death" || reason === "disablement";
+
+    const working: CalcStep[] = [
+      { label: "Service", formula: `${shortDate(doj)} to ${shortDate(lwd)}, both days counted`, result: `${plural(s.years, "year")}, ${plural(s.months, "month")}, ${plural(s.days, "day")}` },
+      {
+        label: "Eligible",
+        formula: noMinimum ? `On ${reason}, no minimum service` : `${plural(s.years, "completed year")}; ${plural(r.minYears, "year")} needed`,
+        result: r.eligible ? "Yes" : "No"
+      }
+    ];
+    if (r.eligible) {
+      working.push(
+        {
+          label: "Years counted",
+          formula:
+            r.countedYears > s.years
+              ? `${s.years} + 1 for the final ${plural(s.months, "month")}${s.days ? ` and ${plural(s.days, "day")}` : ""} (more than ${rules.partYearMonths} months)`
+              : `${plural(s.years, "completed year")}${s.months || s.days ? `; the part-year is not more than ${rules.partYearMonths} months` : ""}`,
+          result: plural(r.countedYears, "year")
+        },
+        { label: "Gratuity", formula: `${inr(v.num("wages"))} × ${rules.daysPerYear} ÷ ${rules.divisor} × ${plural(r.countedYears, "year")}`, result: rupees(r.uncapped) }
+      );
+      if (r.capped) working.push({ label: "Gratuity payable", formula: `the lower of ${rupees(r.uncapped)} and the ${inr(rules.ceiling)} ceiling`, result: rupees(r.amount) });
+      if (r.payBy) working.push({ label: "Pay by", formula: `${shortDate(lwd)} + ${rules.paymentDays} days`, result: longDate(r.payBy) });
+    } else working.push({ label: "Gratuity payable", formula: "", result: "₹0", note: r.reasonText });
+
+    // Unusual inputs, using the rules this page states.
+    const warnings: string[] = [];
+    if (!noMinimum && type === "permanent" && !r.eligible && s.years === r.minYears - 1) {
+      const anniversary = parseISO(addMonthsClamped(doj, 12 * s.years).date)!;
+      const extra = parseISO(lwd)! - anniversary + 1;
+      if (extra >= nearMissDays)
+        warnings.push(
+          `${plural(s.years, "year")} and ${plural(extra, "day")}: just short of ${r.minYears} completed years. This calculator follows the Code; courts differed on near-misses like ${s.years} years and ${nearMissDays} days under the old law, and the point is not settled. Check the case with HR.`
+        );
+    }
+    if (lwd < codesFrom)
+      warnings.push(`The last working day is before ${shortDate(codesFrom)}, when the Labour Codes came into force. This calculator applies the Codes; the Payment of Gratuity Act, 1972 applied before then.`);
+
+    return {
+      working,
+      warnings,
+      outputs: { amount: rupees(r.amount), status: r.reasonText },
+      lines: [
+        { label: "Service", value: `${plural(s.years, "year")}, ${plural(s.months, "month")}, ${plural(s.days, "day")}` },
+        { label: "One day's wages", value: rupees(v.num("wages") / rules.divisor), note: `${inr(v.num("wages"))} ÷ ${rules.divisor}` },
+        { label: "Gratuity for each year", value: rupees(r.perYear), note: `${rules.daysPerYear} days' wages` },
+        {
+          label: "Years counted",
+          value: num(r.countedYears, 0),
+          note: r.countedYears > s.years ? `The final ${plural(s.months, "month")} count as a full year` : undefined
+        },
+        ...(r.capped ? [{ label: "Before the ceiling", value: rupees(r.uncapped), note: `Capped at ${inr(rules.ceiling)}` }] : []),
+        { label: "Gratuity payable", value: rupees(r.amount), strong: true },
+        ...(r.payBy ? [{ label: "Pay by", value: longDate(r.payBy), note: `Within ${rules.paymentDays} days of the last working day` }] : [])
+      ],
+      bars: [
+        { label: "Service", value: served, display: `${num(served)} yrs` },
+        { label: "Years needed", value: r.minYears, display: `${r.minYears} yrs` }
+      ],
+      notes: [
+        `Eligibility counts completed years only. The more-than-${rules.partYearMonths}-months rule rounds the amount, never the eligibility.`,
+        "Death or disablement removes the minimum-service condition; the amount is still based on the years served.",
+        "Your employer can pay more under a contract, award or policy. Income tax is not worked out here."
+      ]
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  @media (max-width: 420px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,101 @@
+---
+/**
+ * Choice input. `style="buttons"` renders a segmented control (2–4 options),
+ * otherwise a dropdown. Options: [{ value, label }].
+ */
+interface Props {
+  name: string;
+  label: string;
+  options: { value: string; label: string }[];
+  value?: string;
+  help?: string;
+  style?: "buttons" | "select";
+}
+const { name, label, options, value, help, style = options.length <= 4 ? "buttons" : "select" } = Astro.props;
+const id = `f-${name}`;
+---
+
+{
+  style === "buttons" ? (
+    <fieldset class="field seg">
+      <legend class="field-label">{label}</legend>
+      <div class="seg-row">
+        {options.map((o) => (
+          <label class="seg-opt">
+            <input type="radio" name={name} value={o.value} checked={o.value === (value ?? options[0].value)} />
+            <span>{o.label}</span>
+          </label>
+        ))}
+      </div>
+      {help && <span class="field-help" set:html={help} />}
+    </fieldset>
+  ) : (
+    <div class="field">
+      <label class="field-label" for={id}>
+        {label}
+      </label>
+      <select class="control" id={id} name={name}>
+        {options.map((o) => (
+          <option value={o.value} selected={o.value === value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      {help && <span class="field-help" set:html={help} />}
+    </div>
+  )
+}
+
+<style>
+  .seg {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .seg legend {
+    padding: 0;
+    margin-bottom: 0.35rem;
+  }
+  .seg-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--r);
+    background: var(--paper);
+    padding: 3px;
+  }
+  .seg-opt {
+    flex: 1 1 auto;
+    position: relative;
+  }
+  .seg-opt input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    pointer-events: none;
+  }
+  .seg-opt span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 7px;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    color: var(--ink-2);
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 150ms, color 150ms;
+  }
+  .seg-opt input:checked + span {
+    background: var(--neel-700);
+    color: #fff;
+  }
+  .seg-opt input:focus-visible + span {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+</style>

@@ -1,0 +1,530 @@
+---
+import Icon from "../ui/Icon.astro";
+/**
+ * Saved scenarios (index cards) and the side-by-side comparison (on notepaper)
+ * for one calculator. Wired by src/components/calc/scenario-ui.ts; hidden until
+ * something is saved.
+ *
+ * CalcShell includes it. A calculator with its own result sections under the
+ * shell (a grade table, a month-by-month table) passes scenarios="external" to
+ * CalcShell and puts <CalcScenarios id="…" external /> after those sections.
+ */
+interface Props {
+  id: string;
+  external?: boolean;
+}
+const { id, external = false } = Astro.props;
+const uid = `calc-${id}`;
+---
+
+<section class:list={["scn", { external }]} id={`${uid}-scenarios`} data-scenarios-for={id} aria-labelledby={`${uid}-scenarios-title`} hidden>
+  <div class="scn-head">
+    <div class="scn-words">
+      <h2 class="scn-title" id={`${uid}-scenarios-title`} data-scn-title>Saved scenarios</h2>
+      <p class="scn-sub">Kept in this browser only. Nothing is uploaded.</p>
+    </div>
+    <div class="scn-tools" data-print="hide">
+      <p class="status" role="status" data-scn-status></p>
+      <button class="btn btn-secondary btn-sm" type="button" data-scn-undo hidden><Icon name="history" size={16} /> Undo delete</button>
+    </div>
+  </div>
+
+  <ul class="cards" data-cards aria-label="Saved scenarios" data-print="hide"></ul>
+  <p class="scn-hint" data-compare-hint hidden></p>
+
+  <div class="compare" data-compare hidden>
+    <div class="cmp-head">
+      <h3 class="cmp-title" id={`${uid}-cmp-title`}>Side by side</h3>
+      <div class="cmp-tools" data-print="hide">
+        <div class="cmp-base" data-cmp-base-wrap>
+          <label class="field-label" for={`${uid}-cmp-base`}>Differences against</label>
+          <select class="control" id={`${uid}-cmp-base`} data-cmp-base></select>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" data-cmp-copy><Icon name="copy" size={16} /> Copy table</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-cmp-csv><Icon name="download" size={16} /> Download table</button>
+      </div>
+    </div>
+    <div class="cmp-table" data-cmp-table></div>
+    <p class="cmp-legend" data-cmp-legend></p>
+  </div>
+
+  <template data-card-tpl>
+    <li class="card">
+      <div class="card-head">
+        <h3 class="card-title" data-card-title></h3>
+        <label class="card-pick">
+          <input type="checkbox" data-card-compare />
+          <span>Compare<span class="visually-hidden" data-card-name></span></span>
+        </label>
+      </div>
+      <form class="card-rename" data-card-rename hidden>
+        <label class="visually-hidden" data-rename-label>New name</label>
+        <input class="control" type="text" maxlength="60" autocomplete="off" data-rename-input />
+        <div class="card-rename-row">
+          <button class="btn btn-sm" type="submit">Save name</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-rename-cancel>Cancel</button>
+        </div>
+      </form>
+      <p class="card-what" data-card-what></p>
+      <p class="card-value" data-card-value></p>
+      <p class="card-meta" data-card-when></p>
+      <p class="card-now" data-card-now hidden>
+        <svg class="pen" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 13.2c1.6 1.2 3.2 3 4.6 5.3.3.5.9.5 1.2 0C11.9 13 15.6 8.1 20.8 4.2"></path></svg>
+        <span class="hand">In the calculator now</span>
+      </p>
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-card-load><Icon name="upload" size={15} />Load<span class="visually-hidden" data-card-name></span></button>
+        <button class="btn btn-ghost btn-sm" type="button" data-card-rename-open aria-expanded="false"><Icon name="edit" size={15} />Rename<span class="visually-hidden" data-card-name></span></button>
+        <button class="btn btn-ghost btn-sm" type="button" data-card-delete><Icon name="x" size={15} />Delete<span class="visually-hidden" data-card-name></span></button>
+      </div>
+    </li>
+  </template>
+</section>
+
+<style>
+  .scn {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+  }
+  .scn.external {
+    margin-top: 1.5rem;
+  }
+  .scn-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 0.5rem 1.5rem;
+  }
+  .scn-title {
+    font-size: var(--fs-lg);
+  }
+  .scn-sub {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    margin-top: 0.15rem;
+  }
+  .scn-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+  .status {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-weight: 560;
+  }
+  .status:empty {
+    display: none;
+  }
+  .scn-hint {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+
+  /* ----- Index cards: ruled card stock, a red line under the name ----- */
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));
+    gap: 1.1rem 1rem;
+  }
+  .cards :global(.card) {
+    --rule: 1.45rem;
+    --head: 2.55rem;
+    --rot: -0.35deg;
+    position: relative;
+    display: grid;
+    align-content: start;
+    padding: 0.55rem 0.95rem 0.6rem;
+    border-radius: 3px;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(rgb(214 69 80 / 0.5), rgb(214 69 80 / 0.5)),
+      repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), rgb(76 86 190 / 0.13) calc(var(--rule) - 1px) var(--rule));
+    background-size:
+      100% 1.5px,
+      100% calc(100% - var(--head) - 0.3rem);
+    background-position:
+      0 var(--head),
+      0 calc(var(--head) + 0.3rem);
+    background-repeat: no-repeat;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.07),
+      1.5px 2px 0 rgb(17 20 58 / 0.08),
+      4px 10px 18px -10px rgb(17 20 58 / 0.25);
+    transform: rotate(var(--rot));
+    transition:
+      transform 220ms var(--ease-out),
+      box-shadow 220ms var(--ease);
+  }
+  .cards :global(.card:nth-child(3n + 2)) {
+    --rot: 0.3deg;
+  }
+  .cards :global(.card:nth-child(3n)) {
+    --rot: -0.1deg;
+  }
+  .cards :global(.card:hover),
+  .cards :global(.card:focus-within) {
+    transform: rotate(0deg) translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgb(59 68 166 / 0.28),
+      3px 6px 0 rgb(17 20 58 / 0.05),
+      6px 18px 28px -12px rgb(17 20 58 / 0.32);
+  }
+  .cards :global(.card.is-now) {
+    box-shadow:
+      0 0 0 1.5px var(--neel-400),
+      1.5px 2px 0 rgb(17 20 58 / 0.08),
+      4px 10px 18px -10px rgb(17 20 58 / 0.25);
+  }
+  .cards :global(.card-head) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: calc(var(--head) - 0.55rem);
+  }
+  .cards :global(.card-title) {
+    font-size: var(--fs-md);
+    font-weight: 720;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .cards :global(.card-pick) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: none;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+    min-height: 2rem;
+  }
+  .cards :global(.card-pick input) {
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    accent-color: var(--neel-700);
+  }
+  .cards :global(.card-what) {
+    margin-top: 0.4rem;
+    font-size: var(--fs-xs);
+    line-height: var(--rule);
+    color: var(--ink-3);
+    font-weight: 560;
+  }
+  .cards :global(.card-value) {
+    font-size: var(--fs-xl);
+    font-weight: 680;
+    letter-spacing: -0.02em;
+    line-height: calc(var(--rule) * 1.5);
+    color: var(--neel-800);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+  .cards :global(.card-meta) {
+    font-size: var(--fs-xs);
+    line-height: var(--rule);
+    color: var(--ink-3);
+  }
+  .cards :global(.card-now) {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    line-height: var(--rule);
+    font-size: 1.15rem;
+  }
+  .cards :global(.card-now .pen) {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+  .cards :global(.card-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.1rem;
+    margin: 0.35rem -0.55rem 0;
+  }
+  .cards :global(.card-actions .btn) {
+    padding-inline: 0.55rem;
+    gap: 0.3rem;
+  }
+  .cards :global(.card-rename) {
+    display: grid;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+  .cards :global(.card-rename .control) {
+    min-height: 2.4rem;
+    font-size: var(--fs-sm);
+  }
+  .cards :global(.card-rename-row) {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  /* ----- The comparison, written on ruled notepaper with a red margin line ----- */
+  .compare {
+    --rule: 2.1rem;
+    --margin-x: 2.4rem;
+    position: relative;
+    justify-self: start;
+    width: fit-content;
+    max-width: 100%;
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.1rem 1.25rem 1.1rem calc(var(--margin-x) + 1rem);
+    border-radius: 3px;
+    background-color: var(--paper);
+    background-image: linear-gradient(90deg, transparent var(--margin-x), rgb(214 69 80 / 0.42) var(--margin-x), rgb(214 69 80 / 0.42) calc(var(--margin-x) + 1px), transparent calc(var(--margin-x) + 1px));
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.07),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.07),
+      3px 8px 18px -8px rgb(17 20 58 / 0.22);
+    min-width: 0;
+  }
+  .cmp-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 0.6rem 1.25rem;
+  }
+  .cmp-title {
+    font-size: var(--fs-md);
+  }
+  .cmp-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+  .cmp-base {
+    display: grid;
+    gap: 0.2rem;
+  }
+  .cmp-base .field-label {
+    font-size: var(--fs-xs);
+  }
+  .cmp-base .control {
+    min-height: 2.25rem;
+    padding-block: 0.25rem;
+    font-size: var(--fs-sm);
+    min-width: 9rem;
+  }
+  .cmp-table {
+    min-width: 0;
+  }
+  .compare :global(.cmp-scroll) {
+    overflow-x: auto;
+    min-width: 0;
+    /* Scroll shadow: visible only while more columns sit off to the right. */
+    background:
+      linear-gradient(to left, var(--paper) 40%, rgb(255 255 255 / 0)) right / 2.5rem 100% no-repeat local,
+      radial-gradient(farthest-side at 100% 50%, rgb(17 20 58 / 0.16), transparent) right / 0.9rem 100% no-repeat scroll;
+  }
+  .compare :global(.cmp) {
+    width: auto;
+    min-width: min(100%, 34rem);
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .compare :global(.cmp th),
+  .compare :global(.cmp td) {
+    height: var(--rule);
+    padding: 0.2rem 0.75rem;
+    border-bottom: 1px solid rgb(76 86 190 / 0.17);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .compare :global(.cmp thead th) {
+    vertical-align: bottom;
+    text-align: right;
+    font-weight: 700;
+    color: var(--ink);
+    border-bottom: 1.5px solid rgb(76 86 190 / 0.4);
+    padding-bottom: 0.35rem;
+    line-height: 1.2;
+  }
+  .compare :global(.cmp .sc-name) {
+    display: block;
+  }
+  .compare :global(.cmp thead th.sc),
+  .compare :global(.cmp thead th.dc) {
+    white-space: normal;
+    min-width: 4.5rem;
+    max-width: 11rem;
+  }
+  .compare :global(.cmp thead .sub) {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+  .compare :global(.cmp th[scope="row"]) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--paper);
+    text-align: left;
+    font-weight: 500;
+    color: var(--ink-2);
+    padding-left: 0;
+    white-space: normal;
+    min-width: 9rem;
+    max-width: 15rem;
+    line-height: 1.25;
+  }
+  .compare :global(.cmp .corner) {
+    position: sticky;
+    left: 0;
+    background: var(--paper);
+  }
+  .compare :global(.cmp td) {
+    text-align: right;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .compare :global(.cmp td.txt) {
+    white-space: normal;
+    min-width: 4.5rem;
+    max-width: 10rem;
+    line-height: 1.3;
+    padding-block: 0.35rem;
+  }
+  .compare :global(.cmp tr.strong th),
+  .compare :global(.cmp tr.strong td) {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .compare :global(.cmp tr.long td) {
+    white-space: normal;
+    min-width: 10rem;
+    max-width: 14rem;
+    text-align: left;
+    font-weight: 450;
+    font-size: var(--fs-xs);
+    line-height: 1.45;
+    color: var(--ink-2);
+    vertical-align: top;
+    padding-block: 0.4rem;
+  }
+  .compare :global(.cmp tr.long th) {
+    vertical-align: top;
+    padding-block: 0.4rem;
+  }
+  .compare :global(.cmp .sec th) {
+    position: static;
+    padding: 0.85rem 0 0.15rem;
+    height: auto;
+    text-align: left;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--neel-700);
+    background: none;
+    border-bottom: 1.5px solid rgb(76 86 190 / 0.3);
+  }
+  .compare :global(.cmp .sec-note td) {
+    text-align: left;
+    font-weight: 450;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    white-space: normal;
+    padding-left: 0;
+  }
+  .compare :global(.cmp td.diff) {
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .compare :global(.cmp td.diff .p) {
+    margin-left: 0.3rem;
+    font-weight: 500;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .compare :global(.cmp td.diff .same) {
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+  .compare :global(.cmp .hl) {
+    padding-inline: 0.25em;
+  }
+  .cmp-legend {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.5;
+    max-width: 62ch;
+  }
+  .cmp-table {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .compare :global(.cmp-words) {
+    display: grid;
+    gap: 0.2rem;
+    max-width: 62ch;
+  }
+  .compare :global(.cmp-words-title) {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--neel-700);
+  }
+  .compare :global(.cmp-words ul) {
+    margin: 0;
+    padding-left: 1.05rem;
+    display: grid;
+    gap: 0.15rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .compare :global(.cmp-words strong) {
+    font-weight: 650;
+    color: var(--ink);
+  }
+
+  @media (max-width: 560px) {
+    .compare {
+      --margin-x: 1.1rem;
+      padding: 1rem 0.85rem 1rem calc(var(--margin-x) + 0.7rem);
+    }
+    .compare :global(.cmp th),
+    .compare :global(.cmp td) {
+      padding-inline: 0.45rem;
+    }
+    .compare :global(.cmp th[scope="row"]) {
+      width: 7rem;
+      min-width: 7rem;
+      max-width: 7rem;
+      padding-left: 0;
+    }
+    .cmp-tools {
+      width: 100%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cards :global(.card) {
+      transition: none;
+    }
+  }
+  @media print {
+    .scn {
+      break-inside: avoid;
+    }
+    .compare {
+      box-shadow: none;
+      border: 1px solid #ccc;
+    }
+    .compare :global(.cmp-scroll) {
+      overflow: visible;
+    }
+  }
+</style>

@@ -1,0 +1,115 @@
+---
+/**
+ * The few numbers a reader must remember, each with what it means.
+ * <KeyNumbers items={[{ value: "12%", label: "of basic + DA goes to EPF from the employee" }, …]} />
+ * Use 2–4 items. Values are set in the same family as everything else.
+ *
+ * On the desk each number has been gone over with a highlighter: yellow for a number to
+ * remember, pink when its own label says it is a deadline or a penalty ("the deadline to
+ * pay", "to complete the inquiry", "fine", "late", "not deposited"). The label always says
+ * which, so the colour is never the only signal.
+ */
+interface Props {
+  items: { value: string; label: string; note?: string }[];
+}
+const { items } = Astro.props;
+// A date or a duration whose label is about paying, filing or acting by then is a deadline.
+const WHEN = /\b\d+(?:st|nd|rd|th)\b|\b(?:days?|weeks?|months?|years?)\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i;
+const DUE = /\b(?:deadline|last day|due|pay|paid|deposit|deposited|file|filed|issue|to (?:give|complete|act|complain|submit|settle))\b/i;
+const PENALTY = /\b(?:fines?|fined|penalt(?:y|ies)|prison|jail|imprisonment|prosecution|interest|late|not (?:deducted|deposited|depositing|paid|paying|filed|filing))\b/i;
+const marked = items.map((it) => ({ ...it, pink: PENALTY.test(it.label) || (WHEN.test(it.value) && DUE.test(it.label)) }));
+const pinks = marked.filter((m) => m.pink).length;
+---
+
+<div class="kn-wrap">
+  <dl class="kn" data-reveal-group>
+    {
+      marked.map((it, i) => (
+        <div class="item" data-reveal>
+          <dt class="value">
+            <span class:list={["hl", { "hl-pink": it.pink }]} data-mark data-mark-delay={i * 120}>{it.value}</span>
+          </dt>
+          <dd class="label">
+            {it.label}
+            {it.note && <span class="note" set:html={it.note} />}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+  {
+    pinks > 0 && (
+      <p class="key" aria-hidden="true">
+        {pinks < marked.length && <span class="hl">number to remember</span>}
+        <span class="hl hl-pink">deadline or penalty</span>
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .kn {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0;
+    margin: 0;
+    border-top: 2px solid var(--neel-700);
+  }
+  .item {
+    padding: 0.9rem 1.1rem 1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .item + .item {
+    padding-left: 1.1rem;
+    border-left: 1px solid var(--line);
+  }
+  .value {
+    font-size: var(--fs-xl);
+    font-weight: 660;
+    font-stretch: 104%;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--neel-900);
+  }
+  /* The swipe sits low on the figure, the way a highlighter goes over a number. */
+  .value .hl {
+    background-size: var(--hl-w, 100%) 0.62em;
+    background-position: 0 88%;
+    padding: 0 0.12em;
+    margin-inline: -0.12em;
+  }
+  .label {
+    margin: 0.4rem 0 0;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+  .note {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  /* The highlighter key, as in "In short". */
+  .key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    margin-top: 0.6rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  @media (max-width: 560px) {
+    .item + .item {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+  /* On paper the highlights become plain underlines, so the colour key means nothing there. */
+  @media print {
+    .key {
+      display: none;
+    }
+  }
+</style>

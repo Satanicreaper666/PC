@@ -1,0 +1,36 @@
+---
+/** A hand-drawn wavy underline in pen, for the one phrase that carries the legal weight. */
+interface Props {
+  red?: boolean;
+  class?: string;
+}
+const { red, class: cls } = Astro.props;
+---
+
+<span class:list={["pen-under", cls]} data-mark>
+  <slot />
+  <svg class:list={["pen", { "pen-red": red }]} viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
+    <path class="pen-stroke" pathLength="1" d="M1 6c8-3.5 14 2.6 22-.8s13-3 21 .4 14 2.6 22-.5 16-3.4 33 .2" />
+  </svg>
+</span>
+
+<style>
+  .pen-under {
+    position: relative;
+    display: inline-block;
+  }
+  .pen-under .pen {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.32em;
+    width: 100%;
+    max-width: none;
+    height: 0.45em;
+    pointer-events: none;
+  }
+  .pen-under .pen :global(path) {
+    vector-effect: non-scaling-stroke;
+    stroke-width: 2.2;
+  }
+</style>

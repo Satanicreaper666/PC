@@ -1,0 +1,156 @@
+---
+title: Contractor or employee? Getting the TDS right
+description: >-
+  How classification decides the TDS section, rate and forms, the signs that a consultant is really an employee, and the 2026 rule that treats manpower supply as work.
+book: tds
+chapter: 7
+stage: recruit
+audiences: [hr, founders]
+checked: 2026-11-02
+summary:
+  - "Salary carries TDS at slab rates under section 392. Payments to contractors and professionals carry flat-rate TDS under section 393."
+  - "What counts is the real working relationship, not the label in the contract. Control over how the work is done and being part of your team point to employment."
+  - "From 1 April 2026, supply of manpower counts as 'work' for TDS, so it is taxed at the contract rates rather than the professional-fee rate."
+  - "Treating an employee as a contractor creates a TDS shortfall with interest, and also PF, ESI and Labour Code liabilities."
+sources:
+  - title: "FAQs on Budget 2026 (supply of manpower within 'work' for TDS)"
+    url: "https://incometaxindia.gov.in/Documents/Budget2026/FAQs-Budget-2026.pdf"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 392: TDS on salary"
+    url: "https://www.incometaxindia.gov.in/w/section-392-6"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 398: Consequences of failure to deduct or pay"
+    url: "https://www.incometaxindia.gov.in/w/section-398-6"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 219: Quarterly statements (Forms 138 and 140)"
+    url: "https://www.incometaxindia.gov.in/w/rule-219-1"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 215: TDS certificates (Forms 130 and 131)"
+    url: "https://www.incometaxindia.gov.in/w/rule-215-1"
+    publisher: "Income Tax Department"
+  - title: "TDS rate chart for tax year 2026-27"
+    url: "https://www.caclubindia.com/articles/tds-rate-chart-for-tax-year-2026-27-54758.asp"
+    publisher: "CAclubindia"
+  - title: "Budget 2026: manpower supply treated as contractual work for TDS"
+    url: "https://studycafe.in/budget-2026-manpower-supply-now-treated-as-contractual-work-for-tds-purposes-408799.html"
+    publisher: "StudyCafe"
+  - title: "Consequences of TDS defaults (section 448 penalty)"
+    url: "https://blog.tdsman.com/2026/06/consequences-of-tds-defaults-11/"
+    publisher: "TDSMAN"
+  - title: "Industrial Relations Code, 2020 (fixed-term employment, section 2(o))"
+    url: "https://www.indiacode.nic.in/bitstream/123456789/22040/1/aa202035.pdf"
+    publisher: "Ministry of Law and Justice, India Code"
+related:
+  - handbooks/labour-law/05-contracts-and-fixed-term-employment
+  - handbooks/labour-law/04-social-security-and-benefits
+  - toolkit/offer-letter
+  - toolkit/appointment-letter
+  - handbooks/tds/08-key-dates-and-penalties
+  - glossary/tds
+faq:
+  - q: "What is the TDS rate on payments to a freelancer or consultant?"
+    a: "Fees for professional services carry TDS at 10% once payments to the person cross ₹50,000 in the tax year. Payments for contract work carry 1% if the payee is an individual or HUF and 2% otherwise. Check the current rate chart before the first payment."
+  - q: "Is TDS on manpower supply deducted at the contract rate or the professional-fee rate?"
+    a: "From 1 April 2026, supply of manpower is treated as \"work\", so TDS is deducted at the contract rates (1% or 2%), not at the professional-fee rate."
+  - q: "Can a full-time consultant be treated as an employee?"
+    a: "Yes. If the person works under your direction, as part of your team and only for you, the relationship can be employment whatever the contract says. Salary TDS, PF, ESI and other employee rights then apply."
+  - q: "Do contractors get Form 130?"
+    a: "No. Form 130 is for salary. Contractors and professionals get Form 131, the certificate for other TDS, after each quarterly statement."
+keywords: [tds on consultant vs employee, contractor or employee india tax, tds rate professional fees 2026-27, tds on manpower supply 2026, misclassification of employees india]
+draft: false
+---
+
+<Snapshot
+  who="HR and finance teams who engage consultants, freelancers and staffing agencies, and founders who hire their first team on contracts."
+  level="Intermediate"
+  risks={[
+    "Long-term 'consultants' who work like employees, which creates back taxes and benefit claims.",
+    "Deducting tax at source (TDS) on manpower supply at the professional-fee rate after 1 April 2026.",
+    "Paying contractors without a permanent account number (PAN), which pushes TDS to a higher rate."
+  ]}
+  mistakes={[
+    "Relying on the contract's label instead of how the work actually happens.",
+    "Ignoring the annual thresholds until a payment crosses them.",
+    "Issuing salary slips or leave to people you treat as contractors."
+  ]}
+  exposure="If a contractor is found to be an employee, the shortfall between flat-rate TDS and salary TDS carries interest at 1% a month (section 398) and a possible penalty equal to the tax not deducted, on top of provident fund (PF), Employees' State Insurance (ESI) and gratuity dues."
+/>
+
+## Why classification matters
+
+The same monthly payment is taxed and reported very differently depending on whether the person is your employee or an independent contractor. For an employee you deduct tax at slab rates, file Form 138 and issue Form 130, and the person is also covered by PF, ESI, gratuity and the Labour Codes. For a contractor you deduct a flat percentage, file Form 140 and issue Form 131, and none of the employee benefits apply.
+
+<Figure title="Employee, contractor and professional compared" caption="TDS rates and thresholds are for tax year 2026-27, for payees who have given a PAN. Check the current rate chart before the first payment of the year." wide>
+  <Compare
+    columns={["Employee", "Contractor", "Professional"]}
+    rows={[
+      { label: "TDS provision", values: ["Section 392 (salary)", "Section 393(1), contract work", "Section 393(1), professional fees"] },
+      { label: "Rate", values: ["Slab rates, at the average rate for the year", "1% for individuals and Hindu undivided families (HUFs); 2% for others", "10%"] },
+      { label: "When TDS starts", values: ["When tax for the year is more than nil", "A payment above ₹30,000, or ₹1 lakh in the year", "Payments above ₹50,000 in the year"] },
+      { label: "Quarterly statement", values: ["Form 138", "Form 140", "Form 140"] },
+      { label: "Certificate", values: ["Form 130, once a year", "Form 131, each quarter", "Form 131, each quarter"] },
+      { label: "PF, ESI, gratuity, leave", values: ["Yes, where the law covers the employee", "No; the contractor's own workers may be covered", "No"] }
+    ]}
+  />
+</Figure>
+
+<Callout type="law" title="Manpower supply from 1 April 2026">
+The Finance Act, 2026 brought "supply of manpower" within the definition of "work" for TDS. Payments to staffing and manpower agencies therefore carry TDS at the contract rates, not the professional-fee rate that some businesses applied. This settles a long-running doubt about which rate applied.
+</Callout>
+
+## Signs that a "consultant" is really an employee
+
+Indian courts look at the whole relationship, not at one factor or at the title of the contract. The questions below are the ones that matter most in practice. If most answers point to employment, treat the person as an employee or change how the engagement works.
+
+<Figure title="Is this person an employee or a contractor?" caption="Start at the top. A 'grey zone' answer means the contract and the day-to-day reality need review before the next payment.">
+  <DecisionTree
+    node={{
+      q: "Do you decide how, when and where the work is done?",
+      yes: {
+        q: "Is the person part of your team, doing ongoing work, mostly or only for you?",
+        yes: { result: "Treat as an employee", detail: "Salary TDS under section 392, plus PF, ESI and other benefits.", tone: "bad" },
+        no: { result: "Grey zone", detail: "Review the contract and how the work is actually managed.", tone: "neutral" }
+      },
+      no: {
+        q: "Do they run their own business, with their own tools, other clients and financial risk?",
+        yes: { result: "Genuine contractor", detail: "TDS under section 393 at the contract or professional rate.", tone: "good" },
+        no: { result: "Grey zone", detail: "Review the contract and how the work is actually managed.", tone: "neutral" }
+      }
+    }}
+  />
+</Figure>
+
+### Red flags in day-to-day practice
+
+| Points to employment | Points to a genuine contract |
+| --- | --- |
+| Fixed hours, attendance tracking and leave approval | Works to agreed deliverables and deadlines |
+| A manager assigns daily tasks | Decides their own methods |
+| Company laptop, email ID and business cards | Uses their own tools and identity |
+| Same fixed amount every month, whatever is delivered | Invoices per project or milestone |
+| Works only for you, for years | Has other clients and markets their services |
+| Appears in the org chart and team meetings as staff | Is managed through a contract owner |
+
+## What happens if you get it wrong
+
+If someone you paid as a contractor turns out to be an employee, the payments were salary. TDS should have been worked out at slab rates under section 392, so the difference is a shortfall. Under section 398 the employer is treated as an assessee in default for that shortfall and pays interest at 1% a month or part of a month. A penalty of up to the tax not deducted can also apply; check the penalty section in the Income-tax Act, 2025 before relying on the number.
+
+Section 398 also gives some protection: if the person has filed their return, included the income and paid the tax, and an accountant certifies this, the employer isn't treated as in default for that tax. Interest still runs until the date the person filed their return.
+
+The bigger costs are usually outside income tax: back PF and ESI contributions, gratuity and leave, and the protections the Labour Codes give employees. The labour law handbook covers these in [contracts and fixed-term employment](/handbooks/labour-law/contracts-and-fixed-term-employment/).
+
+<Callout type="tip">
+If you need someone full-time for a defined period, a fixed-term employment contract is often cleaner than a long consultancy. Under the Industrial Relations Code, fixed-term employees get at least the same wages and benefits as comparable permanent staff, in proportion to their service, and gratuity after one year. Their salary TDS works like anyone else's.
+</Callout>
+
+## Keeping contractor TDS clean
+
+<Steps
+  items={[
+    { title: "Collect the PAN before the first payment", body: "Without a PAN, TDS applies at a higher rate and the payee can't get credit for it." },
+    { title: "Pick the right category", body: "Contract work (including manpower supply) or professional fees. The rate and threshold differ." },
+    { title: "Track thresholds across the year", body: "Contract work: a single payment above ₹30,000 or ₹1 lakh in the year. Professional fees: above ₹50,000 in the year." },
+    { title: "Deposit and report", body: "Deposit by the 7th of the next month (30 April for March), file Form 140 each quarter, and issue Form 131 within 15 days of the statement's due date." },
+    { title: "Review long engagements every year", body: "If the work has become ongoing, core and directed by your managers, convert it to employment." }
+  ]}
+/>

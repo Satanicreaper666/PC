@@ -1,0 +1,257 @@
+---
+import "./desk.css";
+/**
+ * A two-axis grid such as the 9-box talent grid or a risk matrix.
+ * rows run top to bottom (highest first); cols run left to right (lowest first).
+ * <Matrix xLabel="Performance" yLabel="Potential" rows={["High","Medium","Low"]} cols={["Low","Medium","High"]}
+ *   cells={[[{ title: "Enigma", note: "…" }, …], …]} />
+ *
+ * On the desk: each box is a sheet of paper. A highlighted box (tone "accent") is a yellow
+ * sticky note; a box marked "bad" is pink and "good" is green. The axis titles are written
+ * in pen, with pen arrows showing which way is more.
+ */
+type Cell = { title: string; note?: string; tone?: "good" | "bad" | "accent" | "neutral" };
+interface Props {
+  rows: string[];
+  cols: string[];
+  cells: Cell[][];
+  xLabel: string;
+  yLabel: string;
+  label?: string;
+}
+const { rows, cols, cells, xLabel, yLabel, label } = Astro.props;
+const paper: Record<string, string> = { good: "dk-sticky dk-green", bad: "dk-sticky dk-pink", accent: "dk-sticky", neutral: "dk-card" };
+const tilts = [-0.6, 0.5, -0.35, 0.45];
+let notes = 0;
+// Handwriting is for short labels only (docs/ART-DIRECTION.md): six words or fewer.
+const short = (s: string) => s.trim().split(/\s+/).length <= 6;
+const SHAFT = "M2.5 9.6c5.2-1.1 10.6-1.4 16.1-.8 4.4.5 8.6.4 12.8-.4";
+const HEAD = "M26.6 4.2c2.3 1.4 4.5 2.9 6.6 4.7-2 1.6-4.2 3.2-6.3 4.9";
+---
+
+<div class="mx" data-draw role="group" aria-label={label ?? `${yLabel} by ${xLabel}`}>
+  <div class="mx-in">
+    <div class="y-axis" aria-hidden="true">
+      <span class:list={["ax-label", { hand: short(yLabel) }]}>{yLabel}</span>
+      <svg class="pen ax-arrow" viewBox="0 0 36 18" data-mark>
+        <path class="pen-stroke" pathLength="1" d={SHAFT} />
+        <path class="pen-stroke" pathLength="1" d={HEAD} />
+      </svg>
+    </div>
+    <div class="grid" style={`--cols:${cols.length};--rows:${rows.length}`}>
+      {
+        rows.map((r, ri) => (
+          <>
+            <span class="rlabel" aria-hidden="true">
+              <span class="rl-pre">{yLabel}: </span>
+              {r}
+            </span>
+            {cols.map((c, ci) => {
+              const cell = cells[ri]?.[ci];
+              const tone = cell?.tone ?? "neutral";
+              const tilt = tone === "neutral" ? undefined : `--dk-tilt:${tilts[notes++ % tilts.length]}deg`;
+              return (
+                <div class:list={["cell", `tone-${tone}`, paper[tone]]} style={`--i:${ri * cols.length + ci};${tilt ?? ""}`}>
+                  <span class="cap">
+                    <span class="visually-hidden">
+                      {yLabel} {r},{" "}
+                    </span>
+                    {xLabel}: {c}
+                  </span>
+                  <span class="ct">{cell?.title}</span>
+                  {cell?.note && <span class="cn" set:html={cell.note} />}
+                </div>
+              );
+            })}
+          </>
+        ))
+      }
+      <span />
+      {
+        cols.map((c) => (
+          <span class="clabel" aria-hidden="true">
+            {c}
+          </span>
+        ))
+      }
+    </div>
+    <div class="x-axis" aria-hidden="true">
+      <span class:list={["ax-label", { hand: short(xLabel) }]}>{xLabel}</span>
+      <svg class="pen ax-arrow" viewBox="0 0 36 18" data-mark>
+        <path class="pen-stroke" pathLength="1" d={SHAFT} />
+        <path class="pen-stroke" pathLength="1" d={HEAD} />
+      </svg>
+    </div>
+  </div>
+</div>
+
+<style>
+  .mx {
+    container-type: inline-size;
+  }
+  .mx-in {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 0.5rem 0.4rem;
+  }
+  /* Axis titles, written in pen, each with a pen arrow pointing to "more". */
+  .ax-label {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .ax-label.hand {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--pen-ink);
+  }
+  .ax-arrow {
+    width: 1.5rem;
+    height: 0.75rem;
+    stroke-width: 2.8;
+    flex-shrink: 0;
+  }
+  .y-axis {
+    grid-row: 1;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+  /* Vertical text with a real vertical layout box, so it can't overlap the row labels. */
+  .y-axis .ax-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  .y-axis .ax-arrow {
+    transform: rotate(-90deg);
+    margin-block: 0.4rem;
+  }
+  .x-axis {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-top: 0.1rem;
+  }
+  /* The cell's position in words: hidden on the grid (the axes say it), shown in the phone list. */
+  .cap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: auto repeat(var(--cols), minmax(0, 1fr));
+    gap: 9px;
+    padding: 0.15rem 0.3rem 0.2rem 0;
+  }
+  .rlabel,
+  .clabel {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-weight: 560;
+  }
+  .rlabel {
+    align-self: center;
+    padding-right: 0.4rem;
+    text-align: right;
+  }
+  .clabel {
+    text-align: center;
+    padding-top: 0.2rem;
+  }
+  .cell {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.2rem;
+    min-height: 5.5rem;
+    padding: 0.65rem 0.75rem;
+  }
+  .ct {
+    font-weight: 640;
+    font-size: var(--fs-sm);
+    line-height: 1.25;
+  }
+  .cn {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.35;
+  }
+  :global(html.js-anim) .mx:not(.draw):not(.drawn) .cell {
+    opacity: 0;
+  }
+  .mx:global(.draw) .cell {
+    animation: mx-in 0.5s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 0.05s);
+  }
+  @keyframes mx-in {
+    from {
+      opacity: 0;
+    }
+  }
+  .rl-pre {
+    display: none;
+  }
+  @container (max-width: 34rem) {
+    .rl-pre {
+      display: inline;
+    }
+  }
+  /* Narrow containers: a list of cells, each labelled with its row and column. Nothing is hidden. */
+  @container (max-width: 34rem) {
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 9px;
+    }
+    .y-axis,
+    .x-axis,
+    .clabel,
+    .grid > span:empty {
+      display: none;
+    }
+    /* Each row becomes a small group heading: "Career stage: Design". */
+    .rlabel {
+      text-align: left;
+      padding: 0.6rem 0 0.1rem;
+      font-size: var(--fs-sm);
+      font-weight: 650;
+      color: var(--ink);
+    }
+    .rlabel:first-child {
+      padding-top: 0;
+    }
+    .mx-in {
+      grid-template-columns: 1fr;
+    }
+    .cell {
+      min-height: 0;
+    }
+    .cap {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--ink-2);
+    }
+  }
+  /* Printed: every box is on the page, whether or not it was scrolled to. */
+  @media print {
+    .mx .cell {
+      opacity: 1 !important;
+      animation: none !important;
+    }
+  }
+</style>

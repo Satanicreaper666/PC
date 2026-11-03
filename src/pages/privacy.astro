@@ -1,0 +1,180 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/site/PageHero.astro";
+import Icon from "../components/ui/Icon.astro";
+import { CONTACT } from "../data/contact";
+import { breadcrumbLd } from "../lib/library";
+
+const updated = "3 November 2026";
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Privacy", href: "/privacy/" }
+];
+---
+
+<BaseLayout title="Privacy" description="PeopleCraft has no accounts, no ads, no analytics and no tracking cookies. Calculators, templates and people analytics run in your browser." jsonLd={breadcrumbLd(Astro.site, trail)}>
+  <PageHero title="Privacy" lede="Short version: we don't collect your personal data. What you type into the library stays on your device." trail={trail}>
+    <p class="small updated">Last updated {updated}</p>
+  </PageHero>
+
+  <div class="wrap-narrow section">
+    <ul class="summary" aria-label="Privacy at a glance">
+      <li><Icon name="shield" size={20} /><span>No accounts or sign-up</span></li>
+      <li><Icon name="shield" size={20} /><span>No ads, no analytics, no tracking cookies</span></li>
+      <li><Icon name="shield" size={20} /><span>No third-party scripts or fonts</span></li>
+      <li><Icon name="check-circle" size={20} /><span>Tools run inside your browser</span></li>
+      <li><Icon name="check-circle" size={20} /><span>Your desk and saved work stay on this device</span></li>
+    </ul>
+
+    <div class="prose">
+      <h2>What happens to what you type</h2>
+      <ul>
+        <li>
+          <strong>Calculators</strong> work in your browser. Your inputs go into the page address only so that "Copy link" can share a result. Scenarios you
+          save to compare (up to 8 per calculator, with the names you give them) are kept in this browser's local storage. Nothing is sent to us.
+        </li>
+        <li>
+          <strong>Letters, forms, policies and job descriptions</strong> save your drafts in your browser's local storage, several per template if you like, so you
+          can come back to them. Company details and a letterhead logo, if you save them, fill in new letters. Letters also remember the last 10 people you
+          filled in (name, role, dates and pay; never PAN, Aadhaar, bank details or date of birth) so the next letter can start from them, and you can forget
+          them from any letter. Downloads (Word, print or PDF) are created on your device.
+        </li>
+        <li><strong>Checklists</strong> remember your ticks, and any owners and due dates you add. <strong>Surveys</strong> keep a team's answers once you add a second person, with no names or times. Both stay on this device.</li>
+        <li><strong>People analytics</strong> and the other tools that read a spreadsheet do it inside your browser. The file is never uploaded, and the data is gone when you close the tab unless you choose to keep a copy in this browser.</li>
+        <li><strong>Search</strong> downloads a small index from this site and searches it on your device. Your search terms are not sent anywhere.</li>
+      </ul>
+      <p>Anything saved on your device stays there until you clear it. You can clear it with the button below or in your browser's settings.</p>
+
+      <h2 id="your-desk">Your desk</h2>
+      <p><a href="/desk/">My desk</a> gathers what you use, from this browser only. To do that it keeps:</p>
+      <ul>
+        <li><strong>Pins:</strong> the title and short description of each chapter, tool, job description or glossary term you pin.</li>
+        <li><strong>Recently viewed:</strong> the last 12 library pages you opened, such as chapters, tools and job descriptions, and when.</li>
+        <li><strong>Chapters read:</strong> which handbook chapters you have read, and when. A chapter counts as read once you reach its Sources, or most of the way down.</li>
+        <li><strong>Checklist dates:</strong> when you last ticked each checklist, so the desk can show it.</li>
+      </ul>
+      <p>
+        Drafts, checklist ticks and survey answers on the desk are the ones the tools already keep; the desk only reads them. None of this is sent to us, and another phone
+        or computer has its own, empty desk. Clear one part from the desk itself, or everything with the button below.
+      </p>
+
+      <h2 id="offline">Pages you can open offline</h2>
+      <p>
+        Once you have opened a page, your browser keeps a copy so it still opens without a connection: every page you pinned, and up to 80 of the pages you
+        opened most recently, with the files they need. The copies are refreshed whenever you are online. They are kept in your browser's cache, not sent
+        anywhere, and the button below deletes them too. <a href="/offline/">See which pages are saved on this device</a>.
+      </p>
+    </div>
+
+    <div class="clear" data-clear>
+      <button type="button" class="btn btn-secondary" data-clear-btn>
+        <Icon name="refresh" size={18} />
+        Clear everything PeopleCraft saved on this device
+      </button>
+      <p class="small muted" role="status" aria-live="polite" data-clear-status></p>
+    </div>
+
+    <div class="prose">
+      <h2>Server logs</h2>
+      <p>
+        Like any website, the company that hosts PeopleCraft may keep standard server logs, such as the IP address, time and page requested, to keep the site secure and running. We don't use them to identify or
+        profile anyone.
+      </p>
+
+      <h2>When you contact us</h2>
+      <p>
+        If you message us on WhatsApp or LinkedIn, those services handle your message under their own privacy policies, and we see what you choose to send. We use it only to reply to you and to correct the
+        library, and we don't share it with anyone else.
+      </p>
+
+      <h2>Links to other sites</h2>
+      <p>Sources and contact links take you to other websites, such as government portals. Their privacy policies apply there.</p>
+
+      <h2>Children</h2>
+      <p>PeopleCraft is written for adults at work or preparing for work. It is not directed at children.</p>
+
+      <h2>Changes</h2>
+      <p>If this notice changes, the date at the top will change too.</p>
+
+      <h2>Questions</h2>
+      <p>
+        Ask us through the links on the <a href="/about/">About page</a>{CONTACT.email && <>, or email <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></>}.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { DESK_CHANGE } from "../scripts/desk";
+
+  const btn = document.querySelector<HTMLButtonElement>("[data-clear-btn]");
+  const status = document.querySelector<HTMLElement>("[data-clear-status]");
+  btn?.addEventListener("click", async () => {
+    let n = 0;
+    try {
+      for (const k of Object.keys(localStorage)) {
+        if (/^(pc[_-]|peoplecraft)/i.test(k)) {
+          localStorage.removeItem(k);
+          n++;
+        }
+      }
+      sessionStorage.clear();
+    } catch {
+      /* storage unavailable: nothing saved */
+    }
+    // Offline copies of pages (public/sw.js): every PeopleCraft cache is named "pc-…".
+    let pages = 0;
+    try {
+      if ("caches" in window) {
+        for (const name of await caches.keys()) {
+          if (!name.startsWith("pc-")) continue;
+          if (name.startsWith("pc-pages-")) pages += (await (await caches.open(name)).keys()).length;
+          await caches.delete(name);
+        }
+      }
+    } catch {
+      /* no cache storage: nothing kept */
+    }
+    // The header's pin count, and any other open page, catch up.
+    window.dispatchEvent(new CustomEvent(DESK_CHANGE, { detail: { what: "all" } }));
+    const saved = n ? `${n} saved ${n === 1 ? "item" : "items"}` : "";
+    const offline = pages ? `${pages} offline ${pages === 1 ? "page" : "pages"}` : "";
+    if (status) status.textContent = saved || offline ? `Cleared ${[saved, offline].filter(Boolean).join(" and ")} from this browser.` : "Nothing was saved on this device.";
+  });
+</script>
+
+<style>
+  .updated {
+    color: var(--ink-2);
+  }
+  .section {
+    display: grid;
+    gap: 1.75rem;
+    padding-bottom: var(--section);
+  }
+  .summary {
+    list-style: none;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border-radius: var(--r-lg);
+    background: var(--canvas);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 0.6rem 1.25rem;
+  }
+  .summary li {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    font-weight: 560;
+  }
+  .summary li :global(svg) {
+    flex-shrink: 0;
+    color: var(--neel-600);
+  }
+  .clear {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+  }
+</style>

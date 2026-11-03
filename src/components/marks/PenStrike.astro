@@ -1,0 +1,51 @@
+---
+/**
+ * Strikes out-of-date words through in red pen and writes the current ones beside them:
+ * <PenStrike old="Form 16">Form 130</PenStrike>. Screen readers hear "Form 130 (was Form 16)".
+ */
+interface Props {
+  old: string;
+  class?: string;
+}
+const { old, class: cls } = Astro.props;
+---
+
+<span class:list={["pen-strike", cls]} data-mark>
+  <span class="was">
+    <span class="visually-hidden">(was </span>{old}<span class="visually-hidden">)</span>
+    <svg class="pen pen-red" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true">
+      <path class="pen-stroke" pathLength="1" d="M2 7.5C20 5 45 7.8 62 5.6S90 4.8 98 6" />
+    </svg>
+  </span>
+  <span class="now"><slot /></span>
+</span>
+
+<style>
+  .pen-strike {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.35em;
+  }
+  .was {
+    position: relative;
+    color: var(--ink-3);
+    order: 0;
+  }
+  .was .pen {
+    position: absolute;
+    left: -0.1em;
+    right: -0.1em;
+    top: 0.32em;
+    width: calc(100% + 0.2em);
+    max-width: none;
+    height: 0.5em;
+  }
+  .was .pen :global(path) {
+    vector-effect: non-scaling-stroke;
+    stroke-width: 2.2;
+  }
+  .now {
+    order: 1;
+  }
+</style>

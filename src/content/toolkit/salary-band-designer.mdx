@@ -1,0 +1,113 @@
+---
+title: Salary band designer
+description: Build a salary grade structure with a minimum, midpoint and maximum for each grade, see spread and overlap on a chart, and check where any salary sits.
+kind: calculator
+calculator: salary-band-designer
+glance:
+  inputs: ["Number of grades", "Lowest midpoint", "Midpoint progression", "Range spread", "Salary to check"]
+  output: "Grade structure"
+  formula: "Minimum = midpoint ÷ (1 + spread ÷ 2)"
+stage: recruit
+audiences: [hr, founders]
+order: 61
+checked: 2026-11-02
+useWhen: You are setting up pay grades, reviewing grades that no longer fit, or placing an offer or a salary inside its range.
+tips:
+  - "Set each midpoint from <strong>current market data</strong> for the roles in that grade, then compare the bands with what you actually pay."
+  - "Apply the same range to the same work, whoever does it. Consistent ranges make unequal pay easier to spot and fix."
+  - "Review the structure every year. Moving all midpoints by your market movement keeps it current without redesigning it."
+sources:
+  - title: The Code on Wages, 2019 (sections 2(v) and 3)
+    url: https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf
+    publisher: India Code
+related:
+  - toolkit/increment-budget-allocator
+  - toolkit/pay-equity-analyzer
+  - toolkit/offer-letter
+  - toolkit/hr-metrics-calculator
+  - handbooks/recruitment/06-offers-and-negotiation
+  - handbooks/labour-law/02-wages-and-pay
+  - glossary/ctc
+  - glossary/compa-ratio
+faq:
+  - q: What is a good range spread for salary bands?
+    a: It depends on the level. Entry-level roles usually get narrower ranges because people learn them quickly; senior roles get wider ranges because experience adds more value over time. Pick a spread that matches how long people typically stay in a grade.
+  - q: How do you calculate compa-ratio?
+    a: Divide a person's pay by the midpoint of their grade. 1.00 means pay is at the midpoint; 0.90 means it is 10% below the midpoint.
+  - q: What is range penetration?
+    a: How far pay has moved through the range, from 0% at the minimum to 100% at the maximum. It is (pay − minimum) ÷ (maximum − minimum).
+  - q: Should salary bands overlap?
+    a: Usually, yes. Overlap lets an experienced person in one grade earn more than a newcomer in the grade above. Too much overlap blurs the grades; a gap turns every promotion into a large jump.
+  - q: Can two people in the same role be paid differently?
+    a: Yes, for reasons such as experience, performance or location, applied the same way to everyone. The Code on Wages, 2019 bars discrimination on the ground of gender in pay for the same work or work of a similar nature.
+keywords: [salary band calculator, salary range calculator, pay grade structure, compa-ratio calculator, range spread and midpoint, salary band overlap]
+draft: false
+---
+
+## How the bands are worked out
+
+Each grade has a **midpoint**: the pay for someone fully competent in the role. The minimum and maximum sit either side of it, set by the **range spread**.
+
+<Figure title="Minimum and maximum from the midpoint" caption="Spread is measured from the minimum, so the midpoint sits exactly halfway between minimum and maximum.">
+  <Formula
+    result={{ value: "Minimum", label: "bottom of the range" }}
+    parts={[{ value: "Midpoint", label: "target pay for the grade" }, { op: "÷" }, { value: "1 + spread ÷ 2", label: "e.g. 1 + 0.40 ÷ 2 = 1.20" }]}
+    example="Example, grade 1: ₹4,00,000 ÷ 1.20 = ₹3,33,333. Maximum = minimum × (1 + spread) = ₹3,33,333 × 1.40 = ₹4,66,667."
+  />
+</Figure>
+
+Midpoints then rise by the **progression** from one grade to the next: grade 2's midpoint is ₹4,00,000 × 1.25 = ₹5,00,000 in the example, grade 3's is ₹6,25,000, and so on.
+
+| Measure | Formula | Example (from the calculator's starting values) |
+| --- | --- | --- |
+| Range spread | (maximum − minimum) ÷ minimum | Grade 3: 48% |
+| Midpoint progression | (next midpoint − this midpoint) ÷ this midpoint | 25% between every grade |
+| Overlap with the next grade | (this maximum − next minimum) ÷ (this maximum − this minimum) | Grade 2 into grade 3: 48% |
+| Compa-ratio | pay ÷ midpoint | ₹6,00,000 ÷ ₹6,25,000 = 0.96 |
+| Range penetration | (pay − minimum) ÷ (maximum − minimum) | ₹6,00,000 in grade 3: 40% |
+
+When two neighbouring grades have the same spread, overlap = 1 − progression ÷ spread. A 50% spread with 25% progression gives 50% overlap; raise the progression to 50% and the grades stop overlapping.
+
+## Choosing the numbers
+
+### Midpoints
+
+Start from the market. Match each grade's main roles to a salary survey, take the figure that matches your pay policy (for example the median if you aim to pay at the market) and set the lowest grade's midpoint from it. If the progression doesn't land close to the market for higher grades, adjust the progression rather than forcing every grade.
+
+### Progression
+
+Progression decides how big a promotion feels. Small steps suit a structure with many grades; larger steps suit a flatter organisation with fewer, broader grades.
+
+### Spread
+
+Spread decides how much room people have to grow without a promotion. Widen it for senior grades, where pay depends more on experience and scope.
+
+## Where a salary sits, and what to do
+
+<Figure title="Reading a salary against its range" caption="Start at the top. Each answer leads to a usual next step; your pay policy decides the details.">
+  <DecisionTree
+    node={{
+      q: "Is pay below the minimum of the grade?",
+      yes: { result: "Plan an increase to the minimum", detail: "In steps if the gap is large. Often called green-circled.", tone: "bad" },
+      no: {
+        q: "Is pay above the maximum?",
+        yes: { result: "Hold base pay", detail: "One-off payments until the range catches up. Often called red-circled.", tone: "neutral" },
+        no: { result: "Within the range", detail: "Use compa-ratio and performance to set increases, as in the merit matrix.", tone: "good" }
+      }
+    }}
+  />
+</Figure>
+
+The [increment budget allocator](/toolkit/increment-budget-allocator/) uses the same compa-ratio zones to give bigger increases to strong performers who are low in their range.
+
+## Using bands fairly
+
+The Code on Wages, 2019 says there shall be no discrimination on the ground of gender in wages for the **same work or work of a similar nature**, which it defines by the skill, effort, experience and responsibility the work needs, done under similar conditions. Bands help you show that pay follows the work. Run the [pay equity analyser](/toolkit/pay-equity-analyzer/) on each grade once a year to check that it does.
+
+<Callout type="warning" title="Common mistakes">
+  <ul>
+    <li>Building bands from what you pay today, which locks in past inconsistencies.</li>
+    <li>Treating the maximum as a target. Most people who are good at their job should sit around the midpoint.</li>
+    <li>Promoting someone only because they reached the top of their range. Promotion should follow a bigger role.</li>
+  </ul>
+</Callout>

@@ -1,0 +1,1267 @@
+---
+/**
+ * People analytics: load an employee list (CSV or Excel), check the columns,
+ * read the dashboard. Everything runs in the browser; see
+ * src/components/analytics/app.ts for the behaviour and src/lib/analytics/
+ * for the tested logic.
+ */
+import Icon from "../ui/Icon.astro";
+import ChartCard from "../analytics/ChartCard.astro";
+---
+
+<div class="pa" data-pa>
+  <p class="visually-hidden" aria-live="polite" data-announce></p>
+  <!-- Icons the script clones into the data checks, so it doesn't ship the whole icon set. -->
+  <template data-icon="alert"><Icon name="alert" size={16} /></template>
+  <template data-icon="x-circle"><Icon name="x-circle" size={16} /></template>
+  <template data-icon="info"><Icon name="info" size={16} /></template>
+  <template data-icon="check-circle"><Icon name="check-circle" size={16} /></template>
+  <template data-icon="chevron-down"><Icon name="chevron-down" size={16} /></template>
+
+  <!-- Step 1: load -->
+  <section class="pa-step pa-load" data-step="load" aria-labelledby="pa-load-title">
+    <div class="pa-load-main">
+      <div>
+        <p class="pa-stepno">Step 1 of 3</p>
+        <h2 class="pa-h" id="pa-load-title" tabindex="-1">Load your employee list</h2>
+      </div>
+      <div class="pa-saved" data-saved hidden>
+        <Icon name="history" size={20} />
+        <p class="pa-saved-text"><strong>Kept in this browser:</strong> <span data-saved-text></span></p>
+        <div class="pa-saved-actions">
+          <button class="btn btn-sm" type="button" data-saved-open>Open it</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-saved-delete>Delete it</button>
+        </div>
+      </div>
+      <div class="pa-drop" data-drop>
+        <span class="pa-drop-icon"><Icon name="upload" size={26} /></span>
+        <p class="pa-drop-title">Drop a CSV or Excel file here</p>
+        <p class="pa-drop-sub">One row per person: everyone on the rolls, plus everyone who left during the period you want to look at.</p>
+        <div class="pa-drop-actions">
+          <button class="btn" type="button" data-pick><Icon name="file-text" size={18} /> Choose a file</button>
+          <button class="btn btn-secondary" type="button" data-sample><Icon name="sparkle" size={18} /> Try with sample data</button>
+        </div>
+        <input type="file" accept=".csv,.txt,.xlsx,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" data-file hidden />
+        <p class="pa-busy" data-busy hidden>Reading the file…</p>
+        <p class="pa-error" role="alert" data-load-error hidden></p>
+      </div>
+    </div>
+    <aside class="pa-privacy" aria-labelledby="pa-privacy-title">
+      <p class="pa-privacy-title" id="pa-privacy-title"><Icon name="lock" size={18} /> Your data stays on this device</p>
+      <ul>
+        <li>Your browser reads the file. It is not uploaded to PeopleCraft or anyone else.</li>
+        <li>Nothing is saved unless you tick <em>Keep this data in this browser</em>.</li>
+        <li>Reload or close the page and the data is gone.</li>
+      </ul>
+      <p class="pa-privacy-links">
+        <button class="pa-linkbtn" type="button" data-template><Icon name="download" size={16} /> Download a blank template (CSV)</button>
+        <a class="pa-linkbtn" href="#how-to-prepare-your-file"><Icon name="checklist" size={16} /> How to prepare your file</a>
+      </p>
+    </aside>
+  </section>
+
+  <!-- Step 2: check the columns -->
+  <section class="pa-step pa-map" data-step="map" aria-labelledby="pa-map-title" hidden>
+    <div>
+      <p class="pa-stepno">Step 2 of 3</p>
+      <h2 class="pa-h" id="pa-map-title" tabindex="-1">Check the columns</h2>
+      <p class="pa-lede" data-map-summary></p>
+    </div>
+    <div class="field pa-sheet" data-sheet-wrap hidden>
+      <label class="field-label" for="pa-sheet">Sheet with the employee list</label>
+      <select class="control" id="pa-sheet" data-sheet></select>
+    </div>
+    <div class="pa-map-table">
+      <div class="pa-map-row pa-map-head" aria-hidden="true">
+        <span>What the dashboard needs</span><span>Column in your file</span><span>First values in that column</span>
+      </div>
+      <div data-map-rows></div>
+    </div>
+    <div class="pa-map-options">
+      <div class="field">
+        <label class="field-label" for="pa-dateorder">Dates like 03/04/2025 are</label>
+        <select class="control" id="pa-dateorder" data-dateorder aria-describedby="pa-dateorder-help">
+          <option value="dmy">Day first: 3 April 2025 (usual in India)</option>
+          <option value="mdy">Month first: 4 March 2025</option>
+        </select>
+        <span class="field-help" id="pa-dateorder-help" data-dateorder-help>Dates written as 2025-04-03 or 3-Apr-2025 are read correctly either way.</span>
+      </div>
+      <div class="field" data-salaryunit-wrap hidden>
+        <label class="field-label" for="pa-salaryunit">The salary column is</label>
+        <select class="control" id="pa-salaryunit" data-salaryunit>
+          <option value="annual">Yearly (annual CTC)</option>
+          <option value="monthly">Monthly (gross or CTC per month)</option>
+        </select>
+      </div>
+    </div>
+    <fieldset class="pa-status" data-status-wrap hidden>
+      <legend class="field-label">How should each status count?</legend>
+      <p class="field-help">The last working day decides when someone left. Status is a cross-check: it catches leavers with no date and dates that clash with the status.</p>
+      <div class="pa-status-rows" data-status-rows></div>
+    </fieldset>
+    <p class="pa-error" role="alert" data-map-error hidden></p>
+    <div class="pa-map-actions">
+      <button class="btn" type="button" data-show>Show the dashboard <Icon name="arrow-right" size={18} /></button>
+      <button class="btn btn-ghost" type="button" data-restart>Choose a different file</button>
+    </div>
+  </section>
+
+  <!-- Step 3: dashboard -->
+  <section class="pa-step pa-dash" data-step="dash" aria-labelledby="pa-dash-title" hidden>
+    <div class="pa-dash-head">
+      <div>
+        <p class="pa-stepno" data-print="hide">Step 3 of 3</p>
+        <h2 class="pa-h" id="pa-dash-title" tabindex="-1">Your dashboard</h2>
+        <p class="pa-source" data-source></p>
+      </div>
+      <div class="pa-actions" data-print="hide">
+        <button class="btn btn-secondary btn-sm" type="button" data-export><Icon name="download" size={16} /> Export summary (CSV)</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-print-btn><Icon name="printer" size={16} /> Print</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-remap><Icon name="sliders" size={16} /> Check columns</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-new><Icon name="upload" size={16} /> Load another file</button>
+      </div>
+    </div>
+
+    <div class="pa-sample-note" data-sample-note hidden>
+      <span class="chip chip-accent">Sample data</span>
+      <p>A made-up company of about 120 people, with everyone who has left since it started. The names are invented. It includes a few deliberate mistakes so you can see the data checks at work.</p>
+    </div>
+    <label class="pa-keep" data-keep-wrap hidden data-print="hide">
+      <input type="checkbox" data-keep />
+      <span>Keep this data in this browser <span class="pa-keep-note">(on this device only, until you untick this)</span></span>
+    </label>
+
+    <form class="pa-filters" data-filters aria-label="Filters" data-print="hide">
+      <div class="field pa-f-period">
+        <label class="field-label" for="pa-period">Period</label>
+        <select class="control" id="pa-period" data-period></select>
+      </div>
+      <div class="pa-custom" data-custom hidden>
+        <div class="field">
+          <label class="field-label" for="pa-from">From</label>
+          <select class="control" id="pa-from" data-from></select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="pa-to">To</label>
+          <select class="control" id="pa-to" data-to></select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="pa-dept">Department</label>
+        <select class="control" id="pa-dept" data-dept></select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="pa-location">Location</label>
+        <select class="control" id="pa-location" data-location></select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="pa-gender">Gender</label>
+        <select class="control" id="pa-gender" data-gender></select>
+      </div>
+    </form>
+    <p class="pa-scope" data-scope></p>
+    <p class="pa-hint" data-hint hidden></p>
+    <p class="pa-alert" data-quality-alert hidden></p>
+
+    <dl class="pa-kpis">
+      <div class="pa-kpi">
+        <dt>Headcount</dt>
+        <dd class="pa-kpi-v" data-kpi="headcount"></dd>
+        <dd class="pa-kpi-s" data-kpi-sub="headcount"></dd>
+      </div>
+      <div class="pa-kpi">
+        <dt>Joiners</dt>
+        <dd class="pa-kpi-v" data-kpi="joiners"></dd>
+        <dd class="pa-kpi-s" data-kpi-sub="joiners"></dd>
+      </div>
+      <div class="pa-kpi">
+        <dt>Leavers</dt>
+        <dd class="pa-kpi-v" data-kpi="leavers"></dd>
+        <dd class="pa-kpi-s" data-kpi-sub="leavers"></dd>
+      </div>
+      <div class="pa-kpi pa-kpi-wide">
+        <dt>Attrition rate</dt>
+        <dd class="pa-kpi-v" data-kpi="rate"></dd>
+        <dd class="pa-formula" data-kpi-sub="rate"></dd>
+      </div>
+      <div class="pa-kpi">
+        <dt>Average tenure</dt>
+        <dd class="pa-kpi-v" data-kpi="tenure"></dd>
+        <dd class="pa-kpi-s" data-kpi-sub="tenure"></dd>
+      </div>
+      <div class="pa-kpi pa-kpi-wide">
+        <dt>Gender ratio</dt>
+        <dd class="pa-kpi-v" data-kpi="gender"></dd>
+        <dd class="pa-kpi-s" data-kpi-sub="gender"></dd>
+      </div>
+    </dl>
+
+    <div class="pa-grid">
+      <ChartCard id="headcount" title="Headcount by month" caption="People on the rolls at the end of each month. The scale starts at zero, so small changes look small." />
+      <ChartCard id="flow" title="Joiners and leavers by month" caption="Joiners by joining date, leavers by last working day. Someone who joins and leaves in the same month appears in both." />
+      <ChartCard id="dept" wide title="Attrition by department" caption="Leavers ÷ average headcount × 100 for each department over the period. The vertical line is the rate for everyone shown. In a team of fewer than 10 people, one leaver moves the rate a lot." />
+      <ChartCard id="tenure" title="Tenure" caption="Years of service of the people on the rolls at the end of the period. Darker bars are longer service." />
+      <ChartCard id="span" title="Span of control" caption="Direct reports per manager, counting people on the rolls at the end of the period. There is no single right number: look for spans much narrower or wider than the rest, and ask why." />
+      <ChartCard
+        id="pay"
+        wide
+        title="Pay spread"
+        caption="Salary or CTC as given in your file, for people on the rolls at the end of the period. Groups of fewer than 3 people are not shown, so no one's pay can be read off the chart. To compare like with like, use the <a href='/toolkit/pay-equity-analyzer/'>pay equity analyser</a>."
+      >
+        <div class="pa-seg" role="group" aria-label="Group pay by" slot="tools" data-payby>
+          <button type="button" class="pa-seg-btn" data-payby-value="dept" aria-pressed="true">Department</button>
+          <button type="button" class="pa-seg-btn" data-payby-value="grade" aria-pressed="false">Grade</button>
+        </div>
+      </ChartCard>
+    </div>
+
+    <section class="pa-quality" id="pa-quality" aria-labelledby="pa-quality-title">
+      <div class="pa-quality-head">
+        <h3 class="pa-card-title" id="pa-quality-title">Data checks</h3>
+        <p class="pa-card-sub" data-quality-summary></p>
+      </div>
+      <div class="pa-checks" data-quality-list></div>
+    </section>
+  </section>
+</div>
+
+<script>
+  import { mountPeopleAnalytics } from "../analytics/app";
+  const root = document.querySelector<HTMLElement>("[data-pa]");
+  if (root) mountPeopleAnalytics(root);
+</script>
+
+<style is:global>
+  .pa {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .pa-step {
+    min-width: 0;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .pa-stepno {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+    letter-spacing: 0.01em;
+  }
+  .pa-h {
+    font-size: var(--fs-xl);
+    margin-top: 0.15rem;
+  }
+  .pa-h:focus {
+    outline: none;
+  }
+  .pa-lede {
+    margin-top: 0.4rem;
+    color: var(--ink-2);
+    max-width: 70ch;
+  }
+  .pa-error,
+  .pa-alert,
+  .pa-hint {
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--r);
+    font-size: var(--fs-sm);
+    font-weight: 540;
+  }
+  .pa-error {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .pa-alert {
+    background: var(--warn-soft);
+    color: var(--warn);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .pa-alert a {
+    color: inherit;
+    font-weight: 650;
+  }
+  .pa-hint {
+    background: var(--info-soft);
+    color: var(--info);
+  }
+  .pa-busy {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+
+  /* ---------- Step 1 ---------- */
+  .pa-load {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: end;
+  }
+  .pa-load-main {
+    display: grid;
+    gap: 1rem;
+  }
+  .pa-drop {
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+    padding: 2.25rem 1.25rem 2rem;
+    text-align: center;
+    border: 2px dashed var(--line-strong);
+    border-radius: var(--r-xl);
+    background: var(--canvas);
+    transition: border-color 150ms, background-color 150ms;
+  }
+  .pa-drop.is-over {
+    border-color: var(--primary);
+    background: var(--neel-50);
+  }
+  .pa-drop-icon {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--primary);
+  }
+  .pa-drop-title {
+    font-weight: 650;
+    font-size: var(--fs-md);
+  }
+  .pa-drop-sub {
+    max-width: 46ch;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .pa-drop-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .pa-saved {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.9rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    color: var(--ink-2);
+  }
+  .pa-saved-text {
+    flex: 1 1 16rem;
+    font-size: var(--fs-sm);
+    color: var(--ink);
+  }
+  .pa-saved-actions {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .pa-privacy {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.25rem 1.25rem 1.1rem;
+    border-radius: var(--r-xl);
+    background: var(--good-soft);
+    border: 1px solid color-mix(in srgb, var(--good) 25%, transparent);
+  }
+  .pa-privacy-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 650;
+    color: var(--good);
+  }
+  .pa-privacy ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.35rem;
+    font-size: var(--fs-sm);
+  }
+  .pa-privacy-links {
+    display: grid;
+    gap: 0.35rem;
+    justify-items: start;
+    padding-top: 0.6rem;
+    border-top: 1px solid color-mix(in srgb, var(--good) 20%, transparent);
+  }
+  .pa-linkbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    color: var(--primary);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .pa-linkbtn:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* ---------- Step 2 ---------- */
+  .pa-map {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .pa-sheet {
+    max-width: 24rem;
+  }
+  .pa-map-table {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .pa-map-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 0.5rem 1.25rem;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  [data-map-rows] > .pa-map-row:last-child {
+    border-bottom: 0;
+  }
+  .pa-map-head {
+    padding-block: 0.55rem;
+    background: var(--canvas);
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .pa-map-field {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .pa-map-field label {
+    font-weight: 620;
+    font-size: var(--fs-sm);
+  }
+  .pa-map-use {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+  .pa-req {
+    margin-left: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 620;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    vertical-align: 1px;
+  }
+  .pa-map-row .control {
+    min-height: 2.5rem;
+    padding-block: 0.4rem;
+    font-size: var(--fs-sm);
+  }
+  .pa-map-ex {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .pa-map-ex .pa-read {
+    color: var(--ink-3);
+  }
+  .pa-map-ex.is-bad {
+    color: var(--bad);
+    font-weight: 560;
+  }
+  .pa-map-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1rem 1.5rem;
+  }
+  .pa-status {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    display: grid;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+  .pa-status legend {
+    padding: 0 0.3rem;
+  }
+  .pa-status-rows {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .pa-status-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 15rem);
+    gap: 0.75rem;
+    align-items: center;
+    font-size: var(--fs-sm);
+  }
+  .pa-status-row .control {
+    min-height: 2.4rem;
+    padding-block: 0.35rem;
+    font-size: var(--fs-sm);
+  }
+  .pa-status-count {
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .pa-map-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  /* ---------- Step 3 ---------- */
+  .pa-dash {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .pa-dash-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+  }
+  .pa-source {
+    margin-top: 0.25rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .pa-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .pa-sample-note {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    align-items: baseline;
+    padding: 0.75rem 1rem;
+    border-radius: var(--r-lg);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    font-size: var(--fs-sm);
+  }
+  .pa-sample-note p {
+    flex: 1 1 18rem;
+  }
+  .pa-keep {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    cursor: pointer;
+    justify-self: start;
+  }
+  .pa-keep input {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--primary);
+  }
+  .pa-keep-note {
+    font-weight: 430;
+    color: var(--ink-3);
+  }
+  .pa-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem 1rem;
+    padding: 0.9rem 1rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--canvas);
+  }
+  .pa-filters .field {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+  .pa-filters .pa-f-period {
+    flex: 1.5 1 15rem;
+  }
+  .pa-filters .control {
+    min-height: 2.6rem;
+    padding-block: 0.4rem;
+    font-size: var(--fs-sm);
+  }
+  .pa-custom {
+    display: flex;
+    gap: 0.75rem;
+    flex: 2 1 16rem;
+  }
+  .pa-scope {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    margin-top: -0.35rem;
+  }
+
+  .pa-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+  .pa-kpi {
+    display: grid;
+    gap: 0.35rem;
+    align-content: start;
+    padding: 1rem 1.2rem 1.15rem;
+    background: var(--paper);
+    min-width: 0;
+  }
+  .pa-kpi dt {
+    font-size: var(--fs-sm);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .pa-kpi dd {
+    margin: 0;
+  }
+  .pa-kpi-v {
+    font-size: clamp(1.9rem, 1.5rem + 1.2vw, 2.5rem);
+    font-weight: 660;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--neel-800);
+  }
+  .pa-kpi-v .pa-unit {
+    font-size: 0.5em;
+    font-weight: 580;
+    letter-spacing: 0;
+    color: var(--ink-2);
+    margin-left: 0.2em;
+  }
+  .pa-kpi-s {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    line-height: 1.45;
+  }
+  .pa-formula {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.5;
+    display: grid;
+    gap: 0.15rem;
+  }
+  .pa-formula .pa-eq {
+    padding: 0.35rem 0.55rem;
+    border-radius: var(--r-sm);
+    background: var(--canvas);
+    color: var(--ink);
+  }
+  .pa-gbar {
+    display: flex;
+    gap: 2px;
+    height: 8px;
+    margin: 0.35rem 0 0.15rem;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .pa-gbar span {
+    background: var(--k);
+    min-width: 3px;
+  }
+  .pa-glegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .pa-glegend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .pa-glegend b {
+    color: var(--ink);
+    font-weight: 650;
+  }
+  .pa-sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--k);
+    flex-shrink: 0;
+  }
+
+  .pa-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .pa-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    min-width: 0;
+    margin: 0;
+    padding: 1.1rem 1.15rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+  }
+  .pa-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem 0.75rem;
+  }
+  .pa-card-titles {
+    min-width: 0;
+  }
+  .pa-card-title {
+    font-size: var(--fs-md);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .pa-card-sub {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .pa-card-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .pa-table-btn[aria-pressed="true"] {
+    background: var(--sunken);
+    color: var(--ink);
+  }
+  .pa-seg {
+    display: inline-flex;
+    padding: 2px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r);
+    background: var(--paper);
+  }
+  .pa-seg-btn {
+    min-height: 2rem;
+    padding: 0.2rem 0.65rem;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .pa-seg-btn[aria-pressed="true"] {
+    background: var(--neel-700);
+    color: #fff;
+  }
+  .pa-seg-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .pa-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .pa-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .pa-legend b {
+    color: var(--ink);
+    font-weight: 650;
+  }
+  .pa-lk {
+    flex-shrink: 0;
+    display: inline-block;
+  }
+  .pa-lk-rect {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--k);
+  }
+  .pa-lk-line {
+    width: 16px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--k);
+    opacity: 0.6;
+  }
+  .pa-lk-band {
+    width: 16px;
+    height: 10px;
+    border-radius: 4px;
+    background: var(--k);
+  }
+  .pa-lk-median {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+  }
+
+  .pa-plot {
+    position: relative;
+    min-width: 0;
+    border-radius: var(--r);
+  }
+  .pa-plot:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+  .pa-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .pa-svg text {
+    font-family: var(--font);
+  }
+  .pa-svg .pa-gl {
+    stroke: var(--line);
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+  }
+  .pa-svg .pa-base {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+  }
+  .pa-svg .pa-tick {
+    fill: var(--ink-3);
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .pa-svg .pa-tick-year {
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .pa-svg .pa-line {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .pa-svg .pa-wash {
+    opacity: 0.1;
+  }
+  .pa-svg .pa-dot {
+    stroke: var(--paper);
+    stroke-width: 2;
+  }
+  .pa-svg .pa-end {
+    fill: var(--ink);
+    font-size: 13px;
+    font-weight: 650;
+  }
+  .pa-svg .pa-cross {
+    stroke: var(--ink-3);
+    stroke-width: 1;
+    opacity: 0.6;
+  }
+  .pa-svg .pa-band {
+    fill: var(--sunken);
+    opacity: 0.85;
+  }
+  .pa-svg .pa-cap {
+    fill: var(--ink-2);
+    font-size: 12px;
+    font-weight: 620;
+  }
+  .pa-svg .pa-cat {
+    fill: var(--ink);
+    font-size: 13px;
+    font-weight: 520;
+  }
+  .pa-svg .pa-sub,
+  .pa-svg .pa-val-sub {
+    fill: var(--ink-3);
+    font-size: 12px;
+    font-weight: 480;
+  }
+  .pa-svg .pa-val,
+  .pa-svg .pa-val-main {
+    fill: var(--ink);
+    font-size: 13px;
+    font-weight: 650;
+  }
+  .pa-svg .pa-ref {
+    stroke: var(--ink-2);
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+  }
+  .pa-svg .pa-ref-label {
+    fill: var(--ink-2);
+    font-size: 12px;
+    font-weight: 620;
+  }
+  .pa-svg .pa-whisker {
+    stroke-width: 2;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+  .pa-svg .pa-median {
+    fill: var(--paper);
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+  .pa-tip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    min-width: 9rem;
+    max-width: 17rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r);
+    background: var(--paper);
+    box-shadow: var(--shadow-float);
+    font-size: var(--fs-xs);
+    line-height: 1.35;
+    pointer-events: none;
+  }
+  .pa-tip-title {
+    font-weight: 620;
+    color: var(--ink-2);
+    margin-bottom: 0.3rem;
+  }
+  .pa-tip ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .pa-tip li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    color: var(--ink-2);
+  }
+  .pa-tip strong {
+    font-size: var(--fs-sm);
+    font-weight: 680;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .pa-tip-note {
+    margin-top: 0.35rem;
+    color: var(--ink-3);
+  }
+  .pa-key {
+    flex-shrink: 0;
+    align-self: center;
+    display: inline-block;
+    background: var(--k);
+  }
+  .pa-key-line {
+    width: 12px;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .pa-key-rect {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+  .pa-table {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .pa-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+  }
+  .pa-table caption {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .pa-table th,
+  .pa-table td {
+    padding: 0.45rem 0.75rem;
+    text-align: left;
+    border-top: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .pa-table thead th {
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-weight: 620;
+    font-size: var(--fs-xs);
+  }
+  .pa-table .num {
+    text-align: right;
+    white-space: nowrap;
+  }
+  .pa-table tbody th {
+    font-weight: 560;
+  }
+  .pa-empty {
+    padding: 1.1rem 1.2rem;
+    border-radius: var(--r);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .pa-card-wide {
+    grid-column: 1 / -1;
+  }
+  .pa-cap {
+    margin-top: auto;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+  .pa-cap a {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .pa-quality {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.1rem 1.15rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .pa-check {
+    border-top: 1px solid var(--line);
+  }
+  .pa-check summary {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr) auto auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.65rem 0.25rem;
+    cursor: pointer;
+    list-style: none;
+    border-radius: var(--r-sm);
+  }
+  .pa-check summary::-webkit-details-marker {
+    display: none;
+  }
+  .pa-check summary:hover {
+    background: var(--canvas);
+  }
+  .pa-check-title {
+    font-size: var(--fs-sm);
+    font-weight: 560;
+  }
+  .pa-check-count {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .pa-check-chev {
+    color: var(--ink-3);
+    transition: transform 150ms;
+  }
+  .pa-check[open] .pa-check-chev {
+    transform: rotate(180deg);
+  }
+  .pa-st {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    justify-self: start;
+    padding: 0.1rem 0.5rem 0.1rem 0.35rem;
+    border-radius: 999px;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .pa-st-fix {
+    color: var(--bad);
+    background: var(--bad-soft);
+  }
+  .pa-st-review {
+    color: var(--warn);
+    background: var(--warn-soft);
+  }
+  .pa-st-note {
+    color: var(--info);
+    background: var(--info-soft);
+  }
+  .pa-st-ok {
+    color: var(--good);
+    background: var(--good-soft);
+  }
+  .pa-check-body {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0 0.25rem 1rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .pa-passed {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.3rem;
+  }
+  .pa-passed b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .pa-check-body .pa-table {
+    max-height: 18rem;
+    overflow: auto;
+  }
+
+  @media (max-width: 900px) {
+    .pa-load {
+      grid-template-columns: 1fr;
+    }
+    .pa-kpis {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-flow: dense;
+    }
+    .pa-kpi-wide {
+      grid-column: span 2;
+    }
+    .pa-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 760px) {
+    .pa-map-head {
+      display: none;
+    }
+    .pa-map-row {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+    .pa-status-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .pa-status-row .control {
+      grid-column: 1 / -1;
+    }
+    .pa-check summary {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+    .pa-check-count {
+      grid-column: 2;
+      grid-row: 2;
+    }
+    .pa-check-chev {
+      grid-row: 1 / span 2;
+      grid-column: 3;
+    }
+  }
+  @media (max-width: 480px) {
+    .pa-drop {
+      padding: 1.75rem 1rem 1.5rem;
+    }
+    .pa-drop-actions .btn {
+      width: 100%;
+    }
+    .pa-kpi {
+      padding: 0.9rem 0.95rem 1rem;
+    }
+    .pa-card {
+      padding: 1rem 0.9rem 0.9rem;
+    }
+    .pa-custom {
+      flex-basis: 100%;
+    }
+  }
+  @media (forced-colors: active) {
+    .pa-gbar span,
+    .pa-sw,
+    .pa-lk,
+    .pa-key {
+      forced-color-adjust: none;
+      border: 1px solid CanvasText;
+    }
+  }
+  @media print {
+    .pa-load,
+    .pa-map,
+    .pa-filters,
+    .pa-card-tools,
+    .pa-tip,
+    .pa-keep,
+    .pa-alert,
+    .pa-hint {
+      display: none !important;
+    }
+    .pa-dash,
+    .pa-grid {
+      gap: 0.8rem;
+    }
+    .pa-grid {
+      grid-template-columns: 1fr;
+    }
+    .pa-kpis {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .pa-kpi-wide {
+      grid-column: auto;
+    }
+    .pa-card,
+    .pa-kpis,
+    .pa-quality {
+      break-inside: avoid;
+    }
+    .pa-table[hidden] {
+      display: none !important;
+    }
+    .pa-check-body {
+      display: none;
+    }
+    .pa-svg,
+    .pa-gbar span,
+    .pa-sw,
+    .pa-lk,
+    .pa-st {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>

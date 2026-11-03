@@ -1,0 +1,109 @@
+---
+title: Take-home salary calculator
+description: Turn an annual CTC into monthly in-hand pay before income tax, with PF, ESI, professional tax, the gratuity provision and the Labour Codes' 50% wage rule.
+kind: calculator
+calculator: take-home
+glance:
+  inputs: ["Annual CTC", "Basic + DA %", "PF basis", "Gratuity in CTC", "State"]
+  output: "Monthly in-hand pay"
+  formula: "In-hand = gross − employee PF − ESI − professional tax"
+stage: pay
+audiences: [employees, students, hr, founders]
+order: 10
+checked: 2026-11-02
+useWhen: You have an offer or a salary structure and want to know what lands in the bank each month, before income tax, and whether the structure passes the 50% wage rule.
+tips:
+  - "Take the <strong>basic pay and HRA percentages</strong> from the offer letter's salary annexure. If it lists a conveyance or similar allowance, enter it as an allowance outside wages."
+  - "This is in-hand pay <strong>before income tax</strong>. TDS depends on your tax regime and declarations; see the <a href=\"/handbooks/tds/salary-tds/\">TDS handbook</a>."
+  - "Compare offers on in-hand pay and on what your employer puts into PF for you, not on CTC alone."
+sources:
+  - title: The Code on Wages, 2019, section 2(y) on the definition of wages (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf
+    publisher: Ministry of Law and Justice
+  - title: The Code on Social Security, 2020, sections 2(88) and 16 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/16823/1/aA2020-36.pdf
+    publisher: Ministry of Law and Justice
+  - title: Cabinet approves EPFO wage ceiling of ₹25,000 a month (16 September 2026)
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2310811
+    publisher: Press Information Bureau
+  - title: Social Security (Central) Rules, 2026, rule 19 on ESI contribution rates (PRS copy)
+    url: https://prsindia.org/files/bills_acts/bills_parliament/2026/Social_Security_(Central)_Rules_2026.pdf
+    publisher: PRS Legislative Research
+  - title: Labour Ministry FAQs on the Labour Codes, 30 December 2025 (summary)
+    url: https://www.scconline.com/blog/post/2026/01/03/labour-ministry-issued-faqs-on-the-labour-codes/
+    publisher: SCC Online
+related: [toolkit/epf-calculator, toolkit/esi-calculator, toolkit/professional-tax-calculator, toolkit/gratuity-calculator, handbooks/tds/02-salary-tds, handbooks/tds/03-ctc-design-and-perquisites, handbooks/labour-law/02-wages-and-pay, glossary/ctc]
+faq:
+  - q: How much of my CTC will I get in hand?
+    a: Take away the employer's PF, any employer ESI and the gratuity provision to get gross pay, then take away your PF, any ESI and professional tax. Income tax comes off after that. For a ₹9 lakh CTC in Karnataka with basic at 50%, in-hand pay before tax is about ₹66,185 a month.
+  - q: What is the 50% wage rule in the new Labour Codes?
+    a: Wages are basic pay, dearness allowance and other pay not on the exclusion list. If excluded items such as HRA, conveyance, overtime and commission add up to more than half of total pay, the excess is added back to wages for PF, ESI, gratuity and other benefits.
+  - q: Is employer PF part of my in-hand salary?
+    a: No. The employer's 12% goes into your PF account and the pension scheme. It is part of CTC but is never paid out monthly.
+  - q: Does this calculator deduct income tax?
+    a: No. It stops at in-hand pay before income tax. TDS depends on the tax regime, your declarations and other income.
+keywords: [take home salary calculator, ctc to in hand calculator, in hand salary calculator india, salary calculator new labour code, 50 percent wage rule, gross to net salary india]
+---
+
+## How it is worked out
+
+<Figure title="From CTC to in-hand pay" caption="The first line gives gross salary; the second gives what is paid into the bank before income tax.">
+  <div style={{ display: "grid", gap: "1.75rem" }}>
+    <Formula
+      result={{ value: "Gross salary", label: "monthly" }}
+      parts={[{ value: "Monthly CTC", label: "annual CTC ÷ 12" }, { op: "−" }, { value: "Employer PF", label: "12% of PF wages" }, { op: "−" }, { value: "Employer ESI", label: "if covered" }, { op: "−" }, { value: "Gratuity provision", label: "if part of CTC" }]}
+    />
+    <Formula
+      result={{ value: "In-hand pay", label: "before income tax" }}
+      parts={[{ value: "Gross salary" }, { op: "−" }, { value: "Employee PF", label: "12% of PF wages" }, { op: "−" }, { value: "Employee ESI", label: "if covered" }, { op: "−" }, { value: "Professional tax", label: "by state" }]}
+      example="Example: a ₹9,00,000 CTC is ₹75,000 a month. Less employer PF of ₹3,000 and a gratuity provision of ₹2,615 leaves gross pay of ₹69,385. Less employee PF of ₹3,000 and Karnataka professional tax of ₹200 leaves ₹66,185 in hand."
+    />
+  </div>
+</Figure>
+
+The calculator builds the salary structure the way most offer letters do. Basic pay and dearness allowance (DA) are a share of CTC, HRA is a share of basic, and a special allowance takes up whatever is left once the employer's own costs are covered. Because those employer costs depend on wages, and wages include the special allowance, the calculator solves the structure so that every part adds back to the CTC.
+
+<Figure title="Where a ₹75,000 monthly CTC goes" caption="Example for ₹9 lakh a year in Karnataka, basic at 50% of CTC and HRA at 40% of basic. The bracket is gross salary; the last two parts are the employer's costs." wide>
+  <Breakdown
+    total="₹75,000 a month"
+    parts={[
+      { label: "In hand before income tax", value: 66185, display: "₹66,185" },
+      { label: "Employee PF", value: 3000, display: "₹3,000", note: "12% of ₹25,000" },
+      { label: "Professional tax", value: 200, display: "₹200", note: "₹300 in February" },
+      { label: "Employer PF", value: 3000, display: "₹3,000", note: "Into PF and pension" },
+      { label: "Gratuity provision", value: 2615, display: "₹2,615", note: "Paid on exit, if eligible" }
+    ]}
+    groups={[{ label: "Gross salary ₹69,385", from: 0, to: 2 }]}
+  />
+</Figure>
+
+## The 50% wage rule
+
+Under the Code on Wages and the Code on Social Security, "wages" are basic pay, DA and retaining allowance, plus any other pay that is not on the exclusion list. A special allowance is not on the list, so it usually counts. HRA, conveyance, overtime, commission and statutory bonus are excluded, but only up to a point: if the excluded items add up to more than <Fact id="wages.halfRule" /> of total pay, the excess is added back to wages.
+
+<Figure title="Does the 50% rule change wages?" caption="Follow the question for a salary structure. PF, ESI and gratuity are all worked out on the result.">
+  <DecisionTree
+    node={{
+      q: "Are HRA, conveyance and other excluded allowances more than half of total pay?",
+      yes: { result: "The excess is added back to wages", detail: "PF, ESI and gratuity rise", tone: "accent" },
+      no: { result: "Wages are basic + DA + other pay, as they are", detail: "Nothing is added back", tone: "good" }
+    }}
+  />
+</Figure>
+
+<Callout type="note" title="Not settled yet">
+The Codes do not say whether the employer's PF contribution counts towards total pay in the 50% test. The calculator leaves it out by default; tick the box to see the effect of counting it.
+</Callout>
+
+## What goes into each deduction
+
+- **PF:** 12% from you and 12% from the employer, worked out on wages up to the PF wage ceiling of <Fact id="epf.wageCeiling" /> unless your employer contributes on full wages. Details are on the [EPF calculator](/toolkit/epf-calculator/).
+- **ESI:** only if wages are <Fact id="esi.wageCeiling" /> or less, at <Fact id="esi.employeeRate" /> from you and <Fact id="esi.employerRate" /> from the employer. See the [ESI calculator](/toolkit/esi-calculator/).
+- **Professional tax:** set by the state where you work, and nil in some states. See the [professional tax calculator](/toolkit/professional-tax-calculator/).
+- **Gratuity provision:** many employers include 15 ÷ 26 of a month's wages a year in CTC. It is paid only when you leave after the qualifying service; see the [gratuity calculator](/toolkit/gratuity-calculator/).
+
+<Callout type="warning" title="Income tax is not deducted here">
+TDS on salary comes off after these deductions and depends on the tax regime you choose and the declarations you make. The [TDS handbook](/handbooks/tds/salary-tds/) explains how it is worked out under the Income-tax Act, 2025.
+</Callout>
+
+Some employers also put the PF admin charge and EDLI insurance cost into CTC, or include variable pay, meal cards and insurance premiums. If your offer letter does, the in-hand figure here will be higher than yours by those amounts.

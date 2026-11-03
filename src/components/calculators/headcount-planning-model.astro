@@ -1,0 +1,415 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import CalcScenarios from "../calc/CalcScenarios.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import { MONTHS } from "../../lib/calc/headcount-planning-model";
+
+const monthOptions = MONTHS.map((_, i) => ({ value: String(i), label: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][i] }));
+---
+
+<CalcShell id="headcount-planning-model" resultLabel="Your 12-month plan" inputsLabel="Plan inputs" scenarios="external">
+  <Fragment slot="inputs">
+    <div class="two">
+      <Num name="opening" label="Headcount today" value="200" suffix="people" />
+      <Num name="newRoles" label="New roles to add" value="40" help="Net growth over the 12 months." />
+    </div>
+    <Num name="attrition" label="Expected attrition" value="18" suffix="% a year" help="Leavers ÷ average headcount. Use your own recent figure; every leaver is replaced in this plan." />
+    <Pick
+      name="timing"
+      label="When the new roles join"
+      options={[
+        { value: "even", label: "Evenly" },
+        { value: "early", label: "Mostly early" },
+        { value: "late", label: "Mostly late" }
+      ]}
+    />
+    <Pick name="start" label="Plan year starts in" options={monthOptions} value="3" style="select" />
+    <div class="sep">
+      <div class="two">
+        <Num name="ctc" label="Average annual CTC" prefix="₹" value="12,00,000" />
+        <Num name="extra" label="Employer costs outside CTC" value="0" suffix="%" help="CTC usually already includes employer PF and gratuity. Add only costs outside it." />
+      </div>
+    </div>
+    <div class="sep">
+      <div class="two">
+        <Num name="lead" label="Days to hire" value="45" suffix="days" help="From opening a role to the person joining." />
+        <Num name="notice" label="Typical notice period" value="30" suffix="days" help="Replacement hiring can start when someone resigns." />
+      </div>
+      <Num name="revenue" label="Revenue for the plan year (optional)" prefix="₹" value="50" suffix="crore" />
+    </div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="joiners">0</span>
+    <span class="sub" data-out="summary"></span>
+  </Fragment>
+  <div slot="visual" class="chart" data-chart>
+    <p class="chart-title">People joining each month</p>
+    <ul class="legend">
+      <li><span class="sw c1"></span>Replacing leavers</li>
+      <li><span class="sw c2"></span>New roles</li>
+    </ul>
+    <div class="plot" data-plot></div>
+    <div class="tip" role="tooltip" hidden></div>
+  </div>
+</CalcShell>
+
+<section class="table-area" data-table-area aria-labelledby="hpm-table-title">
+  <h2 id="hpm-table-title" class="t">Month by month</h2>
+  <div class="tw" role="region" tabindex="0" aria-labelledby="hpm-table-title">
+    <table class="months">
+      <caption class="visually-hidden">Opening headcount, leavers, joiners, closing headcount and payroll cost for each month of the plan</caption>
+      <thead>
+        <tr>
+          <th scope="col">Month</th>
+          <th scope="col">Opening</th>
+          <th scope="col">Leavers</th>
+          <th scope="col">Joiners replacing leavers</th>
+          <th scope="col">Joiners in new roles</th>
+          <th scope="col">Closing</th>
+          <th scope="col">Payroll cost</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+      <tfoot data-foot></tfoot>
+    </table>
+  </div>
+</section>
+<CalcScenarios id="headcount-planning-model" external />
+
+<script>
+  import { bindCalculator, inr, num, type CalcLine } from "../../scripts/calc-kit";
+  import { planHeadcount, type MonthRow, type Timing } from "../../lib/calc/headcount-planning-model";
+  import { niceTicks } from "../../lib/calc/salary-band-designer";
+
+  const root = document.querySelector<HTMLElement>('[data-calc="headcount-planning-model"]')!;
+  const chart = root.querySelector<HTMLElement>("[data-chart]")!;
+  const plot = chart.querySelector<HTMLElement>("[data-plot]")!;
+  const tip = chart.querySelector<HTMLElement>(".tip")!;
+  const tableArea = document.querySelector<HTMLElement>("[data-table-area]")!;
+  const SVG = "http://www.w3.org/2000/svg";
+  let months: MonthRow[] = [];
+
+  function el<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number>, parent?: Element) {
+    const e = document.createElementNS(SVG, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+    parent?.appendChild(e);
+    return e;
+  }
+  /** A column with 4px rounded top corners and a square base. */
+  function colPath(x: number, y: number, w: number, h: number, r: number) {
+    const rr = Math.max(0, Math.min(r, w / 2, h));
+    return `M${x},${y + h} V${y + rr} Q${x},${y} ${x + rr},${y} H${x + w - rr} Q${x + w},${y} ${x + w},${y + rr} V${y + h} Z`;
+  }
+
+  function draw() {
+    plot.replaceChildren();
+    if (!months.length) return;
+    const W = Math.max(280, plot.clientWidth);
+    const H = 210;
+    const left = 30;
+    const right = 6;
+    const top = 18;
+    const bottom = 24;
+    const maxJ = Math.max(1, ...months.map((m) => m.joiners));
+    const ticks = niceTicks(0, maxJ, 4).filter((t) => Number.isInteger(t));
+    const yMax = ticks[ticks.length - 1] || maxJ;
+    const ph = H - top - bottom;
+    const y = (v: number) => top + ph - (v / yMax) * ph;
+    const band = (W - left - right) / 12;
+    const bw = Math.min(24, band * 0.62);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "group", "aria-label": "Joiners each month. The table below lists every value." });
+    for (const t of ticks) {
+      el("line", { x1: left, x2: W - right, y1: y(t), y2: y(t), class: t === 0 ? "base" : "grid" }, svg);
+      const lab = el("text", { x: left - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg);
+      lab.textContent = num(t, 0);
+    }
+    const peak = months.reduce((best, m, i) => (m.joiners > months[best].joiners ? i : best), 0);
+    months.forEach((m, i) => {
+      const cx = left + band * i + band / 2;
+      const x0 = cx - bw / 2;
+      const label = `${m.label}: ${m.joiners} joining (${m.replacements} replacing leavers, ${m.growth} in new roles); headcount ${m.opening} to ${m.closing}`;
+      const g = el("g", { class: "col", tabindex: 0, role: "img", "aria-label": label, "data-tip": label }, svg);
+      el("rect", { x: cx - band / 2, y: top, width: band, height: ph, class: "hit" }, g);
+      const hRep = (m.replacements / yMax) * ph;
+      const hGro = (m.growth / yMax) * ph;
+      if (m.replacements > 0) el("path", { d: colPath(x0, y(m.replacements), bw, hRep, m.growth > 0 ? 0 : 4), class: "s1" }, g);
+      if (m.growth > 0) {
+        const gap = m.replacements > 0 ? 2 : 0;
+        el("path", { d: colPath(x0, y(m.joiners), bw, Math.max(0, hGro - gap), 4), class: "s2" }, g);
+      }
+      const ml = el("text", { x: cx, y: H - 6, class: "tick", "text-anchor": "middle" }, svg);
+      ml.textContent = m.label;
+      if (i === peak && m.joiners > 0) {
+        const pl = el("text", { x: cx, y: y(m.joiners) - 5, class: "peak", "text-anchor": "middle" }, svg);
+        pl.textContent = String(m.joiners);
+      }
+    });
+    plot.appendChild(svg);
+  }
+
+  function showTip(target: Element, clientX?: number) {
+    const t = target.closest("[data-tip]");
+    if (!t) return hideTip();
+    tip.textContent = t.getAttribute("data-tip");
+    tip.hidden = false;
+    const cb = chart.getBoundingClientRect();
+    const tb = t.getBoundingClientRect();
+    const cx = (clientX ?? tb.left + tb.width / 2) - cb.left;
+    tip.style.left = `${Math.max(0, Math.min(cb.width - tip.offsetWidth, cx - tip.offsetWidth / 2))}px`;
+    tip.style.top = `${tb.top - cb.top - tip.offsetHeight + 8}px`;
+  }
+  function hideTip() {
+    tip.hidden = true;
+  }
+  chart.addEventListener("pointermove", (e) => showTip(e.target as Element, e.clientX));
+  chart.addEventListener("pointerleave", hideTip);
+  chart.addEventListener("focusin", (e) => showTip(e.target as Element));
+  chart.addEventListener("focusout", hideTip);
+  new ResizeObserver(() => draw()).observe(plot);
+
+  function renderTable(rows: MonthRow[], total: { leavers: number; replacements: number; growth: number; cost: number }) {
+    const td = (text: string) => Object.assign(document.createElement("td"), { textContent: text });
+    tableArea.querySelector("[data-rows]")!.replaceChildren(
+      ...rows.map((m) => {
+        const tr = document.createElement("tr");
+        tr.append(Object.assign(document.createElement("th"), { scope: "row", textContent: m.label }), td(num(m.opening, 0)), td(num(m.leavers, 0)), td(num(m.replacements, 0)), td(num(m.growth, 0)), td(num(m.closing, 0)), td(inr(m.cost)));
+        return tr;
+      })
+    );
+    const tr = document.createElement("tr");
+    tr.append(Object.assign(document.createElement("th"), { scope: "row", textContent: "Year" }), td(num(rows[0].opening, 0)), td(num(total.leavers, 0)), td(num(total.replacements, 0)), td(num(total.growth, 0)), td(num(rows[rows.length - 1].closing, 0)), td(inr(total.cost)));
+    tableArea.querySelector("[data-foot]")!.replaceChildren(tr);
+  }
+
+  bindCalculator("headcount-planning-model", (v) => {
+    const timing = (["even", "early", "late"].includes(v.str("timing")) ? v.str("timing") : "even") as Timing;
+    const r = planHeadcount({
+      opening: v.num("opening"),
+      newRoles: v.num("newRoles"),
+      attritionPct: v.num("attrition"),
+      avgCtc: v.num("ctc"),
+      extraCostPct: v.num("extra"),
+      leadDays: v.num("lead"),
+      noticeDays: v.num("notice"),
+      revenue: v.num("revenue") * 1e7,
+      timing,
+      startMonth: Math.max(0, Math.min(11, Math.floor(v.num("start", 3))))
+    });
+    if (!r.ok) {
+      months = [];
+      draw();
+      tableArea.hidden = true;
+      return { outputs: { joiners: "0", summary: "" }, message: r.message };
+    }
+    months = r.months;
+    draw();
+    tableArea.hidden = false;
+    renderTable(r.months, { leavers: r.leavers, replacements: r.leavers, growth: r.growth, cost: r.annualCost });
+    const peak = r.months.reduce((best, m) => (m.joiners > best.joiners ? m : best), r.months[0]);
+    const lines: CalcLine[] = [
+      { label: "Closing headcount", value: num(r.closing, 0), note: `${num(v.num("opening"), 0)} today + ${r.growth} new roles` },
+      { label: "Expected leavers", value: num(r.leavers, 0), note: `At ${num(v.num("attrition"), 1)}% a year, all replaced` },
+      { label: "Hires for the year", value: num(r.joiners, 0), strong: true },
+      { label: "Busiest month", value: `${peak.label}: ${peak.joiners}`, note: `On average ${num(r.joiners / 12, 1)} a month` },
+      ...(r.rolesToOpenBeforeStart > 0
+        ? [{ label: "New roles to open before the year starts", value: num(r.rolesToOpenBeforeStart, 0), note: `Hiring takes about ${r.leadMonths} ${r.leadMonths === 1 ? "month" : "months"}, so the first months' roles must be open already` }]
+        : []),
+      {
+        label: "Seats empty at any time",
+        value: r.emptyDays > 0 ? `About ${num(r.emptySeats, 1)}` : "None expected",
+        note: r.emptyDays > 0 ? `Each replacement leaves a gap of about ${num(r.emptyDays, 0)} days (days to hire − notice)` : "Notice periods cover the time to hire"
+      },
+      { label: "Average headcount", value: num(r.averageHeadcount, 1) },
+      { label: "Payroll cost for the year", value: inr(r.annualCost), note: `Average headcount × average CTC${v.num("extra") > 0 ? ` + ${num(v.num("extra"), 1)}%` : ""}` },
+      ...(r.revenuePerEmployee !== null ? [{ label: "Revenue per employee", value: inr(r.revenuePerEmployee), note: "Revenue ÷ average headcount" }] : [])
+    ];
+    return {
+      outputs: {
+        joiners: `${num(r.joiners, 0)} hires`,
+        summary: `${r.growth} new roles + ${r.leavers} replacements, to end the year at ${num(r.closing, 0)} people.`
+      },
+      lines,
+      notes: [
+        "Assumes steady attrition, every leaver replaced, and new joiners on the current average CTC.",
+        "Compare the busiest month with how many hires your recruiters can close in a month."
+      ]
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  .sep {
+    display: grid;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 480px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+  .chart {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+  .chart-title {
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+  .sw.c1 {
+    background: var(--c1);
+  }
+  .sw.c2 {
+    background: var(--c2);
+  }
+  .plot {
+    width: 100%;
+  }
+  .plot :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .plot :global(.grid) {
+    stroke: var(--line);
+  }
+  .plot :global(.base) {
+    stroke: var(--line-strong);
+  }
+  .plot :global(.tick) {
+    font-size: 11px;
+    fill: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .plot :global(.peak) {
+    font-size: 12px;
+    font-weight: 650;
+    fill: var(--ink);
+  }
+  .plot :global(.hit) {
+    fill: transparent;
+  }
+  .plot :global(.col:hover .hit),
+  .plot :global(.col:focus-visible .hit) {
+    fill: var(--neel-50);
+  }
+  .plot :global(.col:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+  .plot :global(.s1) {
+    fill: var(--c1);
+  }
+  .plot :global(.s2) {
+    fill: var(--c2);
+  }
+  .tip {
+    position: absolute;
+    z-index: 5;
+    max-width: 19rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--r-sm);
+    background: var(--ink);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    line-height: 1.35;
+    pointer-events: none;
+    box-shadow: var(--shadow-float);
+  }
+  .table-area {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    display: grid;
+    gap: 0.75rem;
+  }
+  .table-area .t {
+    font-size: var(--fs-md);
+  }
+  .tw {
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .months {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .months thead th {
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-weight: 620;
+    text-align: right;
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--line-strong);
+    vertical-align: bottom;
+    line-height: 1.25;
+  }
+  .months thead th:first-child {
+    text-align: left;
+  }
+  .months :global(tbody th),
+  .months :global(tfoot th) {
+    text-align: left;
+    font-weight: 620;
+  }
+  .months :global(td),
+  .months :global(tbody th),
+  .months :global(tfoot th) {
+    padding: 0.45rem 0.8rem;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .months :global(td) {
+    text-align: right;
+  }
+  .months :global(tfoot th),
+  .months :global(tfoot td) {
+    font-weight: 700;
+    border-top: 2px solid var(--ink);
+    border-bottom: 0;
+  }
+  @media print {
+    .tip {
+      display: none;
+    }
+  }
+</style>

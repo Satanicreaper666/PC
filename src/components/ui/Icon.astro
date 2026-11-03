@@ -1,0 +1,38 @@
+---
+import { ICONS, type IconName } from "../../lib/icons";
+
+interface Props {
+  name: IconName;
+  size?: number;
+  label?: string;
+  class?: string;
+  strokeWidth?: number;
+}
+const { name, size = 20, label, class: className, strokeWidth = 1.75 } = Astro.props;
+const body = ICONS[name] ?? ICONS.info;
+---
+
+<svg
+  class:list={["icon", className]}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  role={label ? "img" : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : "true"}
+  focusable="false"
+  set:html={body}
+/>
+
+<style>
+  .icon {
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+  }
+</style>

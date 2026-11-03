@@ -1,0 +1,100 @@
+---
+title: Increment budget allocator (merit matrix)
+description: Build a merit matrix by performance rating and position in pay band, check what it costs against your increment budget and scale it to fit in one click.
+kind: calculator
+calculator: increment-budget-allocator
+glance:
+  inputs: ["Annual payroll", "Increment budget", "People per rating", "Position in band", "Merit matrix"]
+  output: "Increment cost against budget"
+  formula: "Average increase = Σ people × increase % ÷ all people"
+stage: grow
+audiences: [hr, founders]
+order: 60
+checked: 2026-11-02
+useWhen: You are planning the annual increment cycle and need increase guidelines that reward performance and still fit the budget.
+tips:
+  - "Agree the budget with finance first, then shape the matrix. Changing both at once hides the trade-offs."
+  - "Calibrate ratings across teams before you apply the matrix. If most people are rated <strong>Exceeds</strong>, the money runs out early."
+  - "Keep promotions and pay corrections in a separate budget, so the matrix stays a clear reward for performance."
+sources: []
+related:
+  - toolkit/salary-band-designer
+  - toolkit/pay-equity-analyzer
+  - toolkit/salary-revision-letter
+  - toolkit/annual-performance-appraisal
+  - toolkit/nine-box-talent-mapper
+  - handbooks/hr-professional/09-performance-and-learning
+  - glossary/compa-ratio
+faq:
+  - q: What is a merit matrix?
+    a: A grid that sets the salary increase for each combination of performance rating and position in the pay band. Strong performers who are low in their band get the most; people already high in their band get less, because their pay is already ahead.
+  - q: How do I make a merit matrix fit the budget?
+    a: Work out the weighted average increase, which is each cell's increase weighted by the share of people in it. If it is above the budget, multiply every cell by budget ÷ weighted average. This tool does that and shows the scaled matrix.
+  - q: Should people rated below expectations get an increase?
+    a: That is a policy choice. Some companies give none, others a small one. Whatever you decide, apply it the same way to everyone and explain it in the revision letter.
+  - q: Why does position in the band matter?
+    a: Two people with the same rating can be paid very differently. A larger percentage for the person low in the band moves pay towards the midpoint over time and avoids overpaying people already near the maximum.
+keywords: [merit matrix, increment budget calculator, salary increment matrix, merit increase budget, annual increment planning, compa-ratio merit matrix]
+draft: false
+---
+
+## How the budget check works
+
+The matrix sets an increase for every combination of rating and position in band. Its cost depends on how many people fall into each cell.
+
+<Figure title="The weighted average increase" caption="If the weighted average is above the budget percentage, the matrix costs more than the budget.">
+  <Formula
+    result={{ value: "Weighted average increase", label: "compare it with the budget %" }}
+    parts={[{ value: "Σ people in each cell × its increase %", label: "add up every cell" }, { op: "÷" }, { value: "All people in the review" }]}
+    example="Example: the starting matrix averages 7.12% against a 7% budget. On ₹5 crore of payroll it costs ₹35,61,250, which is ₹61,250 over. Multiplying every cell by 7 ÷ 7.1225 = 0.983 brings it back to the budget."
+  />
+</Figure>
+
+<Figure title="Example merit matrix" caption="Rows are ratings, highest at the top; columns are where pay sits in the band. The largest increase goes to top performers who are low in their band." wide>
+  <Matrix
+    xLabel="Position in band (compa-ratio)"
+    yLabel="Performance rating"
+    rows={["Outstanding", "Exceeds", "Meets", "Below", "Unsatisfactory"]}
+    cols={["Below 0.90", "0.90 to 1.10", "Above 1.10"]}
+    cells={[
+      [{ title: "14%", tone: "accent" }, { title: "12%" }, { title: "9%" }],
+      [{ title: "11%" }, { title: "9%" }, { title: "7%" }],
+      [{ title: "8%" }, { title: "7%" }, { title: "5%" }],
+      [{ title: "3%" }, { title: "2%" }, { title: "0%" }],
+      [{ title: "0%" }, { title: "0%" }, { title: "0%" }]
+    ]}
+  />
+</Figure>
+
+## Shaping the matrix
+
+- **Steepness** is the difference between the top and the middle rows. A steep matrix rewards top performers clearly but leaves less for everyone else.
+- **Band position** is the difference between the columns. It decides how quickly pay moves towards the midpoint. Compa-ratio is pay ÷ the midpoint of the person's band; the [salary band designer](/toolkit/salary-band-designer/) works it out.
+- **The bottom rows** carry a message. A zero says the rating needs to change before pay does; make sure the appraisal said so first.
+
+## The review, step by step
+
+<Figure title="From budget to revision letters" caption="Each step has an owner. HR checks cost and fairness before anyone sees a number." wide>
+  <Flow
+    steps={[
+      { who: "Finance and leadership", title: "Set the budget", detail: "% of payroll" },
+      { who: "HR", title: "Build the matrix", detail: "Check its cost here" },
+      { who: "Managers", title: "Propose increases", detail: "Within the guidelines" },
+      { who: "HR", title: "Check cost and fairness", detail: "Outliers, pay equity" }
+    ]}
+    outcomes={[{ title: "Approved", detail: "Revision letters go out", tone: "good" }, { title: "Sent back", detail: "Over budget or unexplained gaps", tone: "bad" }]}
+  />
+</Figure>
+
+When increases are final, the [salary revision letter](/toolkit/salary-revision-letter/) puts each one in writing. Run the [pay equity analyser](/toolkit/pay-equity-analyzer/) on the proposed salaries before they are approved, not after.
+
+## What this tool assumes
+
+<Callout type="note" title="Simplifications">
+  <ul>
+    <li>Everyone is costed at the average salary (payroll ÷ headcount). If higher earners cluster in some cells, the real cost moves.</li>
+    <li>The split by position in band is the same for every rating.</li>
+    <li>Increases apply for a full year. A mid-year effective date costs less in the current year and the full amount from the next.</li>
+  </ul>
+  For exact figures, apply the final matrix to each person's salary in a spreadsheet.
+</Callout>

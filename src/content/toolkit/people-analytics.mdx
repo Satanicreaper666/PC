@@ -1,0 +1,190 @@
+---
+title: People analytics dashboard
+description: Load your employee list as CSV or Excel and see headcount, joiners, leavers, attrition, tenure, span of control and pay spread. Nothing is uploaded.
+kind: app
+calculator: people-analytics
+glance:
+  inputs: ["Date of joining", "Last working day", "Department", "Gender", "Salary or CTC"]
+  output: "Headcount, attrition and tenure"
+  formula: "Attrition = leavers ÷ average headcount × 100"
+stage: lead
+audiences: [hr, founders]
+order: 10
+checked: 2026-11-02
+useWhen: You have an employee list or an HR system export and want headcount, attrition and tenure figures without sending the file to anyone.
+tips:
+  - "Include everyone who left during the period, with their <strong>last working day</strong>. Without leavers, attrition can't be worked out."
+  - "Export the list straight from your HR system or payroll as .xlsx or .csv, with one header row. Remove any password first."
+  - "To share results, use <strong>Export summary</strong>. It has counts, rates and pay ranges for groups of three or more, but no names or employee IDs."
+sources:
+  - title: "Business Responsibility and Sustainability Report: guidance note (Annexure II)"
+    url: https://www.sebi.gov.in/sebi_data/commondocs/may-2021/Business%20responsibility%20and%20sustainability%20reporting%20by%20listed%20entitiesAnnexure2_p.PDF
+    publisher: Securities and Exchange Board of India, May 2021
+  - title: "Business Responsibility and Sustainability Report: format (Annexure I)"
+    url: https://www.sebi.gov.in/sebi_data/commondocs/may-2021/Business%20responsibility%20and%20sustainability%20reporting%20by%20listed%20entitiesAnnexure1_p.PDF
+    publisher: Securities and Exchange Board of India, May 2021
+  - title: "Government notifies the Digital Personal Data Protection Rules, 2025"
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2190014&reg=3&lang=2
+    publisher: Press Information Bureau, 14 November 2025
+related:
+  - handbooks/hr-professional/04-people-analytics-and-data-literacy
+  - toolkit/hr-metrics-calculator
+  - toolkit/pay-equity-analyzer
+  - toolkit/attrition-cost-calculator
+  - toolkit/headcount-planning-model
+  - toolkit/stay-interview-guide
+faq:
+  - q: Is my employee data uploaded anywhere?
+    a: No. Your browser reads the file on your own device and works out every figure there. Nothing is sent to PeopleCraft or anyone else, and nothing is saved unless you tick "Keep this data in this browser".
+  - q: How is the attrition rate calculated?
+    a: Leavers in the period divided by the average headcount, times 100. Average headcount is the headcount at the start plus the headcount at the end, divided by 2. SEBI's guidance for the Business Responsibility and Sustainability Report (BRSR) works out employee turnover the same way.
+  - q: What columns does my file need?
+    a: Only the date of joining is required. Add the last working day to see leavers and attrition, and department, location, gender, reporting manager and salary or CTC for the other charts. Headings don't have to match exactly; you check and correct the matches before the dashboard appears.
+  - q: Why is my attrition different from the figure in our HR system?
+    a: Systems differ in how they average headcount (start and end of the period, or every month), whether they count interns, trainees and contract staff, and whether the year runs from January or April. Check the formula shown under the rate, and remove or filter out the groups you don't count.
+  - q: Can I use it for BRSR turnover figures?
+    a: The formula matches SEBI's BRSR guidance, which counts every exit, including dismissal, retirement and death in service. BRSR asks for permanent employees and permanent workers separately, for women and men, for the current and two previous financial years. Load a file with only the category you are reporting, pick each financial year and use the gender filter.
+keywords:
+  - hr analytics dashboard
+  - attrition rate formula
+  - employee turnover rate calculation
+  - headcount report from excel
+  - people analytics tool
+  - span of control
+  - average tenure calculation
+  - brsr turnover rate
+draft: false
+---
+
+## How each figure is worked out
+
+Every figure follows the period and filters you choose. A person is **on the rolls** on a day if they joined on or before that day and their last working day is after it. So someone whose last working day is 31 October is a leaver in October and is not in the headcount at the end of that day.
+
+<Figure title="What the start and end of a period mean" caption="Example for a financial year: the start is the headcount at the end of the day before the year begins, the end is the headcount at the end of its last day.">
+  <Timeline
+    items={[
+      { when: "31 Mar 2025", label: "Headcount at the start", note: "End of the day before the period" },
+      { when: "Apr 2025 to Mar 2026", label: "Joiners and leavers", note: "By joining date and last working day" },
+      { when: "31 Mar 2026", label: "Headcount at the end", accent: true }
+    ]}
+    spans={[{ from: 0, to: 2, label: "FY 2025–26" }]}
+  />
+</Figure>
+
+### Headcount, joiners and leavers
+
+Joiners are counted by joining date and leavers by last working day. Someone who joins and leaves in the same month counts in both. Month by month, the headcount always adds up:
+
+<Formula
+  result={{ value: "Headcount at the end", label: "of the period or month" }}
+  parts={[{ value: "Headcount at the start" }, { op: "+" }, { value: "Joiners" }, { op: "−" }, { value: "Leavers" }]}
+  example="Example: 112 at the start + 24 joiners − 16 leavers = 120 at the end"
+/>
+
+### Attrition rate
+
+Attrition compares the people who left with the average number employed over the same period.
+
+<Formula
+  result={{ value: "Attrition rate", label: "for the period, in %" }}
+  parts={[{ value: "Leavers", label: "last working day in the period" }, { op: "÷" }, { value: "Average headcount", label: "(start + end) ÷ 2" }, { op: "×" }, { value: "100" }]}
+  example="Example: 16 ÷ ((112 + 120) ÷ 2) × 100 = 16 ÷ 116 × 100 = 13.8%"
+/>
+
+Leavers include everyone who left by any route: resignation, termination, retirement or death in service. That is how SEBI's guidance for the Business Responsibility and Sustainability Report (BRSR) defines employee turnover, with the same average of opening and closing headcount. If you track voluntary attrition separately, remove the other exits from the file first.
+
+<Callout type="tip" title="Read rates with the counts beside them">
+  In a team of 8, one leaver is a 12.5% attrition rate. The department chart shows how many people left next to each rate, and the tooltip warns when a team averages fewer than 10 people.
+</Callout>
+
+### Annualised attrition
+
+When the period is not 12 months, such as this financial year so far, the dashboard also shows the rate scaled to a full year. It assumes people keep leaving at the same pace, so treat it as a projection, not a result.
+
+<Formula
+  result={{ value: "Annualised rate" }}
+  parts={[{ value: "Attrition rate", label: "for the period" }, { op: "×" }, { value: "12" }, { op: "÷" }, { value: "Months in the period", label: "part-months count as a fraction" }]}
+  example="Example: 9 leavers in 7 months with an average headcount of 115 is 7.8% for the period, or 7.8% × 12 ÷ 7 = 13.4% a year"
+/>
+
+### Tenure
+
+Tenure is worked out for everyone on the rolls at the end of the period. The dashboard shows the average and the median; the median is the middle person's tenure, so a few very long-serving people don't pull it up.
+
+<Formula
+  result={{ value: "Tenure in years" }}
+  parts={[{ value: "Days from joining", label: "to the end of the period" }, { op: "÷" }, { value: "365.25", label: "days in an average year" }]}
+  example="Example: someone who joined on 1 April 2023 has 3.5 years of service on 30 September 2026"
+/>
+
+### Gender ratio
+
+The share of women among people on the rolls at the end of the period. Records marked transgender, non-binary or other are shown as "Another gender", and blanks or "prefer not to say" as "Not stated", so the shares always add up to the headcount.
+
+<Formula
+  result={{ value: "Share of women", label: "in %" }}
+  parts={[{ value: "Women on the rolls", label: "at the end of the period" }, { op: "÷" }, { value: "Headcount at the end" }, { op: "×" }, { value: "100" }]}
+/>
+
+### Span of control
+
+The number of people on the rolls who report directly to each manager. The manager column can hold the manager's employee ID (best), "Name (ID)" or a name. There is no single right span: it depends on how similar the work is and how much coaching people need. Look for managers with spans much narrower or much wider than everyone else, and ask why.
+
+<Formula
+  result={{ value: "Average span", label: "direct reports per manager" }}
+  parts={[{ value: "People with a manager", label: "on the rolls at the end" }, { op: "÷" }, { value: "Number of managers", label: "with at least one direct report" }]}
+/>
+
+### Pay spread
+
+For each department or grade, the chart shows the lowest and highest salary, the middle half of people (from the 25th to the 75th percentile) and the median. Percentiles are worked out the way Excel's PERCENTILE.INC does. Figures are the salary or CTC in your file today, so a past period still uses current pay. Groups of fewer than 3 people are not shown, so no one's pay can be read off the chart. To compare pay for similar roles, use the [pay equity analyser](/toolkit/pay-equity-analyzer/).
+
+## Your data stays on your device
+
+<Callout type="note" title="What happens to your file">
+  <ul>
+    <li>Your browser reads the file and works out every figure on your device. The file is never uploaded to PeopleCraft or anyone else.</li>
+    <li>Nothing is stored unless you tick <strong>Keep this data in this browser</strong>. That keeps one copy in this browser's local storage on this device; untick the box or choose <strong>Delete it</strong> to remove it.</li>
+    <li>Reload or close the page without ticking it, and the data is gone.</li>
+    <li>The exported summary has counts, rates and pay ranges for groups of three or more. It has no names or employee IDs.</li>
+  </ul>
+</Callout>
+
+Employee records are personal data under the Digital Personal Data Protection Act, 2023, and its Rules, notified in November 2025, give organisations an 18-month phased timeline to comply. Working on your own device means the file doesn't pass to another service. Treat the screen and any printout as confidential all the same: the data checks list names, and the span of control table names managers.
+
+## How to prepare your file
+
+<Steps
+  items={[
+    { title: "Export the employee list", body: "From your HR system or payroll, export everyone on the rolls plus everyone who left during the period you want to see: one row per person, one header row. Excel (.xlsx) and CSV both work." },
+    { title: "Keep only the columns you need", body: "The date of joining is required. Add the last working day for leavers, then department, location, gender, reporting manager ID, grade and salary or CTC as you need them. Leave out PAN, Aadhaar, bank details, addresses and dates of birth: the dashboard doesn't need them." },
+    { title: "Decide who counts", body: "If you don't count interns, trainees, consultants or contract staff in headcount and attrition, remove them so the figures match how you report." },
+    { title: "Load it and check the matches", body: "Check each column match and the example values, then read the data checks under the dashboard before you rely on the figures." }
+  ]}
+/>
+
+The tool recognises the usual headings from Indian HR systems and spreadsheets, so you rarely need to rename anything. You can also start from the blank template in the tool.
+
+| Column | Used for | Headings it recognises |
+| --- | --- | --- |
+| Date of joining (required) | Headcount, joiners and tenure | Date of Joining, DOJ, Joining Date, Hire Date |
+| Last working day | Leavers and attrition; leave it blank for people still working | Last Working Day, LWD, Date of Exit, Relieving Date |
+| Status | Cross-checks the last working day | Status, Employee Status, Employment Status |
+| Employee ID | Duplicates and links to managers | Employee ID, Emp Code, ECode, Staff ID |
+| Department | Filter and attrition by department | Department, Dept, Division, Business Unit |
+| Location | Filter | Location, Work Location, Branch |
+| Gender | Gender ratio and filter | Gender, Sex |
+| Reporting manager | Span of control; the manager's employee ID works best | Reporting Manager ID, Manager Code, Reports To |
+| Salary or CTC | Pay spread | Annual CTC, CTC, Gross Salary, Monthly Gross |
+| Grade or band | Pay spread by grade | Grade, Band, Job Level, Pay Grade |
+
+Dates can be written as 31/01/2026, 31-Jan-2026 or 2026-01-31, or be Excel dates. Salaries can be written as 12,00,000, ₹45,000, 12 LPA or 1.2 Cr. Gender values such as Female, Male, Transgender, F and M are recognised, and status values such as Active, Resigned, Notice period and Absconding are read automatically; you can change how each status counts.
+
+Dates such as 03/04/2025 are read day first (3 April), as Indian files usually are. If your file writes the month first, change it in the column check.
+
+## Reading the figures well
+
+- **Compare like with like.** Compare a financial year with a financial year. Annualised rates assume leavers come at an even pace; if yours bunch up around appraisals or bonus payouts, the projection will be off.
+- **Look at who leaves early.** The leavers tile counts people who left within a year of joining. A high share points at hiring and onboarding more than at pay; see [onboarding, day 1 to 90](/handbooks/recruitment/onboarding-day-1-to-90/).
+- **Check the data first.** A wrong joining date or a missing last working day changes headcount and attrition. Fix the rows the data checks list and load the file again.
+- **Put a cost on it.** The [attrition cost calculator](/toolkit/attrition-cost-calculator/) turns leavers into a rupee figure, and [stay interviews](/toolkit/stay-interview-guide/) help you find out why people stay before they leave.

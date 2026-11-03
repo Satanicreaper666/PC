@@ -1,0 +1,95 @@
+# PeopleCraft — Apache / LiteSpeed (Hostinger) configuration. (On Vercel, vercel.json does the same job.)
+# Upload together with the contents of dist/ to public_html.
+
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+AddDefaultCharset utf-8
+
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+  AddType image/svg+xml .svg
+  AddType font/woff2 .woff2
+  AddType application/wasm .wasm
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1. Always HTTPS.
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 2. One host: drop "www." (swap these two lines if you prefer www).
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+  # 3. Pages from the previous PeopleCraft site.
+  #    Old #c1…#c11 and #fc1…#fc8 links are forwarded by a script on the new page.
+  RewriteRule ^labor-law-handbook\.html$ /handbooks/labour-law/ [L,R=301]
+  RewriteRule ^tds-handbook\.html$ /handbooks/tds/ [L,R=301]
+  RewriteRule ^recruitment-mastery\.html$ /handbooks/recruitment/ [L,R=301]
+  RewriteRule ^hr-professional\.html$ /handbooks/hr-professional/ [L,R=301]
+  RewriteRule ^hr-toolkit\.html$ /toolkit/ [L,R=301]
+  RewriteRule ^peoplecraft-analytics\.html$ /toolkit/people-analytics/ [L,R=301]
+  RewriteRule ^peoplecraft-orgchart\.html$ /toolkit/org-chart-builder/ [L,R=301]
+  RewriteRule ^mail-merge\.html$ /toolkit/mail-merge/ [L,R=301]
+  RewriteRule ^jd-library\.html$ /jd-library/ [L,R=301]
+  RewriteRule ^about\.html$ /about/ [L,R=301]
+  RewriteRule ^(admin|generate-og)\.html$ / [L,R=301]
+
+  # 4. "/index.html" and "/x/index.html" → the clean folder URL (only when typed, never on internal lookups).
+  RewriteCond %{THE_REQUEST} \s/+(.*/)?index\.html[\s?] [NC]
+  RewriteRule ^(.*/)?index\.html$ /%1 [L,R=301,NE]
+
+  # 5. Add the trailing slash to folder pages ("/toolkit" → "/toolkit/").
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_URI} !/$
+  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}/index.html -f
+  RewriteRule ^(.*)$ /$1/ [L,R=301]
+</IfModule>
+
+# Security headers. The Content-Security-Policy allows only this site's own files;
+# 'unsafe-inline' for styles is needed by Astro's scoped styles, and 'wasm-unsafe-eval' by Pagefind search.
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
+</IfModule>
+
+# Caching: hashed build files for a year, pages always revalidated.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 hour"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/xml "access plus 1 hour"
+  ExpiresByType text/plain "access plus 1 hour"
+  ExpiresByType application/manifest+json "access plus 1 week"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  # The offline helper: browsers must always check for a new one.
+  <Files "sw.js">
+    Header set Cache-Control "no-cache"
+  </Files>
+</IfModule>
+<IfModule mod_headers.c>
+  # Astro's built files carry a content hash in their names (name.AbC123xY.js), so they never change.
+  <FilesMatch "\.[A-Za-z0-9_-]{8}\.(js|css|woff2|svg|png|jpg|webp|avif)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# Compression.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/xml application/manifest+json image/svg+xml
+</IfModule>

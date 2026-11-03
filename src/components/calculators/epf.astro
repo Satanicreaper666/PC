@@ -1,0 +1,140 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import AsAt from "./parts/AsAt.astro";
+import { stat } from "../../data/statutory";
+import { addDays, shortDate } from "../../lib/calc/working-days";
+
+const from = stat("epf.wageCeiling").from ?? "2026-09-17";
+const before = addDays(from, -1);
+const periods = [
+  { value: from, label: `From ${shortDate(from)} (${stat("epf.wageCeiling").display.replace(" a month", "")} ceiling)` },
+  { value: before, label: `Up to ${shortDate(before)} (${stat("epf.wageCeilingBefore").display.replace(" a month", "")} ceiling)` }
+];
+---
+
+<CalcShell id="epf" resultLabel="PF each month" bars>
+  <Fragment slot="inputs">
+    <Num
+      name="wages"
+      label="Monthly PF wages"
+      prefix="₹"
+      value="20,000"
+      help="Wages as the Code on Social Security defines them: basic pay, dearness allowance and other pay not on the exclusion list (HRA, conveyance and the like), plus any excess over the 50% limit."
+    />
+    <Pick name="period" label="Wage month" options={periods} />
+    <Pick
+      name="basis"
+      label="Contribute on"
+      options={[
+        { value: "restricted", label: "Wages up to the ceiling" },
+        { value: "actual", label: "Full PF wages" }
+      ]}
+      help="Contributions on wages above the ceiling are voluntary, and the employer need not match them."
+    />
+    <Pick
+      name="eps"
+      label="Member of the pension scheme (EPS)?"
+      options={[
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" }
+      ]}
+      help="Check the passbook or ask the employer. Do not guess: some members are not in EPS."
+    />
+    <Pick
+      name="member"
+      label="Already a PF member?"
+      options={[
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No, a new joiner" }
+      ]}
+    />
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="total">₹0</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+<AsAt ids={["epf.employeeRate", "epf.employerRate", "epf.epsRate", "epf.edliRate", "epf.adminRate", "epf.adminMinimum", "epf.wageCeiling", "epf.wageCeilingBefore"]} />
+
+<script>
+  import { bindCalculator, inr, inrExact, type CalcStep } from "../../scripts/calc-kit";
+  import { computeEpf, epfRules, pctOf } from "../../lib/calc/epf";
+  import type { EpfBasis } from "../../lib/calc/epf";
+  import { stat } from "../../data/statutory";
+  import { shortDate } from "../../lib/calc/working-days";
+  const rules = epfRules();
+  const adminMin = stat("epf.adminMinimum");
+
+  bindCalculator("epf", (v) => {
+    const P = v.num("wages");
+    if (P <= 0) return { outputs: { total: "₹0", sub: "" }, message: "Enter the monthly PF wages to see the split." };
+    const r = computeEpf({
+      pfWages: P,
+      date: v.str("period", rules.ceilingFrom),
+      basis: v.str("basis", "restricted") as EpfBasis,
+      epsMember: v.str("eps", "yes") === "yes",
+      existingMember: v.str("member", "yes") === "yes"
+    });
+    const capNote = r.base < P ? `${rules.employeeRate}% of ${inr(r.base)} (the ceiling)` : `${rules.employeeRate}% of ${inr(r.base)}`;
+    const notes: string[] = [];
+    if (r.excluded)
+      notes.push(
+        `New joiner above ${inr(r.ceiling)}: PF membership is not mandatory. The employee may join with the employer's consent; the figures show what joining would cost.`
+      );
+    if (r.aboveCeiling > 0 && r.base > r.ceiling) notes.push(`Contributions on the ${inr(r.aboveCeiling)} above the ceiling are voluntary.`);
+    if (v.str("period", rules.ceilingFrom) < rules.ceilingFrom)
+      notes.push(
+        `The month of the change is split: days before ${shortDate(rules.ceilingFrom)} use the ${inr(rules.ceilingBefore)} ceiling and the rest of the month ${inr(rules.ceiling)}, in one return.`
+      );
+    notes.push(`EDLI and admin charges are paid by the employer on top of the 12%. Admin charges have a minimum of ${adminMin.display} for each establishment.`);
+    notes.push("Interest is credited by EPFO once a year and is not shown here.");
+
+    // How this was worked out. Each share is rounded to the nearest rupee (half up).
+    const capped = Math.min(P, r.ceiling);
+    const roundNote = (exact: number) => (Number.isInteger(Math.round(exact * 100) / 100) ? undefined : `${inrExact(exact)}, rounded to the rupee`);
+    const working: CalcStep[] = [
+      {
+        label: "PF wages used",
+        formula: r.base === P ? (r.base > r.ceiling ? `full PF wages of ${inr(P)}` : `${inr(P)}, within the ${inr(r.ceiling)} ceiling`) : `the lower of ${inr(P)} and the ${inr(r.ceiling)} ceiling`,
+        result: inr(r.base)
+      },
+      { label: "Employee PF", formula: `${rules.employeeRate}% × ${inr(r.base)}`, result: inr(r.employee), note: roundNote(pctOf(r.base, rules.employeeRate)) },
+      { label: "Employer's share", formula: `${rules.employerRate}% × ${inr(r.base)}`, result: inr(r.employerTotal), note: roundNote(pctOf(r.base, rules.employerRate)) },
+      r.eps
+        ? { label: "Employer to pension (EPS)", formula: `${rules.epsRate}% × ${inr(capped)}`, result: inr(r.eps), note: roundNote(pctOf(capped, rules.epsRate)) ?? "On wages up to the ceiling" }
+        : { label: "Employer to pension (EPS)", formula: "", result: "₹0", note: "Not an EPS member" },
+      { label: "Employer to PF (EPF)", formula: `${inr(r.employerTotal)} − ${inr(r.eps)}`, result: inr(r.employerEpf) },
+      { label: "Credited to the PF account", formula: `${inr(r.employee)} + ${inr(r.employerEpf)}`, result: inr(r.toPfAccount) },
+      { label: "PF each month", formula: `${inr(r.employee)} + ${inr(r.employerTotal)}`, result: inr(r.totalContribution) },
+      { label: "EDLI insurance (employer)", formula: `${rules.edliRate}% × ${inr(capped)}`, result: inr(r.edli), note: roundNote(pctOf(capped, rules.edliRate)) },
+      { label: "Admin charges (employer)", formula: `${rules.adminRate}% × ${inr(r.base)}`, result: inr(r.admin), note: roundNote(pctOf(r.base, rules.adminRate)) },
+      { label: "Employer's total cost", formula: `${inr(r.employerTotal)} + ${inr(r.edli)} + ${inr(r.admin)}`, result: inr(r.employerCost) }
+    ];
+    return {
+      working,
+      outputs: {
+        total: inr(r.totalContribution),
+        sub: `${inr(r.employee)} from pay and ${inr(r.employerTotal)} from the employer each month. ${inr(r.toPfAccount)} goes to the PF account${r.eps ? ` and ${inr(r.eps)} to pension` : ""}.`
+      },
+      lines: [
+        { label: "Employee PF, deducted from pay", value: inr(r.employee), note: capNote },
+        { label: "Employer to pension (EPS)", value: inr(r.eps), note: r.eps ? `${rules.epsRate}% of ${inr(Math.min(P, r.ceiling))}` : "Not an EPS member" },
+        { label: "Employer to PF (EPF)", value: inr(r.employerEpf), note: `The rest of the employer's ${rules.employerRate}%` },
+        { label: "Credited to the PF account", value: inr(r.toPfAccount), strong: true },
+        { label: "EDLI insurance (employer)", value: inr(r.edli), note: `${rules.edliRate}% of ${inr(Math.min(P, r.ceiling))}` },
+        { label: "Admin charges (employer)", value: inr(r.admin), note: `${rules.adminRate}% of ${inr(r.base)}` },
+        { label: "Employer's total cost", value: inr(r.employerCost) },
+        { label: "Employee's deduction in a year", value: inr(r.employee * 12) }
+      ],
+      bars: [
+        { label: "Employee PF", value: r.employee, display: inr(r.employee) },
+        { label: "Employer EPF", value: r.employerEpf, display: inr(r.employerEpf) },
+        { label: "Employer EPS", value: r.eps, display: inr(r.eps) },
+        { label: "EDLI + admin", value: r.edli + r.admin, display: inr(r.edli + r.admin) }
+      ],
+      notes
+    };
+  });
+</script>

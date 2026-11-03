@@ -1,0 +1,109 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import AsAt from "./parts/AsAt.astro";
+import { stat } from "../../data/statutory";
+
+const supervisorLimit = stat("osh.supervisorWageLimit").display;
+---
+
+<CalcShell id="leave-encashment" resultLabel="Leave encashment">
+  <Fragment slot="inputs">
+    <Num
+      name="wages"
+      label="Monthly wages"
+      prefix="₹"
+      value="40,000"
+      help="Use the pay your leave policy names. Under the Labour Codes, wages are basic pay, dearness allowance and other pay not on the exclusion list (HRA, conveyance and the like)."
+    />
+    <Num name="days" label="Leave days to encash" value="18" suffix="days" help="Unused earned or annual leave. Half days are fine." />
+    <Pick
+      name="divisor"
+      label="A day's wages is"
+      options={[
+        { value: "26", label: "Monthly wages ÷ 26" },
+        { value: "30", label: "Monthly wages ÷ 30" }
+      ]}
+      help="The law does not fix this. Use the divisor in your leave policy or standing orders."
+    />
+    <Pick
+      name="situation"
+      label="Why is leave being encashed?"
+      style="select"
+      options={[
+        { value: "leaving", label: "Leaving the job" },
+        { value: "retirement", label: "Retirement" },
+        { value: "death", label: "Death of the employee" },
+        { value: "year_end", label: "Year end, on request" }
+      ]}
+    />
+    <Pick
+      name="worker"
+      label="Is the employee a 'worker' under the OSH Code?"
+      options={[
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" }
+      ]}
+      help={`Not a worker: managerial or administrative staff, and supervisors earning more than ${supervisorLimit}.`}
+    />
+    <Num name="worked" label="Days worked this calendar year (optional)" suffix="days" placeholder="For example 240" help="To check annual leave earned under the OSH Code." />
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="amount">₹0</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+<AsAt ids={["leave.eligibilityDays", "leave.accrualDays", "leave.carryForwardMax", "leave.exitPaymentWorkingDays", "leave.retirementPaymentMonths", "osh.supervisorWageLimit"]} />
+
+<script>
+  import { bindCalculator, inr, num, type CalcStep } from "../../scripts/calc-kit";
+  import { computeLeaveEncashment, leaveAccrual, leaveRules } from "../../lib/calc/leave-encashment";
+  import type { LeaveDivisor, LeaveSituation } from "../../lib/calc/leave-encashment";
+  import { roundRupee } from "../../lib/calc/gratuity";
+  const rules = leaveRules();
+
+  bindCalculator("leave-encashment", (v) => {
+    const wages = v.num("wages");
+    const days = v.num("days");
+    if (wages <= 0) return { outputs: { amount: "₹0", sub: "" }, message: "Enter the monthly wages your leave policy uses." };
+    if (days <= 0) return { outputs: { amount: "₹0", sub: "" }, message: "Enter the number of leave days to encash." };
+    const divisor = (v.str("divisor", "26") === "30" ? 30 : 26) as LeaveDivisor;
+    const worker = v.str("worker", "yes") === "yes";
+    const r = computeLeaveEncashment({ wages, days, divisor, situation: v.str("situation", "leaving") as LeaveSituation, worker });
+    const lines = [
+      { label: "A day's wages", value: inr(roundRupee(r.dailyRate)), note: `${inr(wages)} ÷ ${divisor}` },
+      { label: "Leave days", value: num(days, 1) },
+      { label: "Leave encashment", value: inr(roundRupee(r.amount)), strong: true },
+      { label: "When to pay", value: r.dueShort, note: worker ? "OSH Code, 2020 s.32" : "Leave policy or state law" }
+    ];
+    const working: CalcStep[] = [
+      { label: "A day's wages", formula: `${inr(wages)} ÷ ${divisor}`, result: inr(roundRupee(r.dailyRate)) },
+      { label: "Leave encashment", formula: `${inr(wages)} ÷ ${divisor} × ${num(days, 1)} days`, result: inr(roundRupee(r.amount)), note: "Rounded to the rupee" }
+    ];
+    const workedRaw = v.raw("worked").replace(/[,\s]/g, "");
+    if (workedRaw !== "") {
+      const a = leaveAccrual(v.num("worked"));
+      lines.push({
+        label: "Leave earned this year",
+        value: `${a.earned} days`,
+        note: a.eligible ? `1 day for every ${a.perDays} days worked` : `Needs ${a.needed} days worked in the year to qualify`
+      });
+      working.push(
+        a.eligible
+          ? { label: "Leave earned this year", formula: `${num(Math.floor(v.num("worked")), 0)} days worked ÷ ${a.perDays}, whole days`, result: `${a.earned} days` }
+          : { label: "Leave earned this year", formula: `${num(Math.floor(v.num("worked")), 0)} days worked; ${a.needed} needed to qualify`, result: "0 days" }
+      );
+    }
+    return {
+      working,
+      outputs: { amount: inr(roundRupee(r.amount)), sub: `${num(days, 1)} days at ${inr(roundRupee(r.dailyRate))} a day` },
+      lines,
+      notes: [
+        ...(worker ? [] : [r.due]),
+        `Workers can carry forward up to ${rules.carryForwardMax} days of annual leave. Leave they applied for and were refused can be carried forward without a limit.`,
+        "A contract or policy can be more generous. Income tax is not worked out here."
+      ]
+    };
+  });
+</script>

@@ -1,0 +1,54 @@
+---
+/**
+ * "Pin to desk": a toggle (aria-pressed) for the header of a chapter, tool or JD page.
+ * The button carries the page's card, so My desk (/desk/) can draw it without a
+ * catalogue; src/scripts/desk.ts does the pinning and keeps every pin button,
+ * and the header's count, in step. The label never changes; the pressed state
+ * shows as a turmeric pin on a turmeric-tinted button.
+ *
+ *   <PinButton item={{ href: "/toolkit/offer-letter/", title: "Offer letter", kind: "Letter", art: "letter" }} />
+ */
+import PinIcon from "./PinIcon.astro";
+import type { DeskItem } from "./shared";
+interface Props {
+  item: Omit<DeskItem, "at">;
+  class?: string;
+}
+const { item, class: cls } = Astro.props;
+// Drop empty fields so the attribute stays short.
+const card = Object.fromEntries(Object.entries(item).filter(([, v]) => v !== undefined && v !== ""));
+---
+
+<button
+  type="button"
+  class:list={["btn", "btn-ghost", "btn-sm", "pin-btn", cls]}
+  data-pin={JSON.stringify(card)}
+  data-pin-page
+  aria-pressed="false"
+  data-print="hide"
+  data-pagefind-ignore
+>
+  <PinIcon size={17} />
+  <span>Pin to desk</span>
+</button>
+
+<style>
+  .pin-btn {
+    --btn-fg: var(--ink-2);
+    --btn-bd: var(--line-strong);
+    border-style: dashed;
+  }
+  .pin-btn:hover {
+    --btn-bd: var(--ink-3);
+    border-style: solid;
+  }
+  .pin-btn[aria-pressed="true"] {
+    --btn-bg: var(--haldi-50);
+    --btn-bd: var(--haldi-500);
+    --btn-fg: var(--ink);
+    border-style: solid;
+  }
+  .pin-btn[aria-pressed="true"]:hover {
+    --btn-bg: var(--haldi-100);
+  }
+</style>

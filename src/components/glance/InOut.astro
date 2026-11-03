@@ -1,0 +1,139 @@
+---
+/**
+ * A calculator or app as "in → out": its real inputs as pills, their threads
+ * tied into one turmeric knot, the result, under a yellow highlighter. The
+ * page's own formula sits under it when the page states one (frontmatter `glance`).
+ */
+interface Props {
+  inputs: string[];
+  output: string;
+  formula?: string;
+}
+const { inputs: all, output, formula } = Astro.props;
+const inputs = all.slice(0, 5);
+
+/* Geometry in px at a 16px root; the SVG scales with rem, so pills and threads stay aligned at any text size. */
+const PILL = 28;
+const GAP = 8;
+const W = 56;
+const H = inputs.length * PILL + (inputs.length - 1) * GAP;
+const mid = H / 2;
+const wires = inputs.map((_, i) => {
+  const y = i * (PILL + GAP) + PILL / 2;
+  return `M0 ${y}C${W * 0.55} ${y} ${W * 0.4} ${mid} ${W} ${mid}`;
+});
+---
+
+<div class="io">
+  <p class="glance-label" id="glance-kind">What goes in, what comes out</p>
+  <div class="flow" style={`--h:${H / 16}rem`}>
+    <ul class="ins" aria-labelledby="glance-kind">
+      {
+        inputs.map((x) => (
+          <li>
+            <span class="visually-hidden">In: </span>
+            {x}
+          </li>
+        ))
+      }
+    </ul>
+    <svg class="wires" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      {wires.map((d) => <path d={d} />)}
+    </svg>
+    <p class="out">
+      <span class="knot" aria-hidden="true"></span>
+      <span class="ol"><span class="visually-hidden">Out: </span><span class="hl" data-mark>{output}</span></span>
+    </p>
+  </div>
+  {
+    formula && (
+      <p class="fx">
+        <span class="fx-l">Formula</span>
+        <span class="fx-t">{formula}</span>
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .glance-label {
+    margin-bottom: 0.65rem;
+  }
+  .flow {
+    display: grid;
+    grid-template-columns: max-content 3.5rem minmax(0, 1fr);
+    align-items: center;
+  }
+  .ins {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    justify-items: end;
+    gap: 0.5rem;
+  }
+  .ins li {
+    display: flex;
+    align-items: center;
+    height: 1.75rem;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1.5px solid var(--neel-300);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .wires {
+    width: 3.5rem;
+    height: var(--h);
+    overflow: visible;
+  }
+  .wires path {
+    fill: none;
+    stroke: var(--neel-300);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .out {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .knot {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-left: -0.15rem;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--haldi-700);
+    box-shadow: 0 0 0 3px var(--canvas);
+  }
+  .ol {
+    font-size: 1.0625rem;
+    font-weight: 660;
+    line-height: 1.2;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .fx {
+    margin-top: 1.1rem;
+    display: grid;
+    gap: 0.15rem;
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+  }
+  .fx-l {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .fx-t {
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    text-wrap: balance;
+  }
+</style>

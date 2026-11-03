@@ -1,0 +1,664 @@
+---
+import Pick from "../calc/Pick.astro";
+import Icon from "../ui/Icon.astro";
+import { BOXES, LEVEL_LABEL } from "../../lib/calc/nine-box-talent-mapper";
+
+const levels = [
+  { value: "1", label: "Low" },
+  { value: "2", label: "Moderate" },
+  { value: "3", label: "High" }
+];
+const rows = [3, 2, 1] as const;
+const cols = [1, 2, 3] as const;
+---
+
+<div class="nb" data-ninebox>
+  <div class="nb-top">
+    <form class="panel add" data-add aria-labelledby="nb-add-title" novalidate>
+      <p class="panel-title" id="nb-add-title">Add a person</p>
+      <div class="field">
+        <label class="field-label" for="nb-name">Name</label>
+        <input class="control" id="nb-name" name="name" type="text" maxlength="80" autocomplete="off" placeholder="For example, Aditi Rao" aria-describedby="nb-add-error" />
+      </div>
+      <Pick name="perf" label="Performance this year" options={levels} value="2" />
+      <Pick name="pot" label="Potential for a bigger role" options={levels} value="2" />
+      <p class="field-error" id="nb-add-error" data-add-error hidden></p>
+      <button class="btn" type="submit"><Icon name="plus" size={18} /> Add to the grid</button>
+      <p class="hint">Rate performance from results this year. Rate potential from ability, aspiration and engagement for a larger role in the next two to three years.</p>
+    </form>
+
+    <section class="panel board" aria-labelledby="nb-grid-title">
+      <div class="board-head">
+        <p class="panel-title" id="nb-grid-title">Your 9-box grid</p>
+        <span class="count" data-count aria-live="polite">No one yet</span>
+      </div>
+      <div class="mx">
+        <div class="y-axis" aria-hidden="true"><span>Potential →</span></div>
+        <div class="grid">
+          {
+            rows.map((pot) => (
+              <>
+                <span class="rlabel" aria-hidden="true">
+                  {LEVEL_LABEL[pot]}
+                </span>
+                {cols.map((perf) => {
+                  const b = BOXES.find((x) => x.potential === pot && x.performance === perf)!;
+                  return (
+                    <div class:list={["cell", `tone-${b.tone}`]} data-box={`${perf}-${pot}`}>
+                      <span class="visually-hidden">
+                        Potential {LEVEL_LABEL[pot].toLowerCase()}, performance {LEVEL_LABEL[perf].toLowerCase()}:
+                      </span>
+                      <span class="ct">{b.title}</span>
+                      <span class="cn" data-cn>
+                        0 people
+                      </span>
+                      <ul class="names" data-names></ul>
+                    </div>
+                  );
+                })}
+              </>
+            ))
+          }
+          <span />
+          {
+            cols.map((perf) => (
+              <span class="clabel" aria-hidden="true">
+                {LEVEL_LABEL[perf]}
+              </span>
+            ))
+          }
+        </div>
+        <div class="x-axis" aria-hidden="true">Performance →</div>
+      </div>
+      <p class="spread" data-spread></p>
+      <p class="empty" data-empty>
+        Add people with the form, paste a list below, or <button type="button" class="linkish" data-example>load an example team</button>.
+      </p>
+    </section>
+  </div>
+
+  <section class="panel people" aria-labelledby="nb-list-title">
+    <div class="people-head">
+      <h2 class="t" id="nb-list-title">People <span class="muted" data-list-count></span></h2>
+      <div class="actions" data-print="hide">
+        <button class="btn btn-secondary btn-sm" type="button" data-csv><Icon name="download" size={16} /> Download CSV</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-print-grid><Icon name="printer" size={16} /> Print</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-clear><Icon name="x" size={16} /> Clear all</button>
+      </div>
+    </div>
+
+    <details class="paste" data-print="hide">
+      <summary>Paste a list from a spreadsheet</summary>
+      <div class="paste-body">
+        <label class="field-label" for="nb-paste">One person per line: name, performance, potential</label>
+        <textarea class="control" id="nb-paste" rows="5" placeholder={"Aditi Rao, High, High\nRohan Gupta, Moderate, Moderate\nFarah Khan, Low, Moderate"}></textarea>
+        <div class="paste-row">
+          <div class="field">
+            <label class="field-label" for="nb-scale">Numbers in your list use</label>
+            <select class="control" id="nb-scale">
+              <option value="3">A 1–3 scale (1 = low)</option>
+              <option value="5">A 1–5 rating (1–2 low, 3 moderate, 4–5 high)</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" type="button" data-paste-add>Add these people</button>
+        </div>
+        <p class="field-help">Columns can be separated by tabs (copied from Excel or Google Sheets) or commas. Words like Low, Moderate and High work too.</p>
+        <div class="paste-msg" data-paste-msg role="status" hidden></div>
+      </div>
+    </details>
+
+    <div class="tw" data-table-wrap role="region" tabindex="0" aria-label="People on the grid">
+      <table class="plist">
+        <caption class="visually-hidden">People on the grid, with their performance, potential and box</caption>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Performance</th>
+            <th scope="col">Potential</th>
+            <th scope="col">Box</th>
+            <th scope="col"><span class="visually-hidden">Remove</span></th>
+          </tr>
+        </thead>
+        <tbody data-rows></tbody>
+      </table>
+    </div>
+    <p class="privacy">
+      <Icon name="lock" size={16} />
+      <span data-store-msg>Your list is saved in this browser on this device only. Nothing is uploaded. Use “Clear all” when you finish on a shared computer.</span>
+    </p>
+  </section>
+</div>
+
+<script>
+  import { LEVEL_LABEL, boxFor, placePeople, axisSpread, parsePeople, toCsv, cleanName, EXAMPLE_PEOPLE, type Person, type Level } from "../../lib/calc/nine-box-talent-mapper";
+
+  const KEY = "peoplecraft:nine-box:v1";
+  const root = document.querySelector<HTMLElement>("[data-ninebox]")!;
+  const addForm = root.querySelector<HTMLFormElement>("[data-add]")!;
+  const nameInput = addForm.querySelector<HTMLInputElement>("#nb-name")!;
+  const addError = addForm.querySelector<HTMLElement>("[data-add-error]")!;
+  const rowsEl = root.querySelector<HTMLElement>("[data-rows]")!;
+  const storeMsg = root.querySelector<HTMLElement>("[data-store-msg]")!;
+  const isLevel = (n: unknown): n is Level => n === 1 || n === 2 || n === 3;
+  const uid = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+
+  let people: Person[] = load();
+
+  function load(): Person[] {
+    try {
+      const raw = localStorage.getItem(KEY);
+      const arr: unknown = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(arr)) return [];
+      return arr
+        .filter((p) => p && typeof p.name === "string" && isLevel(p.performance) && isLevel(p.potential))
+        .map((p) => ({ id: typeof p.id === "string" ? p.id : uid(), name: cleanName(p.name), performance: p.performance, potential: p.potential }));
+    } catch {
+      return [];
+    }
+  }
+  function save() {
+    try {
+      if (people.length) localStorage.setItem(KEY, JSON.stringify(people));
+      else localStorage.removeItem(KEY);
+    } catch {
+      storeMsg.textContent = "This browser isn't letting the page save. Your list will be lost when you close the page; download a CSV to keep it.";
+    }
+  }
+  function commit() {
+    save();
+    render();
+  }
+
+  function render() {
+    const placed = placePeople(people);
+    for (const b of placed) {
+      const cell = root.querySelector<HTMLElement>(`[data-box="${b.performance}-${b.potential}"]`)!;
+      const n = b.people.length;
+      cell.querySelector<HTMLElement>("[data-cn]")!.textContent = n ? `${n} ${n === 1 ? "person" : "people"} · ${Math.round(b.share * 100)}%` : "No one";
+      cell.querySelector<HTMLElement>("[data-names]")!.replaceChildren(...b.people.map((p) => Object.assign(document.createElement("li"), { textContent: p.name })));
+      cell.classList.toggle("has-people", n > 0);
+    }
+    const total = people.length;
+    root.querySelector<HTMLElement>("[data-count]")!.textContent = total ? `${total} ${total === 1 ? "person" : "people"}` : "No one yet";
+    root.querySelector<HTMLElement>("[data-list-count]")!.textContent = total ? `(${total})` : "";
+    root.querySelector<HTMLElement>("[data-empty]")!.hidden = total > 0;
+    root.querySelector<HTMLElement>("[data-table-wrap]")!.hidden = total === 0;
+    const spread = root.querySelector<HTMLElement>("[data-spread]")!;
+    spread.hidden = total === 0;
+    if (total) {
+      const fmt = (axis: "performance" | "potential") =>
+        axisSpread(people, axis)
+          .map((s) => `${s.label.toLowerCase()} ${s.count}`)
+          .join(", ");
+      spread.textContent = `Performance: ${fmt("performance")}. Potential: ${fmt("potential")}.`;
+    }
+    rowsEl.replaceChildren(...people.map(rowFor));
+  }
+
+  function levelSelect(p: Person, axis: "performance" | "potential") {
+    const sel = document.createElement("select");
+    sel.className = "control mini";
+    sel.setAttribute("aria-label", `${axis === "performance" ? "Performance" : "Potential"} for ${p.name}`);
+    for (const l of [1, 2, 3] as Level[]) {
+      const o = Object.assign(document.createElement("option"), { value: String(l), textContent: LEVEL_LABEL[l] });
+      o.selected = p[axis] === l;
+      sel.append(o);
+    }
+    sel.addEventListener("change", () => {
+      const v = Number(sel.value);
+      if (isLevel(v)) {
+        p[axis] = v;
+        commit();
+      }
+    });
+    return sel;
+  }
+
+  function rowFor(p: Person) {
+    const tr = document.createElement("tr");
+    const th = Object.assign(document.createElement("th"), { scope: "row", textContent: p.name });
+    const tdPerf = document.createElement("td");
+    tdPerf.append(levelSelect(p, "performance"));
+    const tdPot = document.createElement("td");
+    tdPot.append(levelSelect(p, "potential"));
+    const tdBox = Object.assign(document.createElement("td"), { className: "box", textContent: boxFor(p.performance, p.potential).title });
+    const tdRm = document.createElement("td");
+    const rm = Object.assign(document.createElement("button"), { type: "button", className: "rm", textContent: "Remove" });
+    rm.setAttribute("aria-label", `Remove ${p.name}`);
+    rm.addEventListener("click", () => {
+      people = people.filter((x) => x.id !== p.id);
+      commit();
+      nameInput.focus();
+    });
+    tdRm.append(rm);
+    tr.append(th, tdPerf, tdPot, tdBox, tdRm);
+    return tr;
+  }
+
+  addForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = cleanName(nameInput.value);
+    if (!name) {
+      addError.textContent = "Enter a name to add someone.";
+      addError.hidden = false;
+      nameInput.setAttribute("aria-invalid", "true");
+      nameInput.focus();
+      return;
+    }
+    const fd = new FormData(addForm);
+    const performance = Number(fd.get("perf"));
+    const potential = Number(fd.get("pot"));
+    if (!isLevel(performance) || !isLevel(potential)) return;
+    people.push({ id: uid(), name, performance, potential });
+    addError.hidden = true;
+    nameInput.removeAttribute("aria-invalid");
+    nameInput.value = "";
+    commit();
+    root.querySelector<HTMLElement>("[data-count]")!.textContent = `Added ${name} to ${boxFor(performance, potential).title}. ${people.length} ${people.length === 1 ? "person" : "people"}`;
+    nameInput.focus();
+  });
+  nameInput.addEventListener("input", () => {
+    if (!addError.hidden && nameInput.value.trim()) {
+      addError.hidden = true;
+      nameInput.removeAttribute("aria-invalid");
+    }
+  });
+
+  root.querySelector("[data-example]")?.addEventListener("click", () => {
+    people = EXAMPLE_PEOPLE.map((p) => ({ ...p, id: uid() }));
+    commit();
+  });
+
+  root.querySelector("[data-paste-add]")?.addEventListener("click", () => {
+    const ta = root.querySelector<HTMLTextAreaElement>("#nb-paste")!;
+    const scale = root.querySelector<HTMLSelectElement>("#nb-scale")!.value === "5" ? 5 : 3;
+    const r = parsePeople(ta.value, scale);
+    const msg = root.querySelector<HTMLElement>("[data-paste-msg]")!;
+    people.push(...r.people.map((p) => ({ ...p, id: uid() })));
+    if (r.people.length) commit();
+    const parts: string[] = [];
+    if (r.people.length) parts.push(`Added ${r.people.length} ${r.people.length === 1 ? "person" : "people"}.`);
+    if (!r.people.length && !r.errors.length) parts.push("Paste at least one line: name, performance, potential.");
+    msg.replaceChildren(document.createTextNode(parts.join(" ")));
+    if (r.errors.length) {
+      const p = Object.assign(document.createElement("p"), { textContent: `${r.errors.length} ${r.errors.length === 1 ? "line wasn't" : "lines weren't"} added. Fix ${r.errors.length === 1 ? "it" : "them"} and paste again:` });
+      const ul = document.createElement("ul");
+      ul.append(...r.errors.slice(0, 8).map((er) => Object.assign(document.createElement("li"), { textContent: `Line ${er.line}: ${er.message}` })));
+      msg.append(p, ul);
+      ta.value = r.errors.map((er) => er.text).join("\n");
+    } else ta.value = "";
+    msg.hidden = false;
+    msg.classList.toggle("has-errors", r.errors.length > 0);
+  });
+
+  root.querySelector("[data-csv]")?.addEventListener("click", () => {
+    if (!people.length) return;
+    const blob = new Blob(["﻿" + toCsv(people)], { type: "text/csv;charset=utf-8" });
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "9-box-grid.csv" });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  root.querySelector("[data-print-grid]")?.addEventListener("click", () => window.print());
+  root.querySelector("[data-clear]")?.addEventListener("click", () => {
+    if (!people.length) return;
+    if (!window.confirm(`Remove all ${people.length} people from this device? This can't be undone. Download a CSV first if you need a copy.`)) return;
+    people = [];
+    commit();
+  });
+
+  render();
+</script>
+
+<style>
+  .nb {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .nb-top {
+    display: grid;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .panel {
+    padding: 1.25rem 1.25rem 1.4rem;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line);
+  }
+  .add {
+    background: var(--canvas);
+    display: grid;
+    gap: 1rem;
+  }
+  .board,
+  .people {
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+    display: grid;
+    gap: 0.9rem;
+  }
+  .panel-title {
+    font-weight: 650;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .add .btn {
+    justify-self: start;
+  }
+  .hint {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+  .board-head,
+  .people-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+  }
+  .count {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-weight: 560;
+  }
+  /* The grid: same look as the site's Matrix diagram */
+  .mx {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 0.4rem;
+  }
+  .y-axis {
+    grid-row: 1;
+    display: grid;
+    place-items: center;
+  }
+  .y-axis span {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-2);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: auto repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .rlabel,
+  .clabel {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    font-weight: 560;
+  }
+  .rlabel {
+    align-self: center;
+    padding-right: 0.4rem;
+    text-align: right;
+  }
+  .clabel {
+    text-align: center;
+    padding-top: 0.2rem;
+  }
+  .x-axis {
+    grid-column: 2;
+    text-align: center;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-2);
+  }
+  .cell {
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
+    min-height: 7.5rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: 8px;
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    min-width: 0;
+  }
+  .ct {
+    font-weight: 640;
+    font-size: var(--fs-sm);
+    line-height: 1.25;
+  }
+  .cn {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .tone-good {
+    background: var(--good-soft);
+    border-color: color-mix(in srgb, var(--good) 25%, transparent);
+  }
+  .tone-bad {
+    background: var(--bad-soft);
+    border-color: color-mix(in srgb, var(--bad) 25%, transparent);
+  }
+  .tone-accent {
+    background: var(--haldi-50);
+    border-color: var(--haldi-300);
+  }
+  .names {
+    list-style: none;
+    margin: 0.2rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .names :global(li) {
+    max-width: 100%;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid var(--line-strong);
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+  }
+  .spread {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .empty {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--r);
+    background: var(--canvas);
+  }
+  .linkish {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .people-head .t {
+    font-size: var(--fs-md);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .paste {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--canvas);
+  }
+  .paste summary {
+    cursor: pointer;
+    padding: 0.7rem 0.9rem;
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+  .paste-body {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0 0.9rem 0.9rem;
+  }
+  .paste-body textarea {
+    font-size: var(--fs-sm);
+    font-family: inherit;
+  }
+  .paste-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+  }
+  .paste-row .field {
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+  .paste-msg {
+    font-size: var(--fs-sm);
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--r);
+    background: var(--good-soft);
+    color: var(--good);
+    font-weight: 560;
+  }
+  .paste-msg.has-errors {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .paste-msg :global(ul) {
+    margin: 0.3rem 0 0;
+    padding-left: 1.1rem;
+    font-weight: 500;
+  }
+  .tw {
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .plist {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .plist thead th {
+    text-align: left;
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-weight: 620;
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  .plist :global(tbody th),
+  .plist :global(td) {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+  }
+  .plist :global(tbody th) {
+    font-weight: 600;
+  }
+  .plist :global(tbody tr:last-child > *) {
+    border-bottom: 0;
+  }
+  .plist :global(.mini) {
+    min-height: 2.25rem;
+    padding: 0.25rem 2rem 0.25rem 0.6rem;
+    font-size: var(--fs-sm);
+    background-position: right 0.45rem center;
+    width: auto;
+  }
+  .plist :global(td.box) {
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .plist :global(.rm) {
+    background: none;
+    border: 0;
+    padding: 0.3rem 0.4rem;
+    border-radius: 6px;
+    color: var(--bad);
+    font: inherit;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .plist :global(.rm:hover) {
+    background: var(--bad-soft);
+  }
+  .privacy {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .privacy :global(svg) {
+    flex: none;
+    margin-top: 0.1rem;
+    color: var(--good);
+  }
+  @media (max-width: 900px) {
+    .nb-top {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .cell {
+      min-height: 6rem;
+      padding: 0.45rem;
+    }
+    .ct {
+      font-size: var(--fs-xs);
+    }
+    .grid {
+      gap: 3px;
+    }
+    .names {
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .names :global(li) {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: none;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    .rlabel {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      padding: 0;
+      text-align: center;
+    }
+  }
+  @media print {
+    .add,
+    .empty {
+      display: none;
+    }
+    .nb-top {
+      grid-template-columns: 1fr;
+    }
+    .board,
+    .people {
+      box-shadow: none;
+    }
+    .cell {
+      break-inside: avoid;
+    }
+  }
+</style>

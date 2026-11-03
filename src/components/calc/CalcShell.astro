@@ -1,0 +1,471 @@
+---
+import Icon from "../ui/Icon.astro";
+import CalcScenarios from "./CalcScenarios.astro";
+/**
+ * Frame for every calculator: inputs on the left, live results on the right.
+ *   <CalcShell id="gratuity" resultLabel="Gratuity payable">
+ *     <Fragment slot="inputs">…<Num/> <Pick/>…</Fragment>
+ *     <Fragment slot="headline"><span data-out="amount">₹0</span></Fragment>
+ *   </CalcShell>
+ * Results: [data-out="key"] for headline values, the shell provides the
+ * breakdown table, bar comparison, notes, "How this was worked out", a sticky
+ * note for messages and unusual inputs, saved scenarios with a comparison, and
+ * CSV download (see src/scripts/calc-kit.ts for the hooks).
+ *
+ * scenarioLabel: default name of a saved scenario. "{A}" counts A, B, C…;
+ *   "{1}" counts 1, 2, 3…  (e.g. "Offer {A}").
+ * scenarios: "external" when the calculator places <CalcScenarios id={id} external />
+ *   itself, below its own result sections.
+ */
+interface Props {
+  id: string;
+  resultLabel: string;
+  inputsLabel?: string;
+  bars?: boolean;
+  scenarioLabel?: string;
+  scenarios?: "inside" | "external";
+}
+const { id, resultLabel, inputsLabel = "Your details", bars = false, scenarioLabel = "Scenario {1}", scenarios = "inside" } = Astro.props;
+const uid = `calc-${id}`;
+---
+
+<div class="calc-wrap" data-calc={id} data-result-label={resultLabel} data-scenario-label={scenarioLabel}>
+  <div class="calc">
+    <form class="inputs" aria-label={inputsLabel} novalidate>
+      <p class="panel-title">{inputsLabel}</p>
+      <div class="input-grid"><slot name="inputs" /></div>
+      <button class="btn btn-ghost btn-sm reset" type="reset" data-print="hide"><Icon name="refresh" size={16} /> Reset</button>
+    </form>
+
+    <section class="results" data-calc-results aria-label={resultLabel} tabindex="-1">
+      <p class="panel-title">{resultLabel}</p>
+      <div class="say" aria-live="polite" aria-atomic="true">
+        <div class="headline"><slot name="headline" /></div>
+        <div class="calc-note note-yellow" role="note" data-calc-prompt hidden>
+          <span class="note-tape" aria-hidden="true"></span>
+          <p data-calc-message></p>
+        </div>
+        <div class="calc-note note-pink" role="note" data-calc-check hidden>
+          <span class="note-tape" aria-hidden="true"></span>
+          <p class="note-title">Check this</p>
+          <p class="note-msg" data-check-message hidden></p>
+          <ul class="note-list" data-warnings hidden></ul>
+        </div>
+      </div>
+      <slot name="visual" />
+      {bars && <div class="bars" data-bars hidden></div>}
+      <table class="lines">
+        <caption class="visually-hidden">How the result is worked out</caption>
+        <tbody data-lines></tbody>
+      </table>
+      <details class="working" data-working hidden>
+        <summary><Icon name="chevron-right" size={16} class="w-chev" /> How this was worked out</summary>
+        <ol class="steps" data-working-steps></ol>
+      </details>
+      <ul class="notes" data-notes hidden></ul>
+      <div class="actions" data-print="hide">
+        <button class="btn btn-secondary btn-sm" type="button" data-save-open aria-expanded="false" aria-controls={`${uid}-save`}><Icon name="plus" size={16} /> Save this scenario</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-calc-link><Icon name="link" size={16} /><span data-label>Copy link to these numbers</span></button>
+        <button class="btn btn-ghost btn-sm" type="button" data-calc-csv><Icon name="download" size={16} /> Download CSV</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-calc-print><Icon name="printer" size={16} /> Print</button>
+      </div>
+      <form class="save-form" id={`${uid}-save`} data-save-form hidden data-print="hide">
+        <label class="field-label" for={`${uid}-name`}>Name this scenario</label>
+        <div class="save-row">
+          <input class="control" id={`${uid}-name`} type="text" maxlength="60" autocomplete="off" data-save-name aria-describedby={`${uid}-save-help`} />
+          <button class="btn btn-sm" type="submit">Save</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-save-cancel>Cancel</button>
+        </div>
+        <p class="field-help" id={`${uid}-save-help`}>Kept in this browser only. Save two or more to compare them side by side.</p>
+      </form>
+      <p class="status" role="status" data-save-status data-print="hide"></p>
+      <a class="scn-link" href={`#${uid}-scenarios`} data-scn-link hidden data-print="hide"><Icon name="chevron-down" size={16} /><span data-scn-link-text></span></a>
+    </section>
+  </div>
+  {scenarios === "inside" && <CalcScenarios id={id} />}
+</div>
+
+<style>
+  /* The sticky results panel is confined to .calc; saved scenarios sit below it, outside the grid. */
+  .calc-wrap {
+    display: grid;
+    gap: 2rem;
+  }
+  .calc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .inputs,
+  .results {
+    padding: 1.25rem 1.25rem 1.4rem;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line);
+  }
+  .inputs {
+    background: var(--canvas);
+    display: grid;
+    gap: 1rem;
+  }
+  .results {
+    position: sticky;
+    top: calc(var(--header-h) + 1rem);
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+  /* Opening the working makes the panel long: let it scroll with the page instead of sticking. */
+  .results:has(.working[open]) {
+    position: static;
+  }
+  .results:focus {
+    outline: none;
+  }
+  .results:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .panel-title {
+    font-weight: 650;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .input-grid {
+    display: grid;
+    gap: 1rem;
+  }
+  .reset {
+    justify-self: start;
+  }
+  .results.is-empty :is(.headline, .lines, .bars) {
+    opacity: 0.35;
+  }
+
+  /* The headline and, beside it when there is room, a sticky note. */
+  .say {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.9rem 1.4rem;
+  }
+  .headline {
+    display: grid;
+    gap: 0.25rem;
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+  /* The result is the number to remember: a yellow highlighter swipe sits under it. */
+  .headline :global(.big) {
+    justify-self: start;
+    font-size: clamp(2.2rem, 1.6rem + 2.4vw, 3.2rem);
+    font-weight: 660;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    color: var(--neel-800);
+    padding: 0 0.12em;
+    margin-left: -0.12em;
+    background-image: linear-gradient(100deg, color-mix(in srgb, var(--hl-yellow) 50%, transparent) 0, var(--hl-yellow) 0.25em, color-mix(in srgb, var(--hl-yellow) 85%, transparent) 60%, var(--hl-yellow) calc(100% - 0.25em), color-mix(in srgb, var(--hl-yellow) 45%, transparent));
+    background-size: 100% 0.42em;
+    background-position: 0 88%;
+    background-repeat: no-repeat;
+    border-radius: 0.25em 0.08em 0.3em 0.06em;
+  }
+  .headline :global(.sub) {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+
+  /* Sticky notes (docs/ART-DIRECTION.md): yellow = a tip to act on, pink = check this. Never blocks the result. */
+  .calc-note {
+    --note: #fff3a6;
+    --note-edge: #f2df6f;
+    --tilt: -0.7deg;
+    position: relative;
+    flex: 0 1 15rem;
+    min-width: min(100%, 13rem);
+    margin-top: 0.35rem;
+    padding: 1.05rem 1rem 0.85rem;
+    border-radius: 2px 2px 3px 14px / 2px 2px 3px 6px;
+    background:
+      linear-gradient(170deg, rgb(255 255 255 / 0.35), transparent 40%),
+      var(--note);
+    color: var(--ink);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+    transform: rotate(var(--tilt));
+    box-shadow:
+      0 1px 1px rgb(17 20 58 / 0.08),
+      3px 8px 14px -6px rgb(17 20 58 / 0.28),
+      inset 0 -2px 0 var(--note-edge);
+  }
+  .note-pink {
+    --note: #ffd9e8;
+    --note-edge: #f7b7d1;
+    --tilt: 0.8deg;
+  }
+  .note-tape {
+    position: absolute;
+    top: -0.6rem;
+    left: 50%;
+    width: 4.5rem;
+    height: 1.25rem;
+    margin-left: -2.25rem;
+    transform: rotate(calc(var(--tilt) * -3 - 2deg));
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.8), rgb(246 247 252 / 0.72));
+    box-shadow:
+      0 0 0 0.5px rgb(17 20 58 / 0.1),
+      0 1px 2px rgb(17 20 58 / 0.16);
+  }
+  .note-title {
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--pen-red);
+    margin-bottom: 0.35rem;
+  }
+  .note-list {
+    margin: 0;
+    padding-left: 1.05rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+  .note-list :global(li::marker) {
+    color: var(--pen-red);
+  }
+  .note-msg + .note-list {
+    margin-top: 0.4rem;
+  }
+
+  .bars {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .bars :global(.bar-row) {
+    display: grid;
+    grid-template-columns: minmax(6rem, 10rem) 1fr auto;
+    gap: 0.7rem;
+    align-items: center;
+    font-size: var(--fs-sm);
+  }
+  .bars :global(.bt) {
+    height: 14px;
+    border-radius: 0 4px 4px 0;
+    background: var(--sunken);
+  }
+  .bars :global(.bf) {
+    display: block;
+    height: 100%;
+    border-radius: 0 4px 4px 0;
+    transition: width 300ms var(--ease-out);
+  }
+  .bars :global(.bv) {
+    font-weight: 620;
+    font-variant-numeric: tabular-nums;
+  }
+  .lines {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .lines :global(th) {
+    text-align: left;
+    font-weight: 500;
+    color: var(--ink-2);
+    padding: 0.5rem 0.75rem 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .lines :global(td) {
+    text-align: right;
+    font-weight: 600;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+    /* An amount is one word: it never breaks; text values still wrap at spaces. */
+    overflow-wrap: normal;
+  }
+  .lines :global(tr.strong th),
+  .lines :global(tr.strong td) {
+    color: var(--ink);
+    font-weight: 700;
+    border-bottom: 2px solid var(--ink);
+  }
+  .lines :global(.tone-bad td) {
+    color: var(--bad);
+  }
+  .lines :global(.tone-good td) {
+    color: var(--good);
+  }
+  .lines :global(.line-note) {
+    display: block;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+
+  /* How this was worked out: rough work in pencil on ruled paper, step numbers in the margin, answers in pen. */
+  .working {
+    border-top: 1px solid var(--line);
+  }
+  .working summary {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    font-size: var(--fs-sm);
+    font-weight: 640;
+    color: var(--neel-700);
+    cursor: pointer;
+    list-style: none;
+  }
+  .working summary::-webkit-details-marker {
+    display: none;
+  }
+  .working summary:hover {
+    color: var(--neel-800);
+  }
+  .working :global(.w-chev) {
+    flex: none;
+    transition: transform 160ms var(--ease);
+  }
+  .working[open] :global(.w-chev) {
+    transform: rotate(90deg);
+  }
+  .steps {
+    --rule: 1.85rem;
+    --margin-x: 2.1rem;
+    counter-reset: step;
+    list-style: none;
+    margin: 0.15rem 0 0.25rem;
+    padding: 0 0.5rem calc(var(--rule) * 0.25) calc(var(--margin-x) + 0.65rem);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(90deg, transparent var(--margin-x), rgb(214 69 80 / 0.42) var(--margin-x), rgb(214 69 80 / 0.42) calc(var(--margin-x) + 1px), transparent calc(var(--margin-x) + 1px)),
+      repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), rgb(76 86 190 / 0.16) calc(var(--rule) - 1px) var(--rule));
+    font-size: var(--fs-sm);
+    line-height: var(--rule);
+  }
+  .steps :global(li) {
+    position: relative;
+    counter-increment: step;
+  }
+  .steps :global(li::before) {
+    content: counter(step);
+    position: absolute;
+    left: calc(-1 * (var(--margin-x) + 0.65rem));
+    width: calc(var(--margin-x) - 0.45rem);
+    text-align: right;
+    font-family: var(--hand);
+    font-weight: 600;
+    font-size: 1.15em;
+    color: #5b5f6e;
+  }
+  .steps :global(.w-label) {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .steps :global(.w-eq) {
+    color: var(--ink-3);
+  }
+  .steps :global(.w-formula) {
+    font-size: 1.18em;
+    line-height: 1;
+  }
+  /* Pen ink: the answer of each step. */
+  .steps :global(.w-result) {
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 1.28em;
+    line-height: 1;
+    color: var(--pen-ink);
+    white-space: nowrap;
+  }
+  .steps :global(.w-note) {
+    display: block;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+
+  .notes {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    display: grid;
+    gap: 0.3rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .save-form {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.85rem 0.9rem 0.8rem;
+    border-radius: var(--r);
+    background: var(--canvas);
+    border: 1px solid var(--line);
+  }
+  .save-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .save-row .control {
+    flex: 1 1 12rem;
+    min-height: 2.5rem;
+    font-size: var(--fs-sm);
+  }
+  .save-row .btn {
+    min-height: 2.5rem;
+  }
+  .status {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-weight: 560;
+  }
+  .status:empty {
+    display: none;
+  }
+  .scn-link {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-underline-offset: 3px;
+  }
+  .scn-link:hover {
+    text-decoration-color: currentColor;
+  }
+  @media (max-width: 900px) {
+    .calc {
+      grid-template-columns: 1fr;
+    }
+    .results {
+      position: static;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .working :global(.w-chev) {
+      transition: none;
+    }
+  }
+  @media print {
+    .calc-note {
+      transform: none;
+      box-shadow: none;
+      border: 1px solid #ccc;
+    }
+    .note-tape {
+      display: none;
+    }
+  }
+</style>

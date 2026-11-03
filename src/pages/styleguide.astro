@@ -1,0 +1,115 @@
+---
+/**
+ * Living style guide for writers and developers: every content and diagram
+ * component with example data. Not indexed by search engines.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Figure from "../components/content/Figure.astro";
+import InShort from "../components/content/InShort.astro";
+import Callout from "../components/content/Callout.astro";
+import Checked from "../components/content/Checked.astro";
+import Steps from "../components/content/Steps.astro";
+import Faq from "../components/content/Faq.astro";
+import Timeline from "../components/diagrams/Timeline.astro";
+import Flow from "../components/diagrams/Flow.astro";
+import Breakdown from "../components/diagrams/Breakdown.astro";
+import Formula from "../components/diagrams/Formula.astro";
+import DecisionTree from "../components/diagrams/DecisionTree.astro";
+import Matrix from "../components/diagrams/Matrix.astro";
+import Cycle from "../components/diagrams/Cycle.astro";
+import KeyNumbers from "../components/diagrams/KeyNumbers.astro";
+import Compare from "../components/diagrams/Compare.astro";
+---
+
+<BaseLayout title="Style guide" description="PeopleCraft components and diagrams." noindex>
+  <div class="wrap section">
+    <h1 class="display">Style guide</h1>
+    <p class="lede">Every component a chapter or tool page can use. Example numbers are illustrative only.</p>
+    <div class="prose" style="margin-top:2rem">
+      <Checked date={new Date("2026-11-02")} sources={4} />
+      <InShort items={["Your notice period starts the day after you resign.", "Dues are settled after your last working day.", "Ask for your relieving letter in writing."]} />
+      <Callout type="law">The Code on Wages sets a timeline for paying dues after someone leaves.</Callout>
+      <Callout type="tip">Keep a copy of your resignation email and the acknowledgement.</Callout>
+      <Callout type="warning">Don't sign a blank full and final form.</Callout>
+      <Callout type="note">Some states set their own leave rules through their Shops and Establishments Act.</Callout>
+      <Steps items={[{ title: "Resign in writing", body: "Email your manager and HR." }, { title: "Agree the last working day", body: "Confirm it in writing." }, { title: "Hand over", body: "Use the exit checklist." }]} />
+
+      <Figure title="Timeline" caption="Read left to right. The yellow dot is the date that matters most.">
+        <Timeline
+          items={[{ when: "Day 0", label: "Resignation emailed" }, { when: "Day 1", label: "Notice starts" }, { when: "Day 30", label: "Last working day", accent: true }, { when: "+2 working days", label: "Dues paid" }]}
+          spans={[{ from: 1, to: 2, label: "Notice period" }]}
+        />
+      </Figure>
+
+      <Figure title="Flow" wide>
+        <Flow
+          steps={[{ who: "Employee", title: "Applies for leave", detail: "Dates and reason" }, { who: "Manager", title: "Reviews the request", detail: "Team cover, balance" }, { who: "System", title: "Checks the balance" }]}
+          outcomes={[{ title: "Approved", detail: "Balance reduces", tone: "good" }, { title: "Declined", detail: "Reason shared", tone: "bad" }]}
+        />
+      </Figure>
+
+      <Figure title="Breakdown" caption="Example structure only.">
+        <Breakdown
+          total="₹50,000 gross a month"
+          parts={[
+            { label: "Basic + DA", value: 25000, display: "₹25,000", note: "Wages for PF and gratuity" },
+            { label: "HRA", value: 10000, display: "₹10,000" },
+            { label: "Special allowance", value: 9000, display: "₹9,000" },
+            { label: "Conveyance", value: 3000, display: "₹3,000" },
+            { label: "Medical", value: 3000, display: "₹3,000" }
+          ]}
+          groups={[{ label: "Wages", from: 0, to: 0 }, { label: "Allowances", from: 1, to: 4 }]}
+        />
+      </Figure>
+
+      <Figure title="Formula">
+        <Formula
+          result={{ value: "Gratuity", label: "subject to the legal ceiling" }}
+          parts={[{ value: "Last drawn wages", label: "basic + DA, monthly" }, { op: "×" }, { value: "15" }, { op: "×" }, { value: "Years of service" }, { op: "÷" }, { value: "26" }]}
+          example="Example: ₹40,000 × 15 × 6 ÷ 26 = ₹1,38,462"
+        />
+      </Figure>
+
+      <Figure title="Decision tree">
+        <DecisionTree
+          node={{
+            q: "Is the employee's gross pay within the ESI wage limit?",
+            yes: { q: "Is the establishment covered by ESI?", yes: { result: "Deduct and deposit ESI", tone: "good" }, no: { result: "ESI does not apply yet", tone: "neutral" } },
+            no: { result: "Not covered by ESI", detail: "Group health cover is a common alternative.", tone: "neutral" }
+          }}
+        />
+      </Figure>
+
+      <Figure title="Matrix" wide>
+        <Matrix
+          xLabel="Performance"
+          yLabel="Potential"
+          rows={["High", "Medium", "Low"]}
+          cols={["Low", "Medium", "High"]}
+          cells={[
+            [{ title: "Rough diamond", note: "Coach closely" }, { title: "Rising star", note: "Stretch roles" }, { title: "Future leader", note: "Plan succession", tone: "accent" }],
+            [{ title: "Inconsistent", note: "Find the blocker" }, { title: "Core player", note: "Keep growing" }, { title: "High performer", note: "Recognise" }],
+            [{ title: "Under-performer", note: "Improvement plan", tone: "bad" }, { title: "Effective", note: "Clarify goals" }, { title: "Trusted pro", note: "Retain", tone: "good" }]
+          ]}
+        />
+      </Figure>
+
+      <Figure title="Cycle">
+        <Cycle
+          center="Every financial year"
+          items={[{ title: "April", note: "Collect declarations" }, { title: "Monthly", note: "Deduct TDS" }, { title: "January", note: "Collect proofs" }, { title: "March", note: "True-up" }, { title: "By 15 June", note: "Issue Form 130" }]}
+        />
+      </Figure>
+
+      <KeyNumbers items={[{ value: "12%", label: "of wages from the employee to EPF" }, { value: "26 weeks", label: "maternity leave for the first two children" }, { value: "2 days", label: "to pay dues after exit" }]} />
+
+      <Compare
+        columns={["Before", "Labour Codes"]}
+        highlight={1}
+        rows={[{ label: "Gratuity for fixed-term staff", values: ["After 5 years", "After 1 year"] }, { label: "Appointment letter", values: ["Not always required", "Required for every employee"] }]}
+      />
+
+      <Faq items={[{ q: "Can my employer hold my salary after I resign?", a: "Dues must be paid within the time the law sets." }, { q: "Is notice period buyout allowed?", a: "Only if your contract or the company allows it." }]} />
+    </div>
+  </div>
+</BaseLayout>

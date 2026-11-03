@@ -1,0 +1,68 @@
+---
+/**
+ * "Clear" for one section of My desk, with a second step before anything is removed.
+ * desk-page.ts fills in the question (it knows the counts) and does the clearing.
+ */
+import Icon from "../ui/Icon.astro";
+interface Props {
+  /** pins | progress | read | recent */
+  what: string;
+  /** The first button, e.g. "Clear pins" */
+  ask: string;
+  /** The confirming button, e.g. "Remove pins" */
+  yes: string;
+}
+const { what, ask, yes } = Astro.props;
+const q = `clear-q-${what}`;
+---
+
+<div class="dclear" data-clear={what} hidden>
+  <button type="button" class="btn btn-ghost btn-sm ask" data-clear-ask>
+    <Icon name="x" size={15} />
+    {ask}
+  </button>
+  <div class="confirm" data-clear-confirm hidden>
+    <p class="q" id={q} data-clear-q></p>
+    <div class="qa">
+      <button type="button" class="btn btn-sm yes" data-clear-yes aria-describedby={q}>{yes}</button>
+      <button type="button" class="btn btn-secondary btn-sm" data-clear-no aria-describedby={q}>Keep</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .dclear {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .ask {
+    --btn-fg: var(--ink-2);
+  }
+  .confirm {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: end;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--r);
+    background: var(--bad-soft);
+    box-shadow: inset 0 0 0 1px rgb(169 52 31 / 0.18);
+  }
+  .q {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--ink);
+    text-align: right;
+    max-width: 30ch;
+  }
+  .qa {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .yes {
+    --btn-bg: var(--bad);
+    --btn-fg: #fff;
+  }
+  .yes:hover {
+    --btn-bg: #8a2a18;
+  }
+</style>

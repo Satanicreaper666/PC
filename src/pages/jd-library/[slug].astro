@@ -1,0 +1,319 @@
+---
+import { render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/site/Breadcrumbs.astro";
+import Icon from "../../components/ui/Icon.astro";
+import Checked from "../../components/content/Checked.astro";
+import Callout from "../../components/content/Callout.astro";
+import Sources from "../../components/content/Sources.astro";
+import Related from "../../components/content/Related.astro";
+import Disclaimer from "../../components/content/Disclaimer.astro";
+import JdFillIn from "../../components/jds/JdFillIn.astro";
+import JdInterviewKit from "../../components/jds/JdInterviewKit.astro";
+import JdCompetencies from "../../components/jds/JdCompetencies.astro";
+import RoleGlance from "../../components/jds/RoleGlance.astro";
+import PinButton from "../../components/desk/PinButton.astro";
+import { FAIR_HIRING_SOURCES, isBlankJd, levelCounts, mergeSources } from "../../components/jds/jd-template";
+import { allJds, jdUrl, resolveRefs, roleJds, breadcrumbLd, type Jd } from "../../lib/library";
+
+export async function getStaticPaths() {
+  return (await allJds()).map((j) => ({ params: { slug: j.id }, props: { entry: j } }));
+}
+
+const { entry } = Astro.props as { entry: Jd };
+const d = entry.data;
+const blank = isBlankJd(entry);
+const { Content } = entry.body?.trim() ? await render(entry) : { Content: null };
+const related = await resolveRefs(d.related);
+const sources = mergeSources(d.sources, FAIR_HIRING_SOURCES);
+const heading = blank ? d.title : `${d.title} job description`;
+const counts = levelCounts(await roleJds());
+const url = new URL(jdUrl(entry), Astro.site).toString();
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "JD library", href: "/jd-library/" },
+  ...(blank ? [] : [{ name: d.function, href: `/jd-library/?function=${encodeURIComponent(d.function)}` }]),
+  { name: blank ? "Blank template" : d.title, href: jdUrl(entry) }
+];
+const mainLd = blank
+  ? {
+      "@context": "https://schema.org",
+      "@type": "DigitalDocument",
+      name: d.title,
+      description: d.description,
+      url,
+      isAccessibleForFree: true,
+      inLanguage: "en-IN",
+      dateModified: d.checked.toISOString()
+    }
+  : {
+      "@context": "https://schema.org",
+      "@type": "Occupation",
+      name: d.title,
+      description: d.summary,
+      url,
+      occupationalCategory: d.function,
+      occupationLocation: { "@type": "Country", name: "India" },
+      skills: d.competencies.map((c) => c.name),
+      responsibilities: d.responsibilities,
+      experienceRequirements: `Typically ${d.experience}`
+    };
+const ld = [mainLd, breadcrumbLd(Astro.site, trail)];
+---
+
+<BaseLayout title={heading} description={d.description} jsonLd={ld} modified={d.checked} image="/og/jd-library.png">
+  <article data-pagefind-body data-pagefind-meta="kind:Job description" data-pagefind-filter="section:JD library">
+    <header class="head band">
+      <div class="wrap">
+        <Breadcrumbs trail={trail} />
+        <div class="hero-split head-inner">
+          <div class="head-text">
+            <p class="kicker">
+              <span class="chip"><Icon name="briefcase" size={15} />{blank ? "Blank template" : "Job description"}</span>
+              {
+                !blank && (
+                  <>
+                    <a class="chip chip-link" href={`/jd-library/?function=${encodeURIComponent(d.function)}#find`}>{d.function}</a>
+                    <a class="chip chip-link" href={`/jd-library/?industry=${encodeURIComponent(d.industry)}#find`}>{d.industry}</a>
+                  </>
+                )
+              }
+            </p>
+            <h1 class="display">{heading}</h1>
+            <p class="lede">{d.summary}</p>
+            <div class="meta">
+              <Checked date={d.checked} sources={sources.length} />
+              <span class="chip chip-good"><Icon name="lock" size={15} /> Works in your browser; nothing is uploaded</span>
+              <PinButton
+                item={{
+                  href: jdUrl(entry),
+                  title: d.title,
+                  kind: blank ? "Job description template" : "Job description",
+                  art: "jd",
+                  description: d.description,
+                  meta: blank ? "Template for any role" : `${d.level}, ${d.experience}`
+                }}
+              />
+            </div>
+            <nav class="jump" aria-label="On this page" data-pagefind-ignore>
+              <a href="#fill-in">Fill in the JD</a>
+              {blank && <a href="#how-to-fill">How to fill in each part</a>}
+              <a href="#interview-kit">Interview kit</a>
+              <a href="#competencies">Competencies</a>
+            </nav>
+          </div>
+          <RoleGlance entry={entry} counts={counts} />
+        </div>
+      </div>
+    </header>
+
+    <section class="wrap tool-area" id="fill-in" aria-labelledby="fill-title">
+      <div class="section-head">
+        <h2 id="fill-title">Fill in your job description</h2>
+        <p>
+          Add your company's details and the job description updates as you type. Set the pay range from your own pay data; the{" "}
+          <a href="/toolkit/salary-band-designer/">salary band designer</a> helps you check it against your grades. Then download it as Word,
+          print it or copy the text.
+        </p>
+      </div>
+      <JdFillIn entry={entry} />
+    </section>
+
+    <div class="wrap after">
+      {
+        Content && (
+          <div class="prose guide" id="how-to-fill">
+            <Content />
+          </div>
+        )
+      }
+      <Callout type="tip" title="Before you post it">
+        <ul>
+          <li>
+            <strong>Describe the work, not the person.</strong> Leave out any preference for gender, age, marital status, religion, caste,
+            community or disability, and words such as “young” or “below 30”. The Code on Wages, 2019 bars discrimination on the ground of sex
+            when recruiting, and the Transgender Persons (Protection of Rights) Act, 2019 bars discrimination against transgender persons in
+            recruitment.
+          </li>
+          <li>
+            <strong>Show a pay range if you can.</strong> It saves time on both sides and makes the later conversation fairer. PeopleCraft
+            doesn't publish salary figures because pay varies too much by company, city and sector to quote reliably.
+          </li>
+          <li>
+            <strong>Make applying accessible.</strong> Offer a simple route such as email alongside any portal, check that forms work on a phone
+            and with a screen reader, and invite people to ask for adjustments. Under the Rights of Persons with Disabilities Act, 2016, denying
+            a reasonable accommodation is discrimination.
+          </li>
+          <li>
+            <strong>Keep the must-haves honest.</strong> Each should be something the person needs in the first months and that you can assess
+            fairly. Years of experience and degrees are only stand-ins for skills.
+          </li>
+          <li>
+            <strong>Say how you'll use applicants' data</strong> and how long you'll keep it. Most duties under the Digital Personal Data
+            Protection Act, 2023 apply from May 2027, but candidates expect this now.
+          </li>
+        </ul>
+      </Callout>
+      <JdInterviewKit role={d.title} interview={d.interview} green={d.greenFlags} red={d.redFlags} blank={blank} />
+      <JdCompetencies items={d.competencies} />
+      <Sources items={sources} checked={d.checked} />
+      <Disclaimer kind="template" />
+      <div data-pagefind-ignore data-print="hide"><Related items={related} /></div>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  // "Print the kit" prints the interview kit and competencies instead of the job advert.
+  const root = document.documentElement;
+  document.querySelector("[data-print-kit]")?.addEventListener("click", () => {
+    root.dataset.printMode = "kit";
+    window.print();
+  });
+  window.addEventListener("afterprint", () => {
+    delete root.dataset.printMode;
+  });
+</script>
+
+<style>
+  .head {
+    padding-block: 2rem 2.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .head-inner {
+    margin-top: 0.85rem;
+  }
+  .head-text {
+    display: grid;
+    gap: 0.85rem;
+  }
+  .kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  h1 {
+    max-width: 24ch;
+  }
+  .chip-link {
+    text-decoration: none;
+    transition: background-color 150ms var(--ease), color 150ms var(--ease);
+  }
+  .chip-link:hover {
+    background: var(--neel-100);
+    color: var(--neel-800);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.75rem;
+  }
+  .jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    font-size: var(--fs-sm);
+  }
+  .jump a {
+    color: var(--primary);
+    font-weight: 560;
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-underline-offset: 3px;
+  }
+  .jump a:hover {
+    text-decoration-color: currentColor;
+  }
+  .tool-area {
+    padding-block: 2rem 1rem;
+    scroll-margin-top: var(--header-h);
+  }
+  /*
+    The must-haves in the advert preview ("What you'll need", always the third
+    heading in jdBody) get a blue pen tick in place of the bullet. On screen only:
+    the Word file, Copy text and the printed advert keep plain bullets.
+  */
+  .tool-area :global([data-tpl-doc] > h3:nth-of-type(3) + ul) {
+    list-style: none;
+  }
+  .tool-area :global([data-tpl-doc] > h3:nth-of-type(3) + ul > li) {
+    position: relative;
+  }
+  .tool-area :global([data-tpl-doc] > h3:nth-of-type(3) + ul > li::before) {
+    content: "";
+    position: absolute;
+    left: -1.45rem;
+    top: 0.3em;
+    width: 1.15rem;
+    height: 1.15rem;
+    background: var(--pen-ink);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 13.2c1.6 1.2 3.2 3 4.6 5.3.3.5.9.5 1.2 0C11.9 13 15.6 8.1 20.8 4.2'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 13.2c1.6 1.2 3.2 3 4.6 5.3.3.5.9.5 1.2 0C11.9 13 15.6 8.1 20.8 4.2'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  .section-head {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .section-head h2 {
+    font-size: var(--fs-xl);
+  }
+  .section-head p {
+    color: var(--ink-2);
+    max-width: 70ch;
+  }
+  .section-head a {
+    color: var(--primary);
+    font-weight: 560;
+    text-underline-offset: 3px;
+  }
+  /* A centred reading column, as on toolkit pages. */
+  .after {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 44rem) minmax(0, 1fr);
+    row-gap: 2.5rem;
+    padding-block: 2rem var(--section);
+  }
+  .after > :global(*) {
+    grid-column: 2;
+    min-width: 0;
+  }
+  .guide :global(h2) {
+    margin-top: 0;
+    font-size: var(--fs-xl);
+  }
+  .after :global(#interview-kit),
+  .after :global(#competencies),
+  .guide {
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  @media print {
+    .tool-area :global([data-tpl-doc] > h3:nth-of-type(3) + ul) {
+      list-style: disc;
+    }
+    .tool-area :global([data-tpl-doc] > h3:nth-of-type(3) + ul > li::before) {
+      content: none;
+    }
+    /* Default print: the job advert only. "Print the kit" switches to the interview kit. */
+    .head,
+    .after,
+    .section-head {
+      display: none !important;
+    }
+    :global(html[data-print-mode="kit"]) .tool-area {
+      display: none !important;
+    }
+    :global(html[data-print-mode="kit"]) .after {
+      display: block !important;
+      padding: 0;
+    }
+    :global(html[data-print-mode="kit"]) .after > :global(*:not(.jd-kit):not(.jd-comp)) {
+      display: none !important;
+    }
+    :global(html[data-print-mode="kit"]) .after > :global(.jd-comp) {
+      margin-top: 1.5rem;
+    }
+  }
+</style>

@@ -1,0 +1,293 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import { COST_FIELDS } from "../../lib/calc/cost-per-hire-calculator";
+
+/** Starting values: the worked example on the page. */
+const START: Record<string, string> = {
+  ads: "1,20,000",
+  agency: "5,00,000",
+  referral: "60,000",
+  checks: "45,000",
+  travel: "0",
+  brand: "50,000",
+  team: "7,00,000",
+  tools: "60,000",
+  interviews: "1,60,000"
+};
+const external = COST_FIELDS.filter((f) => f.group === "external");
+const internal = COST_FIELDS.filter((f) => f.group === "internal");
+---
+
+<CalcShell id="cost-per-hire-calculator" resultLabel="Cost per hire" inputsLabel="Hiring costs for one period">
+  <Fragment slot="inputs">
+    <p class="hint">Use one period for everything, usually a financial year. Starting figures are an example; replace them with yours.</p>
+    <div class="sep"><fieldset class="group">
+      <legend>External costs <span>paid to outside parties</span></legend>
+      {external.map((f) => <Num name={f.id} label={f.label} prefix="₹" value={START[f.id]} help={f.help} />)}
+    </fieldset></div>
+    <div class="sep"><fieldset class="group">
+      <legend>Internal costs <span>your own people and tools</span></legend>
+      {internal.map((f) => <Num name={f.id} label={f.label} prefix="₹" value={START[f.id]} help={f.help} />)}
+    </fieldset></div>
+    <div class="sep"><fieldset class="group">
+      <legend>Hires</legend>
+      <Num name="hires" label="People who joined in the period" value="30" suffix="people" />
+      <Num name="ctc" label="Their total annual CTC (optional)" prefix="₹" value="1,80,00,000" help="Adds the recruiting cost ratio: hiring costs as a share of the hires' pay." />
+    </fieldset></div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="cph">₹0</span>
+    <span class="sub" data-out="split"></span>
+  </Fragment>
+  <div slot="visual" class="seg" data-seg>
+    <p class="seg-title">Where the money went</p>
+    <div class="seg-bar" role="img"></div>
+    <ul class="seg-legend"></ul>
+    <div class="tip" role="tooltip" hidden></div>
+  </div>
+</CalcShell>
+
+<script>
+  import { bindCalculator, inr, inrExact, num } from "../../scripts/calc-kit";
+  import { computeCostPerHire, COST_FIELDS } from "../../lib/calc/cost-per-hire-calculator";
+
+  /** Fixed groups, so each kind of cost keeps its colour whatever the amounts. */
+  const GROUPS: { label: string; ids: string[] }[] = [
+    { label: "Agency fees", ids: ["agency"] },
+    { label: "Job boards and ads", ids: ["ads"] },
+    { label: "Referrals, checks, travel, branding", ids: ["referral", "checks", "travel", "brand"] },
+    { label: "Recruiting team", ids: ["team"] },
+    { label: "Interviewers' time", ids: ["interviews"] },
+    { label: "Recruiting software", ids: ["tools"] }
+  ];
+
+  const INK = ["#fff", "#151a3b", "#151a3b", "#fff", "#fff", "#151a3b"];
+  const root = document.querySelector<HTMLElement>('[data-calc="cost-per-hire-calculator"]');
+  const seg = root?.querySelector<HTMLElement>("[data-seg]");
+
+  function drawSeg(host: HTMLElement, parts: { label: string; amount: number; color: number }[], total: number) {
+    const bar = host.querySelector<HTMLElement>(".seg-bar")!;
+    const legend = host.querySelector<HTMLElement>(".seg-legend")!;
+    const pctOf = (n: number) => `${Math.round((n / total) * 100)}%`;
+    bar.replaceChildren(
+      ...parts.map((p) => {
+        const b = document.createElement("span");
+        b.className = "seg-part";
+        b.style.flexGrow = String(p.amount);
+        b.style.background = `var(--c${p.color + 1})`;
+        b.style.color = INK[p.color];
+        b.tabIndex = 0;
+        b.dataset.tip = `${p.label}: ${inr(p.amount)}, ${pctOf(p.amount)}`;
+        const t = document.createElement("span");
+        t.className = "seg-label";
+        // White on the red slot is 4.3:1; a darker chip behind the label keeps it readable (WCAG 1.4.3).
+        if (p.color === 3) t.classList.add("on-red");
+        t.textContent = pctOf(p.amount);
+        b.append(t);
+        return b;
+      })
+    );
+    bar.setAttribute("aria-label", `Split of hiring costs: ${parts.map((p) => `${p.label} ${pctOf(p.amount)}`).join(", ")}`);
+    legend.replaceChildren(
+      ...parts.map((p) => {
+        const li = document.createElement("li");
+        const sw = document.createElement("span");
+        sw.className = "sw";
+        sw.style.background = `var(--c${p.color + 1})`;
+        li.append(sw, document.createTextNode(p.label));
+        return li;
+      })
+    );
+    requestAnimationFrame(() =>
+      bar.querySelectorAll<HTMLElement>(".seg-part").forEach((b) => {
+        const t = b.firstElementChild as HTMLElement;
+        t.hidden = false;
+        t.hidden = t.offsetWidth + 10 > b.clientWidth;
+      })
+    );
+  }
+
+  function wireTips(host: HTMLElement) {
+    const tip = host.querySelector<HTMLElement>(".tip")!;
+    const show = (el: HTMLElement, x?: number) => {
+      tip.textContent = el.dataset.tip ?? "";
+      tip.hidden = false;
+      const hb = host.getBoundingClientRect();
+      const eb = el.getBoundingClientRect();
+      const cx = (x ?? eb.left + eb.width / 2) - hb.left;
+      const left = Math.max(0, Math.min(hb.width - tip.offsetWidth, cx - tip.offsetWidth / 2));
+      tip.style.left = `${left}px`;
+      tip.style.top = `${eb.top - hb.top - tip.offsetHeight - 8}px`;
+    };
+    const hide = () => (tip.hidden = true);
+    host.addEventListener("pointermove", (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+      if (el && host.contains(el)) show(el, e.clientX);
+      else hide();
+    });
+    host.addEventListener("pointerleave", hide);
+    host.addEventListener("focusin", (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+      if (el) show(el);
+    });
+    host.addEventListener("focusout", hide);
+  }
+  if (seg) wireTips(seg);
+
+  bindCalculator("cost-per-hire-calculator", (v) => {
+    const r = computeCostPerHire({
+      items: COST_FIELDS.map((f) => ({ id: f.id, label: f.label, group: f.group, amount: v.num(f.id) })),
+      hires: v.num("hires"),
+      hiresAnnualCtc: v.num("ctc")
+    });
+    if (!r.ok) {
+      if (seg) seg.hidden = true;
+      return { outputs: { cph: "₹0", split: "" }, message: r.message };
+    }
+    if (seg) {
+      seg.hidden = false;
+      const amount = (ids: string[]) => r.items.filter((i) => ids.includes(i.id)).reduce((a, i) => a + i.amount, 0);
+      const parts = GROUPS.map((g, color) => ({ label: g.label, amount: amount(g.ids), color })).filter((p) => p.amount > 0);
+      drawSeg(seg, parts, r.total);
+    }
+    const hires = Math.floor(v.num("hires"));
+    return {
+      better: { cph: "lower" },
+      working: [
+        { label: "Total hiring costs", formula: `${inr(r.external)} external + ${inr(r.internal)} internal`, result: inr(r.total) },
+        { label: "Cost per hire", formula: `${inr(r.total)} ÷ ${num(hires, 0)} hires`, result: inrExact(r.costPerHire) },
+        ...(r.costRatio !== null ? [{ label: "Recruiting cost ratio", formula: `${inr(r.total)} ÷ ${inr(v.num("ctc"))} × 100`, result: `${num(r.costRatio, 1)}%` }] : [])
+      ],
+      outputs: { cph: inr(r.costPerHire), split: `${inr(r.externalPerHire)} external + ${inr(r.internalPerHire)} internal, for each of ${num(hires, 0)} hires` },
+      lines: [
+        { label: "External costs", value: inr(r.external), note: `${Math.round((r.external / r.total) * 100)}% of the total` },
+        { label: "Internal costs", value: inr(r.internal), note: `${Math.round((r.internal / r.total) * 100)}% of the total` },
+        { label: "Total hiring costs", value: inr(r.total) },
+        { label: "Hires", value: num(hires, 0) },
+        { label: "Cost per hire", value: inr(r.costPerHire), strong: true },
+        ...(r.costRatio !== null ? [{ label: "Recruiting cost ratio", value: `${num(r.costRatio, 1)}%`, note: "Hiring costs ÷ the hires' annual CTC" }] : [])
+      ],
+      notes: [
+        "Compare cost per hire with your own past periods, or between hiring channels, rather than with a single outside figure.",
+        "Agency-heavy hiring raises external costs; a busy in-house team raises internal costs. Look at both."
+      ]
+    };
+  });
+</script>
+
+<style>
+  .hint {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+  .group {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    display: grid;
+    gap: 0.85rem;
+  }
+  .sep + .sep {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .group legend {
+    padding: 0;
+    margin-bottom: 0.6rem;
+    font-weight: 650;
+    font-size: var(--fs-sm);
+    color: var(--ink);
+  }
+  .group legend span {
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+  .group legend span::before {
+    content: " · ";
+  }
+  .seg {
+    position: relative;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .seg-title {
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .seg-bar {
+    display: flex;
+    gap: 2px;
+    height: 28px;
+  }
+  .seg :global(.seg-part) {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 0.4rem;
+    border-radius: 4px;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: default;
+    transition: filter 150ms;
+  }
+  .seg :global(.seg-label.on-red) {
+    padding: 0 0.2rem;
+    border-radius: 3px;
+    background: rgb(17 20 58 / 0.3);
+  }
+  .seg :global(.seg-part:hover),
+  .seg :global(.seg-part:focus-visible) {
+    filter: brightness(1.08);
+  }
+  .seg :global(.seg-part:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .seg-legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.9rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .seg-legend :global(li) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .seg-legend :global(.sw) {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+  }
+  .tip {
+    position: absolute;
+    z-index: 5;
+    max-width: 18rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--r-sm);
+    background: var(--ink);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    line-height: 1.35;
+    pointer-events: none;
+    box-shadow: var(--shadow-float);
+  }
+  @media print {
+    .tip {
+      display: none;
+    }
+  }
+</style>

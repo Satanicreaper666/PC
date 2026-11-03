@@ -1,0 +1,107 @@
+---
+/**
+ * A numbered sequence joined by a thread. Use only for real sequences.
+ * <Steps items={[{ title: "Resign in writing", body: "…" }, …]} />
+ */
+interface Props {
+  items: { title: string; body?: string }[];
+  label?: string;
+}
+const { items, label } = Astro.props;
+---
+
+<ol class="steps" aria-label={label} data-draw>
+  {
+    items.map((s, i) => (
+      <li>
+        <span class="num" aria-hidden="true">
+          <svg class="ring" viewBox="0 0 40 40">
+            <path d={i % 2 ? "M27 6C17 2 5 9 5 21s10 16 18 15 13-8 12-17C34 11 28 6 20 6" : "M13 7C22 3 35 9 35 20s-9 16-17 15S5 28 5 20C6 12 12 7 21 6"} />
+          </svg>
+          <span class="n">{i + 1}</span>
+        </span>
+        <div class="text">
+          <p class="t">{s.title}</p>
+          {s.body && <p class="b" set:html={s.body} />}
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.9rem;
+    padding-bottom: 1.25rem;
+  }
+  li:last-child {
+    padding-bottom: 0;
+  }
+  li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: calc(1.125rem - 1px);
+    top: 2.35rem;
+    bottom: 0.15rem;
+    width: 2px;
+    background: repeating-linear-gradient(180deg, #8a8e9e 0 5px, transparent 5px 9px);
+    opacity: 0.6;
+    transform-origin: top;
+  }
+  :global(.draw) li:not(:last-child)::before {
+    animation: grow 0.9s var(--ease-draw) both;
+  }
+  @keyframes grow {
+    from {
+      transform: scaleY(0);
+    }
+  }
+  /* The step number, written in pen and circled by hand. */
+  .num {
+    position: relative;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: grid;
+    place-items: center;
+    background: var(--paper);
+    border-radius: 50%;
+  }
+  .ring {
+    position: absolute;
+    inset: -0.2rem;
+    width: calc(100% + 0.4rem);
+    height: calc(100% + 0.4rem);
+    fill: none;
+    stroke: var(--pen-ink);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+  .n {
+    position: relative;
+    font-family: var(--hand);
+    font-weight: 700;
+    font-size: 1.45rem;
+    line-height: 1;
+    color: var(--pen-ink);
+    transform: translateY(-0.05em) rotate(-4deg);
+  }
+  .t {
+    font-weight: 640;
+    padding-top: 0.25rem;
+  }
+  .b {
+    margin-top: 0.2rem;
+    color: var(--ink-2);
+    font-size: var(--fs-base);
+  }
+</style>

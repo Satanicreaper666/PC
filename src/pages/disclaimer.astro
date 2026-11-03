@@ -1,0 +1,58 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/site/PageHero.astro";
+import { breadcrumbLd } from "../lib/library";
+
+const updated = "2 November 2026";
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Disclaimer", href: "/disclaimer/" }
+];
+---
+
+<BaseLayout title="Disclaimer" description="PeopleCraft is general information about Indian HR and employment law, not legal, tax or financial advice. Check decisions with a professional." jsonLd={breadcrumbLd(Astro.site, trail)}>
+  <PageHero title="Disclaimer" lede="PeopleCraft explains how things usually work. Your situation may be different, so use it as a starting point, not the final word." trail={trail}>
+    <p class="small updated">Last updated {updated}</p>
+  </PageHero>
+
+  <div class="wrap-narrow prose section">
+    <h2>General information, not advice</h2>
+    <p>
+      Everything on PeopleCraft is general information about Indian employment law, payroll and HR practice. It is not legal, tax, financial or professional advice, and it doesn't create a lawyer–client or
+      adviser–client relationship.
+    </p>
+
+    <h2>Your situation may differ</h2>
+    <p>Several things can change the answer for you:</p>
+    <ul>
+      <li>your employment contract, appointment letter or company policy, which may give you more than the law requires;</li>
+      <li>your state, because shops and establishments rules, professional tax and holidays differ by state;</li>
+      <li>the type of establishment, its size and whether you are a "worker" or an "employee" under a Code;</li>
+      <li>a notification, circular or court judgment issued after the page's "Checked on" date.</li>
+    </ul>
+
+    <h2>Calculators give estimates</h2>
+    <p>
+      Calculators apply the statutory formula to the numbers you enter. They show the legal minimum, not what your employer has agreed to pay, and they don't calculate income tax. Your payroll team or a
+      chartered accountant can confirm the final figure.
+    </p>
+
+    <h2>Templates need adapting</h2>
+    <p>Letters, forms and policies are starting points. Edit them to match your facts, your contracts and your state's rules, and have important documents reviewed before you rely on them.</p>
+
+    <h2>Check before you act</h2>
+    <p>
+      For anything with legal or financial consequences, such as a dispute, a termination, a tax filing or a compliance notice, speak to a qualified lawyer, chartered accountant or HR professional. Each page lists
+      its sources so you or your adviser can check them.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .updated {
+    color: var(--ink-2);
+  }
+  .section {
+    padding-bottom: var(--section);
+  }
+</style>

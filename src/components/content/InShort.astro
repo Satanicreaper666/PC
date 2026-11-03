@@ -1,0 +1,114 @@
+---
+/**
+ * "In short": the reader's notes at the top of a guide, on ruled notepaper. Deadlines
+ * are highlighted pink and the numbers to remember yellow, automatically (lib/marks.ts).
+ * Pass `items` or a slot list.
+ */
+import { markFacts } from "../../lib/marks";
+interface Props {
+  items?: string[];
+  title?: string;
+}
+const { items = [], title = "In short" } = Astro.props;
+const marked = items.map((i) => markFacts(i, { deadlines: 2, figures: 2 }));
+const hasPink = marked.some((m) => m.includes("hl-pink"));
+const hasYellow = marked.some((m) => /class="hl"/.test(m));
+---
+
+<aside class="in-short notepaper" aria-label={title}>
+  <p class="label hand">{title}</p>
+  {
+    items.length > 0 ? (
+      <ul>
+        {marked.map((i) => (
+          <li set:html={i} />
+        ))}
+      </ul>
+    ) : (
+      <slot />
+    )
+  }
+  {
+    (hasPink || hasYellow) && (
+      <p class="key">
+        {hasYellow && <span class="hl">numbers to remember</span>}
+        {hasPink && <span class="hl hl-pink">deadlines</span>}
+      </p>
+    )
+  }
+</aside>
+
+<style>
+  .in-short {
+    --rule: 1.9rem;
+    --margin-x: 2.6rem;
+    --rule-start: -0.6rem;
+    position: relative;
+    padding: 0 1.5rem var(--rule) 3.4rem;
+    border-radius: 3px;
+    line-height: var(--rule);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07),
+      4px 12px 24px -14px rgb(17 20 58 / 0.25);
+  }
+  /* Two punched holes in the margin, like a page from a ring binder. */
+  .in-short::before,
+  .in-short::after {
+    content: "";
+    position: absolute;
+    left: 0.95rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--canvas);
+    box-shadow: inset 1px 1.5px 2px rgb(17 20 58 / 0.22);
+  }
+  .in-short::before {
+    top: calc(var(--rule) * 1.5);
+  }
+  .in-short::after {
+    bottom: calc(var(--rule) * 1.5);
+  }
+  .label {
+    height: calc(var(--rule) * 2);
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 0.2rem;
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+  ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0;
+  }
+  li {
+    line-height: var(--rule);
+  }
+  li::marker {
+    color: var(--pen-ink);
+  }
+  .key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin-top: calc(var(--rule) * 0.5);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    line-height: var(--rule);
+    color: var(--ink-2);
+  }
+  @media print {
+    .in-short {
+      box-shadow: none;
+      border: 1px solid #ccc;
+      background-image: none;
+    }
+    .in-short::before,
+    .in-short::after {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,212 @@
+---
+/**
+ * One whole split into parts (≤ 6; extra parts fold into "Other").
+ * <Breakdown
+ *   total="₹50,000 a month"
+ *   parts={[{ label: "Basic pay", value: 25000, display: "₹25,000", note: "At least half of pay under the Code on Wages" }, …]}
+ *   groups={[{ label: "Paid to you", from: 0, to: 2 }]}
+ * />
+ * A tall segmented bar (28px), a legend with values and shares, brackets for groups.
+ * The bar is data and stays a clean chart. On the desk, the one figure to remember, the
+ * value of the largest part, is highlighted in the legend (no highlight when two tie).
+ */
+interface Part {
+  label: string;
+  value: number;
+  display?: string;
+  note?: string;
+}
+interface Group {
+  label: string;
+  from: number;
+  to: number;
+}
+interface Props {
+  parts: Part[];
+  total?: string;
+  groups?: Group[];
+  label?: string;
+}
+const { parts: raw, total, groups = [], label } = Astro.props;
+const parts =
+  raw.length > 6
+    ? [...raw.slice(0, 5), { label: "Other", value: raw.slice(5).reduce((a, p) => a + p.value, 0), display: undefined, note: raw.slice(5).map((p) => p.label).join(", ") }]
+    : raw;
+const sum = parts.reduce((a, p) => a + Math.max(0, p.value), 0) || 1;
+const pct = (v: number) => (v / sum) * 100;
+const fmtPct = (v: number) => `${Math.round(pct(v))}%`;
+let acc = 0;
+const starts = parts.map((p) => {
+  const s = acc;
+  acc += pct(Math.max(0, p.value));
+  return s;
+});
+const name = label ?? `Breakdown${total ? ` of ${total}` : ""}`;
+const top = Math.max(...parts.map((p) => p.value));
+const largest = parts.filter((p) => p.value === top).length === 1 ? parts.findIndex((p) => p.value === top) : -1;
+---
+
+<div class="bd" data-draw>
+  {total && <p class="total">{total}</p>}
+  {
+    groups.length > 0 && (
+      <div class="groups" aria-hidden="true">
+        {groups.map((g) => {
+          const left = starts[g.from] ?? 0;
+          const right = (starts[g.to] ?? 0) + pct(Math.max(0, parts[g.to]?.value ?? 0));
+          // Keep labels inside the figure: near an edge, align to that edge instead of centring.
+          const mid = (left + right) / 2;
+          const align = mid > 70 ? "end" : mid < 30 ? "start" : "mid";
+          return (
+            <span class="grp" style={`left:${left}%;width:${right - left}%`}>
+              <span class:list={["grp-lbl", align]}>{g.label}</span>
+            </span>
+          );
+        })}
+      </div>
+    )
+  }
+  <div class="bar" role="img" aria-label={`${name}: ${parts.map((p) => `${p.label} ${p.display ?? p.value} (${fmtPct(p.value)})`).join("; ")}`}>
+    {parts.map((p, i) => <span class="seg" style={`width:${pct(Math.max(0, p.value))}%;--c:var(--c${(i % 6) + 1});--i:${i}`} />)}
+  </div>
+  <ul class="legend">
+    {
+      parts.map((p, i) => (
+        <li style={`--c:var(--c${(i % 6) + 1})`}>
+          <span class="sw" aria-hidden="true" />
+          <span class="name">{p.label}</span>
+          <span class="val tabular">{i === largest ? <span class="hl" data-mark>{p.display ?? p.value}</span> : p.display ?? p.value}</span>
+          <span class="share tabular">{fmtPct(p.value)}</span>
+          {p.note && <span class="pnote" set:html={p.note} />}
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .bd {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .total {
+    font-weight: 650;
+    font-size: var(--fs-lg);
+    letter-spacing: -0.01em;
+  }
+  .groups {
+    position: relative;
+    height: 1.6rem;
+  }
+  .grp {
+    position: absolute;
+    bottom: 0;
+    height: 0.7rem;
+    border: 2px solid var(--neel-400);
+    border-bottom: 0;
+    border-radius: 6px 6px 0 0;
+  }
+  .grp-lbl {
+    position: absolute;
+    left: 50%;
+    bottom: 0.75rem;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .grp-lbl.start {
+    left: 0;
+    transform: none;
+  }
+  .grp-lbl.end {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+  .bar {
+    display: flex;
+    gap: 2px;
+    height: 28px;
+  }
+  .seg {
+    background: var(--c);
+    border-radius: 4px;
+    min-width: 2px;
+    transform-origin: left;
+  }
+  :global(html.js-anim) .bd:not(.draw):not(.drawn) .seg {
+    transform: scaleX(0);
+  }
+  .bd:global(.draw) .seg {
+    animation: bd-grow 0.7s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 0.09s);
+  }
+  @keyframes bd-grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  .legend {
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.1rem;
+  }
+  .legend li {
+    display: grid;
+    grid-template-columns: 0.85rem 1fr auto 3.2rem;
+    column-gap: 0.65rem;
+    align-items: baseline;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-sm);
+  }
+  .legend li:last-child {
+    border-bottom: 0;
+  }
+  .sw {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 3px;
+    background: var(--c);
+    align-self: center;
+  }
+  .name {
+    font-weight: 600;
+  }
+  .val {
+    font-weight: 620;
+    text-align: right;
+  }
+  .share {
+    color: var(--ink-3);
+    text-align: right;
+  }
+  .pnote {
+    grid-column: 2 / -1;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+  @media (max-width: 520px) {
+    .groups {
+      display: none;
+    }
+  }
+  @media print {
+    .seg {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+  /* Printed: the whole bar is on the page, whether or not it was scrolled to. */
+  @media print {
+    .bd .seg {
+      transform: none !important;
+      animation: none !important;
+    }
+  }
+</style>

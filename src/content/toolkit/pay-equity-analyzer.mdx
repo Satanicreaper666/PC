@@ -1,0 +1,119 @@
+---
+title: Pay equity analyser
+description: Paste role, gender and pay to see unadjusted and like-for-like gender pay gaps, with warnings for small groups. Your data never leaves your browser.
+kind: calculator
+calculator: pay-equity-analyzer
+glance:
+  inputs: ["Role", "Gender", "Annual pay"]
+  output: "Gender pay gaps"
+  formula: "Gap = (men's average − women's average) ÷ men's average × 100"
+stage: lead
+audiences: [hr, founders]
+order: 11
+checked: 2026-11-02
+useWhen: You want to check that women and men doing the same work are paid fairly, before an increment cycle, an internal audit or a board review.
+tips:
+  - "Use the same pay measure for everyone: annual CTC, or fixed pay only. For part-time staff, convert pay to a full-time figure first."
+  - "Choose role names that group genuinely similar work. Too broad hides gaps; too narrow leaves groups of one."
+  - "Leave names out. Role, gender and pay are enough, and you can trace individual cases in your own HR system."
+sources:
+  - title: The Code on Wages, 2019 (sections 2(v) and 3)
+    url: https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf
+    publisher: India Code
+  - title: "Glossary: Gender pay gap (GPG)"
+    url: https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Gender_pay_gap_(GPG)
+    publisher: Eurostat
+related:
+  - toolkit/salary-band-designer
+  - toolkit/increment-budget-allocator
+  - toolkit/hr-metrics-calculator
+  - toolkit/people-analytics
+  - handbooks/labour-law/02-wages-and-pay
+  - handbooks/hr-professional/02-ethics-and-professional-courage
+  - handbooks/hr-professional/04-people-analytics-and-data-literacy
+faq:
+  - q: What is the difference between the unadjusted and the like-for-like pay gap?
+    a: The unadjusted gap compares all women with all men, so it reflects who holds which roles as well as how they are paid. The like-for-like gap compares women and men in the same role, which is closer to the question the law asks about the same or similar work.
+  - q: What does Indian law say about equal pay?
+    a: The Code on Wages, 2019 says there shall be no discrimination on the ground of gender in wages paid by the same employer for the same work or work of a similar nature. It also bars discrimination on the ground of sex in recruitment and conditions of employment for such work, except where a law restricts women's employment in it.
+  - q: How many people do I need for a meaningful result?
+    a: There is no fixed rule. This tool flags any role with fewer than 5 women or 5 men, because in groups that small one person can move the average a lot. For small groups, review the individual cases instead.
+  - q: What size of gap is acceptable?
+    a: Indian law doesn't set a percentage. Any pay difference for the same or similar work needs a reason that has nothing to do with gender, such as experience or performance, applied the same way to everyone. Set your own threshold for investigating, and look at individual cases.
+  - q: Is my pay data uploaded anywhere?
+    a: No. The analysis runs in your browser and nothing is sent anywhere. The data is kept only if you tick the box to keep it on this device.
+keywords: [gender pay gap calculator, pay equity analysis, equal pay india, equal pay code on wages, gender pay gap formula, unadjusted vs adjusted pay gap]
+draft: false
+---
+
+## How the gaps are worked out
+
+The **unadjusted gap** is the standard headline measure: the difference between men's and women's average pay, as a share of men's.
+
+<Figure title="Unadjusted gender pay gap" caption="A positive gap means women are paid less on average; a negative gap means they are paid more. The median version uses the middle earner of each group instead of the average.">
+  <Formula
+    result={{ value: "Unadjusted gap", label: "% of men's pay" }}
+    parts={[{ value: "Men's average − women's average" }, { op: "÷" }, { value: "Men's average" }, { op: "×" }, { value: "100" }]}
+    example="Example data: (₹12,87,593 − ₹9,09,813) ÷ ₹12,87,593 × 100 = 29.3%. Using medians: (₹11,00,000 − ₹5,85,000) ÷ ₹11,00,000 × 100 = 46.8%."
+  />
+</Figure>
+
+The **like-for-like gap** compares each woman's pay with the average for men in the same role, then adds it all up.
+
+<Figure title="Like-for-like gap within roles" caption="Only roles with at least one woman and one man count. Roles with more women weigh more, because more women are affected.">
+  <Formula
+    result={{ value: "Like-for-like gap", label: "% of men's pay in the same roles" }}
+    parts={[
+      { value: "Σ women in role × (men's average − women's average)", label: "for each role" },
+      { op: "÷" },
+      { value: "Σ women in role × men's average" },
+      { op: "×" },
+      { value: "100" }
+    ]}
+    example="Example data: 6.7% across five roles. In the only role with at least 5 women and 5 men, the gap is 0.4%."
+  />
+</Figure>
+
+<Figure title="Two gaps, two questions" caption="Report both. A large unadjusted gap with a small like-for-like gap points to who holds senior roles, not unequal pay for the same work." wide>
+  <Compare
+    columns={["Unadjusted gap", "Like-for-like gap"]}
+    highlight={1}
+    rows={[
+      { label: "Compares", values: ["All women with all men", "Women and men in the same role"] },
+      { label: "Answers", values: ["Do women earn less overall?", "Are women paid less for the same work?"] },
+      { label: "Mostly driven by", values: ["Who holds which roles", "Pay decisions within a role"] },
+      { label: "In the example data", values: ["29.3% (mean)", "6.7%"] }
+    ]}
+  />
+</Figure>
+
+The example data, which you can load in the tool, is a fictional 44-person company. Its unadjusted gap is large because most senior engineers are men. Within roles the gap is much smaller, but most roles have fewer than five women, so each role's figure needs a look at the individual cases.
+
+## What to do with a gap
+
+<Figure title="Is a gap a problem?" caption="A gap is a question, not a verdict. The answer depends on whether the reasons for it apply to everyone in the same way.">
+  <DecisionTree
+    node={{
+      q: "Are women and men in the same or similar work paid differently?",
+      yes: {
+        q: "Is the difference explained by factors applied the same way to everyone, such as experience, performance or location?",
+        yes: { result: "Write down the reasons and keep checking", detail: "Make sure the factors themselves aren't biased.", tone: "good" },
+        no: { result: "Correct it, and find out how it arose", detail: "Starting pay, increments and promotions are the usual places.", tone: "bad" }
+      },
+      no: { result: "Look at the unadjusted gap", detail: "Hiring, promotion and who leaves explain most of it.", tone: "neutral" }
+    }}
+  />
+</Figure>
+
+The Code on Wages, 2019 says there shall be no discrimination on the ground of gender in wages for the **same work or work of a similar nature**: work needing the same skill, effort, experience and responsibility under similar conditions. Similar work can sit under different job titles, so look across titles as well as within them.
+
+<Callout type="warning" title="Read small numbers with care">
+  This tool marks every role with fewer than 5 women or 5 men. In groups that small, one hire or one exit changes the average, and there are too few people to tell a real pattern from chance. Use those gaps to decide which individual cases to review, not as findings. The tool also doesn't adjust for experience, performance, location or hours.
+</Callout>
+
+## Fixing what you find
+
+1. Review the individual cases behind any gap in a role, starting with the largest.
+2. Check where differences start: offers, increments or promotions. The [salary band designer](/toolkit/salary-band-designer/) helps you set ranges that apply to everyone.
+3. Set aside a small budget for corrections and apply it through the [increment budget allocator](/toolkit/increment-budget-allocator/).
+4. Run the analysis again every year, before increments are approved.

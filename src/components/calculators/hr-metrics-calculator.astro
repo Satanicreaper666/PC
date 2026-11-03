@@ -1,0 +1,250 @@
+---
+import Num from "../calc/Num.astro";
+import Icon from "../ui/Icon.astro";
+import { METRICS, GROUPS } from "../../lib/calc/hr-metrics-calculator";
+
+const groups = GROUPS.map((g) => ({ ...g, metrics: METRICS.filter((m) => m.group === g.id) }));
+const sharedLabel: Record<string, string> = { avgHc: "average headcount", months: "months covered" };
+---
+
+<div class="hm" data-calc="hr-metrics-calculator">
+  <form novalidate aria-label="HR metrics: inputs and results">
+    <nav class="jump" aria-label="Metric groups" data-print="hide">
+      {
+        groups
+          .filter((g) => g.id !== "shared")
+          .map((g) => (
+            <a href={`#hm-${g.id}`} class="chip">
+              {g.title}
+            </a>
+          ))
+      }
+    </nav>
+
+    {
+      groups.map((g) => (
+        <section class:list={["grp", { shared: g.id === "shared" }]} id={`hm-${g.id}`} aria-labelledby={`hm-${g.id}-t`}>
+          <div class="grp-head">
+            <h2 class="grp-title" id={`hm-${g.id}-t`}>
+              {g.title}
+            </h2>
+            <p class="grp-blurb">{g.blurb}</p>
+          </div>
+          <div class="cards">
+            {g.metrics.map((m) => (
+              <article class="card" aria-labelledby={`hm-${m.id}-t`}>
+                {g.id !== "shared" && (
+                  <h3 class="card-title" id={`hm-${m.id}-t`}>
+                    {m.label}
+                  </h3>
+                )}
+                {g.id === "shared" && (
+                  <p class="visually-hidden" id={`hm-${m.id}-t`}>
+                    {m.label}
+                  </p>
+                )}
+                <p class="formula">
+                  <span class="visually-hidden">Formula: </span>
+                  {m.formula}
+                </p>
+                <div class:list={["inputs", { pair: g.id === "shared" }]}>
+                  {m.inputs.map((i) =>
+                    i.kind === "list" ? (
+                      <div class="field">
+                        <label class="field-label" for={`f-${i.id}`}>
+                          {i.label}
+                        </label>
+                        <textarea class="control list" id={`f-${i.id}`} name={i.id} rows="2" aria-describedby={i.help ? `f-${i.id}-help` : undefined} set:text={i.value} />
+                        {i.help && (
+                          <span class="field-help" id={`f-${i.id}-help`}>
+                            {i.help}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <Num name={i.id} label={i.label} value={i.value} prefix={i.prefix} suffix={i.suffix} help={i.help} />
+                    )
+                  )}
+                </div>
+                {m.uses && <p class="uses">Also uses {m.uses.map((u) => sharedLabel[u]).join(" and ")} from the top of the page.</p>}
+                {g.id !== "shared" && (
+                  <p class="result" data-result={m.id}>
+                    <span class="visually-hidden">Result: </span>
+                    <output class="rv" data-out={m.id} aria-live="polite">
+                      —
+                    </output>
+                    <span class="rn" data-out={`${m.id}__note`}></span>
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    <div class="bar" data-print="hide">
+      <button class="btn btn-ghost btn-sm" type="reset"><Icon name="refresh" size={16} /> Reset all</button>
+      <button class="btn btn-secondary btn-sm" type="button" data-calc-link><Icon name="link" size={16} /><span data-label>Copy link to these numbers</span></button>
+      <button class="btn btn-ghost btn-sm" type="button" data-calc-print><Icon name="printer" size={16} /> Print</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  import { bindCalculator } from "../../scripts/calc-kit";
+  import { computeAll } from "../../lib/calc/hr-metrics-calculator";
+
+  const root = document.querySelector<HTMLElement>('[data-calc="hr-metrics-calculator"]')!;
+
+  bindCalculator("hr-metrics-calculator", (v) => {
+    const results = computeAll({ n: (id) => v.num(id), raw: (id) => v.raw(id) });
+    const outputs: Record<string, string> = {};
+    for (const [id, out] of Object.entries(results)) {
+      outputs[id] = out.display;
+      outputs[`${id}__note`] = out.note ?? "";
+      const el = root.querySelector<HTMLElement>(`[data-result="${id}"]`);
+      el?.classList.toggle("is-empty", out.value === null);
+      el?.classList.toggle("is-warn", !!out.warn);
+    }
+    return { outputs };
+  });
+</script>
+
+<style>
+  .hm form {
+    display: grid;
+    gap: 2.25rem;
+  }
+  .jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .jump .chip {
+    text-decoration: none;
+    font-size: var(--fs-xs);
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .jump .chip:hover {
+    border-color: var(--line-strong);
+    background: var(--canvas);
+  }
+  .grp {
+    display: grid;
+    gap: 0.9rem;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .grp-head {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .grp-title {
+    font-size: var(--fs-lg);
+  }
+  .grp-blurb {
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    gap: 1rem;
+    align-items: stretch;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.1rem 1.1rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--canvas);
+  }
+  .shared .cards {
+    grid-template-columns: 1fr;
+  }
+  .shared .card {
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+  }
+  .card-title {
+    font-size: var(--fs-md);
+    line-height: 1.25;
+  }
+  .formula {
+    font-size: var(--fs-xs);
+    line-height: 1.45;
+    color: var(--ink-2);
+    padding: 0.45rem 0.65rem;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--neel-200);
+    background: var(--neel-50);
+    font-weight: 560;
+  }
+  .inputs {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .inputs.pair {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    align-items: start;
+  }
+  .list {
+    font-size: var(--fs-sm);
+    resize: vertical;
+    min-height: 3.5rem;
+  }
+  .uses {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .result {
+    margin-top: auto;
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--r);
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
+  .rv {
+    font-size: var(--fs-xl);
+    font-weight: 660;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--neel-800);
+  }
+  .rn {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .result.is-empty .rv {
+    color: var(--ink-3);
+  }
+  .result.is-warn {
+    border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+    background: var(--warn-soft);
+  }
+  .result.is-warn .rn {
+    color: var(--warn);
+    font-weight: 600;
+  }
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  @media print {
+    .cards {
+      grid-template-columns: 1fr 1fr;
+    }
+    .card {
+      break-inside: avoid;
+    }
+  }
+</style>

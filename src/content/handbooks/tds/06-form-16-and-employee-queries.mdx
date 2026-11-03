@@ -1,0 +1,178 @@
+---
+title: Form 130 (formerly Form 16) and employee questions
+description: >-
+  What Form 130 contains, how to generate and check it from TRACES by 15 June, how to fix mismatches, and clear answers to the TDS questions employees ask most.
+book: tds
+chapter: 6
+stage: pay
+audiences: [hr, employees]
+checked: 2026-11-02
+summary:
+  - "Form 130 replaces Form 16 for salary from tax year 2026-27. The first ones are due by 15 June 2027; Form 16 was still used for the year ended 31 March 2026."
+  - "It can only be generated after the quarterly statement (Form 138) is processed, and it must be downloaded from TRACES. Certificates made any other way aren't valid."
+  - "Most mismatches between Form 130 and an employee's tax statement come from a wrong PAN, a challan that wasn't matched, or a statement that hasn't been processed yet."
+  - "Explain changes in TDS on the payslip as they happen, so the year-end certificate holds no surprises."
+sources:
+  - title: "Income-tax Rules, 2026, rule 215: TDS certificates"
+    url: "https://www.incometaxindia.gov.in/w/rule-215-1"
+    publisher: "Income Tax Department"
+  - title: "Form No. 130 FAQs"
+    url: "https://www.incometaxindia.gov.in/documents/d/guest/form-130-faqs"
+    publisher: "Income Tax Department"
+  - title: "Form No. 138 FAQs (quarterly statements and corrections)"
+    url: "https://www.incometaxindia.gov.in/documents/d/guest/form-138-faqs"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 219: Quarterly statements"
+    url: "https://www.incometaxindia.gov.in/w/rule-219-1"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 204: Forms 122 and 123"
+    url: "https://www.incometaxindia.gov.in/w/rule-204-1"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 202 (regime choice in the return)"
+    url: "https://www.incometaxindia.gov.in/w/section-202-76"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 156: Rebate"
+    url: "https://www.incometaxindia.gov.in/w/section-156-88"
+    publisher: "Income Tax Department"
+  - title: "Form 16 and Form 130 compared (Form 16 for FY 2025-26)"
+    url: "https://www.scconline.com/blog/post/2026/06/15/overview-comparison-of-form-16-and-form-130-tds-certificate/"
+    publisher: "SCC Online"
+  - title: "Section 202: what the new regime allows and disallows"
+    url: "https://cleartax.in/s/section-202-new-tax-regime"
+    publisher: "ClearTax"
+related:
+  - handbooks/tds/05-joiners-leavers-and-transfers
+  - handbooks/tds/08-key-dates-and-penalties
+  - handbooks/tds/02-salary-tds
+  - toolkit/take-home-salary-calculator
+  - toolkit/relieving-letter
+  - glossary/form-16
+  - glossary/form-24q
+  - glossary/pan
+  - glossary/tds
+faq:
+  - q: "When will I get Form 130?"
+    a: "By 15 June after the end of the tax year. For tax year 2026-27 (April 2026 to March 2027), that is 15 June 2027. For the year ended 31 March 2026, employers issued Form 16 by 15 June 2026."
+  - q: "Is Form 130 the same as Form 16?"
+    a: "It does the same job and replaces Form 16 under the Income-tax Rules, 2026. It has three parts: your and your employer's details, a summary of pay and tax deducted, and the salary and tax computation."
+  - q: "Do I have to attach Form 130 to my tax return?"
+    a: "No. You don't attach it, but keep it: you need its figures to file your return and to check the TDS credited against your PAN."
+  - q: "My Form 130 has a mistake. What should I do?"
+    a: "Tell your employer in writing. The employer files a correction to its quarterly statement (Form 138) and, once that is processed, issues a corrected Form 130."
+  - q: "Can my employer send Form 130 by email?"
+    a: "Yes. The employer downloads it from TRACES and may sign it digitally; a digitally signed certificate carries a control number and can't be altered."
+keywords: [form 130 income tax, form 130 vs form 16, form 16 due date 15 june, form 130 traces download, tds mismatch form 26as form 16]
+draft: false
+---
+
+<Snapshot
+  who="Payroll teams issuing year-end certificates, HR teams answering employees, and employees reading their Form 130."
+  level="Basic"
+  risks={[
+    "Issuing certificates made in payroll software instead of downloading them from TRACES.",
+    "Missing 15 June because the last quarter's statement was filed late or rejected.",
+    "Wrong permanent account numbers (PANs), which leave an employee without credit for tax that was actually paid."
+  ]}
+  mistakes={[
+    "Forgetting leavers when certificates are sent out.",
+    "Answering 'why did my TDS change?' without looking at the payslip history.",
+    "Telling employees that excess TDS will be refunded by the company."
+  ]}
+  exposure="Late or wrong certificates hold up employees' tax returns, and every error becomes a query, often at the busiest time of the year. Chapter 8 covers the penalties for late statements and certificates."
+/>
+
+## What Form 130 is
+
+Form 130 is the employer's certificate of tax deducted at source (TDS) from an employee's salary. It replaced [Form 16](/glossary/#form-16) under the Income-tax Rules, 2026, for salary paid from tax year 2026-27. Employers issued Form 16 for the year ended 31 March 2026 under the old rules, and the first Form 130s are due by 15 June 2027.
+
+<Figure title="Form 16 and Form 130 side by side" caption="Form 130 keeps the same purpose and due date. It splits the old content into three parts and adds a section for specified senior citizens' pension and interest, which banks issue." wide>
+  <Compare
+    columns={["Form 16", "Form 130"]}
+    highlight={1}
+    rows={[
+      { label: "Used for", values: ["Salary up to the year ended 31 March 2026", "Salary from tax year 2026-27"] },
+      { label: "Law", values: ["Income-tax Act, 1961 and 1962 Rules", "Income-tax Act, 2025 and 2026 Rules (rule 215)"] },
+      { label: "Part A", values: ["TDS details, from TRACES", "Employer and employee details"] },
+      { label: "Part B", values: ["Salary and tax computation", "Summary of amounts paid and tax deducted"] },
+      { label: "Part C", values: ["None", "Annexure-I: salary, exemptions, deductions, tax, relief, TDS"] },
+      { label: "Due date", values: ["15 June after the year", "15 June after the tax year"] },
+      { label: "Where it comes from", values: ["Part A from TRACES", "Downloaded from TRACES; other versions aren't valid"] }
+    ]}
+  />
+</Figure>
+
+For employees whose salary for the year is more than ₹1,50,000, also give the statement of perquisites on Form 123. For lower salaries, the perquisite details go into Form 130 itself.
+
+## How Form 130 gets made
+
+TRACES, the income-tax department's TDS portal, builds Form 130 from the quarterly statements you file on Form 138, once the Centralised Processing Cell (CPC-TDS) has processed them. So the certificate is only as good, and as early, as those statements.
+
+<Figure title="From payroll to Form 130" caption="Read the steps in order. If the last quarter's statement is filed late or rejected, the certificate can't be generated in time for 15 June." wide>
+  <Flow
+    steps={[
+      { who: "Finance", title: "Deposits TDS monthly", detail: "Challans by the 7th; 30 April for March" },
+      { who: "Finance and payroll", title: "Files Form 138", detail: "Last quarter by 31 May, with the annual salary annexures" },
+      { who: "CPC-TDS", title: "Processes the statement", detail: "Matches PANs and challans" },
+      { who: "Payroll", title: "Downloads Form 130 from TRACES", detail: "Checks, then signs digitally or by hand" }
+    ]}
+    outcomes={[
+      { title: "Issued by 15 June", detail: "To every employee, including leavers", tone: "good" },
+      { title: "Errors found", detail: "File a correction statement, then reissue", tone: "bad" }
+    ]}
+  />
+</Figure>
+
+### Check before you send
+
+- The employee's name and PAN match your records.
+- Part B's tax deducted matches what payroll deducted and Finance deposited for that employee.
+- Part C's computation matches payroll: regime, exemptions, deductions, the section 157 relief for arrears if claimed, and any previous employer's salary from Form 122.
+- Leavers are included, with the correct period of employment.
+- Digitally signed certificates carry a control number, and you keep a log of what was issued.
+
+<Callout type="tip">
+File the last quarter's Form 138 by mid-May rather than on 31 May. Processing takes time, and rejections for wrong PANs or unmatched challans need to be fixed before TRACES can produce the certificates.
+</Callout>
+
+## When the numbers don't match
+
+Employees can see the TDS credited against their PAN in their annual tax statement (Form 26AS) and the Annual Information Statement (AIS) on the income-tax e-filing portal. Most queries start with "my Form 130 and my statement don't agree".
+
+<Figure title="Form 130 and the employee's tax statement don't match" caption="Work down the questions in order. Each correction goes through a revised Form 138; tell the employee when it has been processed.">
+  <DecisionTree
+    node={{
+      q: "Has the quarterly statement for that period been filed and processed?",
+      no: { result: "Wait for processing", detail: "Credits appear only after CPC-TDS processes the statement.", tone: "neutral" },
+      yes: {
+        q: "Is the employee's PAN correct in the statement?",
+        no: { result: "File a correction with the right PAN", detail: "Until then the credit sits against the wrong PAN or none.", tone: "bad" },
+        yes: {
+          q: "Do the challans match the TDS reported?",
+          no: { result: "Fix the challan details or pay the shortfall", detail: "Then file a correction statement.", tone: "bad" },
+          yes: { result: "Look elsewhere", detail: "Other employers, bank TDS or a typing error in the return are the usual causes.", tone: "accent" }
+        }
+      }
+    }}
+  />
+</Figure>
+
+Corrections are filed as a correction statement once the original Form 138 has been processed. The department's FAQ says a correction can be filed within two years from the end of the tax year in which the statement was due.
+
+## The questions employees ask most
+
+| Question | What to tell them |
+| --- | --- |
+| Why did my TDS go up this month? | Payroll recalculates the whole year every month. A raise, bonus or arrears, proofs that weren't submitted, or a previous employer's salary from Form 122 will all raise the remaining months' TDS. |
+| Which regime is better for me? | If your taxable salary is up to about ₹12.75 lakh and you have no other income, the new regime costs nothing. Above that, compare both using your own deductions; [chapter 2](/handbooks/tds/salary-tds/) shows where the old regime starts to win. |
+| Can I change my regime in the middle of the year? | Usually not for TDS: most payroll policies fix the regime once you declare it, so check ours. You make the final choice in your tax return, and that only changes your refund or the tax you pay at filing. |
+| Why is the TDS in Form 130 different from my payslips? | Check the March payslip, arrears paid after March, and whether you are adding a previous employer's TDS, which is in that employer's Form 130, not ours. |
+| I have a home loan. Will it reduce my TDS? | In the old regime: yes, interest on a self-occupied home (up to ₹2 lakh) and principal within the ₹1.5 lakh investment deduction. In the new regime: no. |
+| My TDS is zero. Is that right? | Yes, if you are a resident on the new regime and your taxable income is ₹12 lakh or less: the section 156 rebate cancels the tax. |
+| I also earn from freelancing. What should I do? | Give us the income on Form 122 and we will include it, so more is deducted from salary; or pay advance tax yourself on that income. |
+| Can I claim house rent allowance (HRA) in the new regime? | No. HRA is fully taxable in the new regime, so you don't need to submit rent receipts. |
+| I resigned. Will I get the extra TDS back from the company? | Tax already deposited can't be paid back by the company. It counts towards your tax for the year, and any excess comes back as a refund when you file your return. |
+| My tax statement doesn't show all my TDS. | Statements are updated after each quarter's return is processed; the last quarter's is due by 31 May. If it is still missing after that, tell payroll so we can check the PAN and challan. |
+
+<Callout type="note">
+Keep a log of TDS questions by type. If the same question comes up from many employees, the cause is usually a payroll setting or a communication gap, not the employees.
+</Callout>

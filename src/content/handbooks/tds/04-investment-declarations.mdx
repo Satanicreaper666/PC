@@ -1,0 +1,202 @@
+---
+title: Investment declarations and proofs (Form 124)
+description: >-
+  Run the yearly declaration and proof cycle: what Form 124 asks for, the landlord PAN rule, the 2026 HRA cities, which proofs to accept and how to true up TDS.
+book: tds
+chapter: 4
+stage: pay
+audiences: [hr, employees]
+checked: 2026-11-02
+summary:
+  - "Form 124 replaced Form 12BB from tax year 2026-27. Employees give it to the employer, not to the tax department."
+  - "If an employee doesn't submit claims, the employer deducts TDS without them. New-regime employees usually have nothing to declare."
+  - "For HRA, the landlord's name, address and PAN are needed when the year's rent is more than ₹1 lakh, and the employee must now state any relationship with the landlord."
+  - "Bengaluru, Hyderabad, Pune and Ahmedabad joined Mumbai, Delhi, Kolkata and Chennai in the 50% HRA limit from 1 April 2026."
+sources:
+  - title: "Income-tax Rules, 2026, rule 205: Evidence of claims by employees (Form 124)"
+    url: "https://www.incometaxindia.gov.in/w/rule-205-1"
+    publisher: "Income Tax Department"
+  - title: "Form No. 124 FAQs"
+    url: "https://www.incometaxindia.gov.in/documents/d/guest/form-124-faqs"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 279: HRA exemption limits and cities"
+    url: "https://www.incometaxindia.gov.in/w/rule-279-1"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 204: Form 122"
+    url: "https://www.incometaxindia.gov.in/w/rule-204-1"
+    publisher: "Income Tax Department"
+  - title: "Form No. 122 FAQs"
+    url: "https://www.incometaxindia.gov.in/documents/d/guest/form-122-faqs"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 392 (evidence of claims, adjustments)"
+    url: "https://www.incometaxindia.gov.in/w/section-392-6"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 202 (choosing the old regime in the return)"
+    url: "https://www.incometaxindia.gov.in/w/section-202-76"
+    publisher: "Income Tax Department"
+  - title: "New income tax rules: HRA exemption extended to eight cities, landlord disclosure"
+    url: "https://moneylife.in/article/new-income-tax-rules-from-1st-april-hra-exemption-extended-to-8-cities-fewer-forms-but-landlord-disclosure-now-mandatory/79998.html"
+    publisher: "Moneylife"
+  - title: "TDS on salary under section 392: regime intimation in practice"
+    url: "https://www.taxheal.com/?p=127172"
+    publisher: "TaxHeal"
+related:
+  - handbooks/tds/02-salary-tds
+  - handbooks/tds/05-joiners-leavers-and-transfers
+  - handbooks/tds/09-mistakes-and-audit-triggers
+  - toolkit/take-home-salary-calculator
+  - toolkit/annual-hr-calendar
+  - glossary/form-12bb
+  - glossary/hra
+  - glossary/tds
+faq:
+  - q: "Is it compulsory to submit investment proofs to my employer?"
+    a: "No. Form 124 is needed only if you want your employer to reduce TDS for your claims. If you don't submit it, TDS is deducted without those claims, and if you choose the old regime you can still claim eligible deductions in your return."
+  - q: "Do I need my landlord's PAN to claim HRA?"
+    a: "Yes, if the rent you pay in the tax year is more than ₹1 lakh. You also have to give the landlord's name and address, and state your relationship with the landlord if there is one."
+  - q: "Can I claim HRA for rent paid to my parents?"
+    a: "The rules don't bar it, but the rent must be real and Form 124 now asks you to disclose the relationship. Keep bank-transfer records, and your parent should show the rent as income in their own return."
+  - q: "I am on the new regime. Do I need to submit anything?"
+    a: "Usually not. HRA, LTA and the old-regime deductions don't apply, the standard deduction needs no declaration, and payroll handles any employer NPS contribution. Do give Form 122 if you had another employer or other taxed income this year."
+  - q: "Which cities get the 50% HRA limit from April 2026?"
+    a: "Mumbai, Delhi, Kolkata, Chennai, Bengaluru, Hyderabad, Pune and Ahmedabad. Everywhere else the limit is 40% of salary."
+keywords: [form 124 income tax, form 12bb replaced by form 124, investment proof submission employer, hra landlord pan above 1 lakh, hra 50 percent bengaluru 2026]
+draft: false
+---
+
+<Snapshot
+  who="Payroll teams running the declaration cycle, and employees on the old regime."
+  level="Intermediate"
+  risks={[
+    "Accepting April declarations and never collecting proofs, then finding a large shortfall in March.",
+    "Allowing house rent allowance (HRA) without the landlord's permanent account number (PAN) when the year's rent is above ₹1 lakh.",
+    "Applying the 40% HRA limit in Bengaluru, Hyderabad, Pune or Ahmedabad after 1 April 2026."
+  ]}
+  mistakes={[
+    "Asking new-regime employees for rent receipts and investment proofs they don't need.",
+    "Promising a mid-year regime 'switch window' that the law doesn't provide.",
+    "Rejecting proofs without saying what is missing."
+  ]}
+  exposure="Claims you allow without evidence can lead to short deduction, with interest at 1% a month (section 398) and possible penalty. Rules you apply too strictly cost employees take-home pay until they file their return."
+/>
+
+## The yearly declaration cycle
+
+Section 392(5)(b) requires the employer to collect evidence for the claims it allows when working out tax deducted at source (TDS). Rule 205 says the employee gives this on Form 124. The law doesn't set dates for the cycle within the year, so the dates below are common practice; set your own and tell employees early.
+
+<Figure title="The declaration and proof cycle in a tax year" caption="Start at April and follow the steps in order; the cycle repeats every tax year. New joiners enter it when they join, and the proof deadline in step 4 is a company choice, not a legal date.">
+  <Cycle
+    center="Tax year: April to March"
+    items={[
+      { title: "April", note: "Regime choice and Form 124 declarations" },
+      { title: "Every month", note: "TDS on declared figures" },
+      { title: "Any time", note: "Form 122 from joiners and for other income" },
+      { title: "December–January", note: "Ask for proofs, give a deadline" },
+      { title: "January–February", note: "Check proofs, recompute TDS" },
+      { title: "March", note: "Final true-up in the last payroll" },
+      { title: "By 15 June", note: "Form 130 shows what was allowed" }
+    ]}
+  />
+</Figure>
+
+### What employees declare in April
+
+- **Their regime for TDS.** If they say nothing, deduct under the new regime, which is the default under section 202. The employee makes the final choice in their tax return, so a different choice there changes only their refund or the tax they pay at filing.
+- **Old-regime claims on Form 124**, with the amounts they expect to spend or invest during the year.
+- **Form 122**, if they had another employer earlier in the year, or other income or tax deducted elsewhere that they want included. It is optional for the employee and has no deadline.
+
+<Callout type="warning" title="There is no mid-year regime window">
+Some payroll policies promise a "regime change window" in October or November. The Act has no such window for employees. Many employers fix the regime for TDS once declared, following long-standing CBDT practice, while the employee keeps the right to choose in their return. Check whether CBDT has issued a salary TDS circular for 2026-27 and write your policy to match it.
+</Callout>
+
+## What Form 124 asks for
+
+Form 124 is the employee's statement of claims under section 392(5)(b). It goes to the employer, on paper or electronically, and is not uploaded to the income-tax portal. If an employee doesn't submit it, the employer deducts TDS without any claimed exemptions or deductions.
+
+| Claim (old regime only) | What rule 205 requires | Proof to keep on file |
+| --- | --- | --- |
+| House rent allowance (HRA) | Landlord's name, address and PAN if the year's rent is more than ₹1,00,000; relationship with the landlord, if any | Rent receipts or rent agreement; bank-transfer records help |
+| Leave travel concession or allowance (LTC or LTA) | Evidence of the travel expenditure | Tickets, boarding passes, invoices |
+| Interest on a home loan | Lender's name, address and PAN | Lender's certificate splitting interest and principal |
+| Deductions under Chapter VIII (old sections 80C, 80D and similar) | Evidence of the investment or expenditure | Statements, premium receipts, fee receipts dated within the tax year |
+
+Employees on the new regime don't need to submit Form 124 for these. The standard deduction needs no declaration at all.
+
+### Checking proofs
+
+<Figure title="What happens to each proof" caption="Read the steps in order. Whatever the outcome, recompute TDS in the same payroll and tell the employee what changed." wide>
+  <Flow
+    steps={[
+      { who: "Employee", title: "Submits Form 124 proofs", detail: "By the company's deadline" },
+      { who: "Payroll", title: "Checks each claim", detail: "Date within the tax year, name, amount, PAN where needed" },
+      { who: "Payroll", title: "Recomputes TDS", detail: "Spread any change over the months left" }
+    ]}
+    outcomes={[
+      { title: "Accepted", detail: "Claim stays in the TDS calculation", tone: "good" },
+      { title: "Incomplete", detail: "Say exactly what is missing and give a short extension", tone: "neutral" },
+      { title: "Not accepted", detail: "Claim removed; the employee can still make it in their return", tone: "bad" }
+    ]}
+  />
+</Figure>
+
+<Callout type="tip">
+Reject a proof by naming the gap ("the receipt is dated March 2026, which is outside tax year 2026-27"), not with a generic "invalid". Most problems are fixable within a week.
+</Callout>
+
+## HRA: the calculation and the checks
+
+Under rule 279, the exempt part of HRA is the least of three amounts for the period the employee rented the home. "Salary" here means basic pay plus dearness allowance (DA) if the terms of employment count DA for this purpose; other allowances and perquisites are left out.
+
+<Figure title="HRA exemption (old regime only)" caption="Work out all three amounts for the period of renting; the lowest is exempt and the rest of the HRA is taxable.">
+  <Formula
+    result={{ value: "Exempt HRA", label: "the least of the three" }}
+    parts={[
+      { value: "HRA received" },
+      { op: "or" },
+      { value: "Rent paid − 10% of salary" },
+      { op: "or" },
+      { value: "50% or 40% of salary", label: "50% in the eight listed cities" }
+    ]}
+    example="Example (Bengaluru): salary ₹4,80,000 a year, HRA ₹2,40,000, rent ₹3,60,000. The three amounts are ₹2,40,000; ₹3,60,000 − ₹48,000 = ₹3,12,000; and 50% of ₹4,80,000 = ₹2,40,000. Exempt HRA is ₹2,40,000. At the old 40% limit it would have been ₹1,92,000."
+  />
+</Figure>
+
+The 50% limit now applies in Mumbai, Delhi, Kolkata, Chennai, Bengaluru, Hyderabad, Pune and Ahmedabad. Everywhere else it is 40%. Update your payroll settings: an employee in Bengaluru, Hyderabad, Pune or Ahmedabad may get a larger exemption from April 2026.
+
+<Figure title="Can you allow this HRA claim in TDS?" caption="Start at the top. This decides what payroll may allow during the year; the employee's final claim is made in their return.">
+  <DecisionTree
+    node={{
+      q: "Is the employee on the old regime for TDS?",
+      no: { result: "HRA is fully taxable", detail: "The new regime has no HRA exemption, so no rent proof is needed.", tone: "neutral" },
+      yes: {
+        q: "Is the rent for the tax year more than ₹1 lakh?",
+        no: { result: "Allow on rent receipts", detail: "Record any relationship with the landlord.", tone: "good" },
+        yes: {
+          q: "Has the employee given the landlord's name, address and PAN?",
+          yes: { result: "Allow the exemption", detail: "Record any relationship with the landlord.", tone: "good" },
+          no: { result: "Hold the exemption", detail: "Ask for the missing details before allowing it.", tone: "bad" }
+        }
+      }
+    }}
+  />
+</Figure>
+
+### Rent paid to relatives
+
+The rules don't bar an employee from paying rent to a parent or other relative, but Form 124 now asks for the relationship, and such claims draw scrutiny. Ask for evidence that rent is actually paid, such as monthly bank transfers. Remind the employee that the relative should show the rent as income in their own return. Where a claim looks artificial, for example rent paid to someone who lives in the same home and owns it jointly with the employee, ask for more evidence before allowing it.
+
+<Callout type="note">
+The income-tax department receives rent and income information from many sources and shows it in each person's Annual Information Statement (AIS). Claims that don't match are more likely to be questioned after the employee files their return, even if payroll allowed them.
+</Callout>
+
+## The year-end true-up
+
+Once proofs are in, recompute every old-regime employee's tax for the year using only the claims you accepted. Spread any shortfall over the months left rather than taking it all in March, which can wipe out an employee's March pay. Section 392(5)(c) lets you increase or reduce later deductions in the same tax year to correct earlier ones.
+
+| Situation | What to do |
+| --- | --- |
+| Proofs match the declaration | No change to TDS |
+| Proofs are lower than declared | Increase TDS for the remaining months; explain the change on the payslip |
+| Proofs are higher than declared | Reduce TDS for the remaining months |
+| No proofs by the deadline | Remove the claims and recompute; tell the employee they can still claim in their return |
+| Employee joined mid-year | Run the same cycle from their joining date, with Form 122 for any earlier salary |

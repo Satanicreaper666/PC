@@ -1,0 +1,38 @@
+---
+import ItemCard from "../ui/ItemCard.astro";
+import type { Linked } from "../../lib/library";
+interface Props {
+  items: Linked[];
+  title?: string;
+}
+const { items, title = "Keep going" } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <section class="related" aria-labelledby="related-title">
+      <h2 id="related-title">{title}</h2>
+      <ul class="cards">
+        {items.map((r) => (
+          <li>
+            <ItemCard href={r.href} art={r.art} kind={r.kind} title={r.title} description={r.description} meta={r.meta} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  h2 {
+    font-size: var(--fs-lg);
+  }
+  .cards {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+    gap: 1.25rem 1rem;
+  }
+</style>

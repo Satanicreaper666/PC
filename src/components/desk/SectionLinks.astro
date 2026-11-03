@@ -1,0 +1,170 @@
+---
+/**
+ * "Copy link to this section" for the h2 and h3 headings of a chapter's text
+ * (.content > h2[id], .content > h3[id]). A small button beside each heading shows on
+ * hover and keyboard focus (always, on touch screens) and copies the page address
+ * with the heading's anchor; the site's status message confirms it.
+ *
+ * The button goes after the heading in a zero-height row, not inside it, so a
+ * heading's name stays its own words in a screen reader's list of headings.
+ * Added in the browser: without JavaScript there is nothing to copy with.
+ */
+import Icon from "../ui/Icon.astro";
+---
+
+<template data-sec-link-tpl>
+  <div class="sec-link-row" data-print="hide" data-pagefind-ignore>
+    <button type="button" class="sec-link">
+      <Icon name="link" size={18} class="sl-link" />
+      <Icon name="check" size={18} class="sl-done" />
+    </button>
+  </div>
+</template>
+
+<script>
+  import { toast } from "../../scripts/desk";
+
+  const tpl = document.querySelector<HTMLTemplateElement>("template[data-sec-link-tpl]");
+  const heads = Array.from(document.querySelectorAll<HTMLElement>(".content > h2[id], .content > h3[id]"));
+
+  function sectionUrl(id: string) {
+    const u = new URL(location.href);
+    u.search = "";
+    u.hash = id;
+    return u.toString();
+  }
+
+  async function copy(textToCopy: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      return true;
+    } catch {
+      // Older browsers, or a page not served over HTTPS.
+      const area = document.createElement("textarea");
+      area.value = textToCopy;
+      area.setAttribute("readonly", "");
+      area.style.cssText = "position:fixed;top:0;left:0;opacity:0;pointer-events:none";
+      document.body.appendChild(area);
+      area.select();
+      let ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch {
+        ok = false;
+      }
+      area.remove();
+      return ok;
+    }
+  }
+
+  if (tpl && heads.length) {
+    for (const h of heads) {
+      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const btn = row.querySelector<HTMLButtonElement>("button")!;
+      const name = (h.textContent ?? "").replace(/\s+/g, " ").trim();
+      btn.setAttribute("aria-label", `Copy link to section: ${name}`);
+      row.dataset.level = h.tagName === "H2" ? "2" : "3";
+      h.classList.add("has-sec-link");
+      h.after(row);
+      let reset = 0;
+      btn.addEventListener("click", async () => {
+        const url = sectionUrl(h.id);
+        if (await copy(url)) {
+          toast(`Link to “${name}” copied`);
+          btn.classList.add("copied");
+          window.clearTimeout(reset);
+          reset = window.setTimeout(() => btn.classList.remove("copied"), 2000);
+        } else {
+          // Put the link where it can be copied by hand.
+          history.replaceState(history.state, "", `#${h.id}`);
+          toast("Couldn't copy here. The section's link is now in the address bar.");
+        }
+      });
+    }
+  }
+</script>
+
+<style>
+  /* A row with no height right after the heading: it changes nothing in the text's spacing. */
+  .sec-link-row {
+    --lh: calc(var(--fs-xl) * 1.15);
+    position: relative;
+    height: 0;
+    margin: 0;
+  }
+  .sec-link-row[data-level="3"] {
+    --lh: calc(var(--fs-lg) * 1.15);
+  }
+  /* What followed the heading keeps the gap it had under it. */
+  .sec-link-row + :global(*) {
+    margin-top: 0.6em;
+  }
+  .sec-link {
+    position: absolute;
+    /* Level with the heading's last line, in the gutter to its left. */
+    bottom: calc((var(--lh) - 2.25rem) / 2);
+    right: 100%;
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.25rem;
+    padding: 0 0.3rem 0 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    opacity: 0;
+    transition:
+      opacity 150ms var(--ease) 120ms,
+      color 150ms;
+  }
+  .sec-link :global(svg) {
+    grid-area: 1 / 1;
+  }
+  .sec-link :global(.sl-done) {
+    opacity: 0;
+    color: var(--good);
+  }
+  .sec-link:hover {
+    color: var(--primary);
+  }
+  :global(.has-sec-link:hover) + .sec-link-row .sec-link,
+  .sec-link-row:hover .sec-link,
+  .sec-link:focus-visible,
+  .sec-link.copied {
+    opacity: 1;
+    transition-delay: 0ms;
+  }
+  .sec-link.copied :global(.sl-link) {
+    opacity: 0;
+  }
+  .sec-link.copied :global(.sl-done) {
+    opacity: 1;
+  }
+  .sec-link:focus-visible {
+    outline-offset: -2px;
+  }
+  /* Touch screens can't hover: the button is always there, quietly. */
+  @media (hover: none) {
+    .sec-link {
+      opacity: 1;
+    }
+  }
+  /* Without the left gutter (no contents column), the button sits at the heading's right end. */
+  @media (max-width: 1023px) {
+    .sec-link {
+      right: -0.35rem;
+      width: 2.25rem;
+      padding: 0;
+    }
+    :global(.content > .has-sec-link) {
+      padding-right: 2.25rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sec-link {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,378 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import Icon from "../../components/ui/Icon.astro";
+import { STAGES, STAGE_INFO, TOOL_KINDS, TOOL_KIND_INFO } from "../../data/taxonomy";
+import ItemCard from "../../components/ui/ItemCard.astro";
+import SpotIcon from "../../components/art/SpotIcon.astro";
+import Scene from "../../components/art/Scene.astro";
+import { allTools, toolFacts, toolUrl, breadcrumbLd } from "../../lib/library";
+import type { IconName } from "../../lib/icons";
+
+const tools = await allTools();
+const kindsPresent = TOOL_KINDS.filter((k) => tools.some((t) => t.data.kind === k));
+
+// Links into the old single-page toolkit (hr-toolkit.html#fc3 etc.) arrive here via a 301; forward them.
+const legacy: Record<string, string> = { lc1: "#recruit", lc2: "#onboard", lc3: "#grow", lc4: "#pay", lc5: "#exit", lc6: "#lead" };
+for (const t of tools) {
+  const m = t.data.code?.match(/^PC-F-0?(\d+)$/);
+  if (m) legacy[`fc${m[1]}`] = toolUrl(t);
+}
+const byId: Record<string, string> = {
+  "offer-tpl": "offer-letter",
+  "pip-tpl": "performance-improvement-plan",
+  "comp-assess": "competency-self-assessment",
+  "mgr-survey": "manager-effectiveness-survey",
+  "eng-survey": "engagement-pulse-survey",
+  "rev-tpl": "salary-revision-letter",
+  "onb-cl": "onboarding-checklist"
+};
+for (const [old, id] of Object.entries(byId)) {
+  const t = tools.find((x) => x.id === id);
+  if (t) legacy[old] = toolUrl(t);
+}
+const perStage = STAGES.map((s) => ({ id: s, n: tools.filter((t) => t.data.stage === s).length }));
+const maxStage = Math.max(...perStage.map((x) => x.n));
+const perKind = kindsPresent
+  .map((k) => ({ k, n: tools.filter((t) => t.data.kind === k).length }))
+  .sort((a, b) => b.n - a.n)
+  .map((x) => `${x.n} ${(x.n === 1 ? TOOL_KIND_INFO[x.k].label : TOOL_KIND_INFO[x.k].plural).toLowerCase()}`);
+const kindLine = perKind.length > 1 ? `${perKind.slice(0, -1).join(", ")} and ${perKind.at(-1)}` : perKind[0];
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Toolkit", href: "/toolkit/" }
+];
+const ld = [
+  breadcrumbLd(Astro.site, trail),
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "PeopleCraft HR toolkit",
+    description: "Free HR calculators, letters, forms, policies, checklists and surveys for India.",
+    hasPart: tools.map((t) => ({ "@type": "WebPage", name: t.data.title, url: new URL(toolUrl(t), Astro.site).toString() }))
+  }
+];
+---
+
+<BaseLayout title="HR toolkit" description="Free HR calculators, letters, forms, policies, checklists and surveys for India, organised by the employee lifecycle. Everything runs in your browser." jsonLd={ld} image="/og/toolkit.png">
+  <PageHero
+    title="Toolkit"
+    lede={`${tools.length} working tools, organised from hiring to leading a team. Calculators work as you type, letters download as Word, checklists remember your ticks. Nothing you enter leaves your browser.`}
+    trail={trail}
+  >
+    <div slot="aside" class="stage-map">
+      <p class="glance-label">Tools for each stage of working life</p>
+      <ol class="sm">
+        {
+          perStage.map((x) => (
+            <li>
+              <a href={`#${x.id}`} style={`--k:${0.75 + (x.n / maxStage) * 0.6}`}>
+                <span class="knot">{x.n}</span>
+                <span class="lbl">
+                  {STAGE_INFO[x.id].short}
+                  <span class="visually-hidden">: {STAGE_INFO[x.id].label.toLowerCase()} tools</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="kinds-line">{kindLine}.</p>
+    </div>
+  </PageHero>
+
+  <div class="wrap filters" data-filters data-pagefind-ignore>
+    <label class="find">
+      <Icon name="search" size={18} />
+      <span class="visually-hidden">Filter tools</span>
+      <input type="search" placeholder="Filter tools, e.g. PF, letter, exit" data-filter-text autocomplete="off" />
+    </label>
+    <div class="kinds" role="group" aria-label="Show only">
+      <button type="button" class="kind" aria-pressed="true" data-kind="all">All</button>
+      {
+        kindsPresent.map((k) => (
+          <button type="button" class="kind" aria-pressed="false" data-kind={k}>
+            <Icon name={TOOL_KIND_INFO[k].icon as IconName} size={16} />
+            {TOOL_KIND_INFO[k].plural}
+          </button>
+        ))
+      }
+    </div>
+    <p class="count tiny muted" data-filter-count aria-live="polite"></p>
+  </div>
+
+  <div class="wrap stages" data-pagefind-ignore>
+    {
+      STAGES.map((s) => {
+        const list = tools.filter((t) => t.data.stage === s);
+        if (!list.length) return null;
+        return (
+          <section class="stage" id={s} aria-labelledby={`st-${s}`} data-stage>
+            <div class="st-head">
+              <span class="st-tile" aria-hidden="true">
+                <SpotIcon name={s} size={52} />
+              </span>
+              <div class="st-words">
+                <h2 id={`st-${s}`}>{STAGE_INFO[s].label}</h2>
+                <p class="muted small">{STAGE_INFO[s].blurb}</p>
+              </div>
+              <Scene name={s} class="st-scene" />
+            </div>
+            <ul class="grid">
+              {list.map((t) => (
+                <li data-tool data-kind={t.data.kind} data-text={`${t.data.title} ${t.data.description} ${t.data.keywords.join(" ")} ${t.data.code ?? ""}`.toLowerCase()}>
+                  <ItemCard href={toolUrl(t)} art={t.data.kind} kind={TOOL_KIND_INFO[t.data.kind].label} code={t.data.code} title={t.data.title} description={t.data.description} meta={toolFacts(t)} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })
+    }
+    <p class="none muted" data-filter-none hidden>No tools match. Try a shorter word, or <button type="button" class="link" data-filter-clear>show everything</button>.</p>
+  </div>
+</BaseLayout>
+
+<script is:inline define:vars={{ legacy }}>
+  (function () {
+    var to = legacy[location.hash.slice(1)];
+    if (to) location.replace(to);
+  })();
+</script>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-filters]");
+  if (root) {
+    const text = root.querySelector<HTMLInputElement>("[data-filter-text]")!;
+    const kinds = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-kind]"));
+    const items = Array.from(document.querySelectorAll<HTMLElement>("[data-tool]"));
+    const stages = Array.from(document.querySelectorAll<HTMLElement>("[data-stage]"));
+    const count = root.querySelector<HTMLElement>("[data-filter-count]")!;
+    const none = document.querySelector<HTMLElement>("[data-filter-none]")!;
+    let kind = new URLSearchParams(location.search).get("kind") ?? "all";
+    const apply = () => {
+      const q = text.value.trim().toLowerCase();
+      let shown = 0;
+      for (const it of items) {
+        const ok = (kind === "all" || it.dataset.kind === kind) && (!q || it.dataset.text!.includes(q));
+        it.hidden = !ok;
+        if (ok) shown++;
+      }
+      stages.forEach((s) => (s.hidden = !s.querySelector("[data-tool]:not([hidden])")));
+      kinds.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.kind === kind)));
+      count.textContent = `Showing ${shown} of ${items.length}`;
+      none.hidden = shown > 0;
+    };
+    kinds.forEach((b) =>
+      b.addEventListener("click", () => {
+        kind = b.dataset.kind ?? "all";
+        const sp = new URLSearchParams(location.search);
+        if (kind === "all") sp.delete("kind");
+        else sp.set("kind", kind);
+        history.replaceState(null, "", `${location.pathname}${sp.toString() ? `?${sp}` : ""}${location.hash}`);
+        apply();
+      })
+    );
+    text.addEventListener("input", apply);
+    document.querySelector("[data-filter-clear]")?.addEventListener("click", () => {
+      text.value = "";
+      kind = "all";
+      apply();
+    });
+    apply();
+  }
+</script>
+
+<style>
+  .filters {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    padding-block: 1rem;
+    background: rgb(255 255 255 / 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .find {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.8rem;
+    min-height: 2.6rem;
+    min-width: min(100%, 20rem);
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--r);
+    color: var(--ink-3);
+  }
+  .find:focus-within {
+    border-color: var(--primary);
+  }
+  .find input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    background: transparent;
+    min-height: 2.4rem;
+  }
+  .kinds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .kind {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.25rem;
+    padding: 0 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    cursor: pointer;
+  }
+  .kind:hover {
+    border-color: var(--neel-300);
+  }
+  .kind[aria-pressed="true"] {
+    background: var(--neel-700);
+    border-color: var(--neel-700);
+    color: #fff;
+  }
+  .count {
+    margin-left: auto;
+  }
+  .stages {
+    display: grid;
+    gap: 3rem;
+    padding-block: 2.5rem var(--section);
+  }
+  .st-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1.1rem;
+    align-items: center;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 2px solid var(--neel-100);
+  }
+  .st-tile {
+    width: 4rem;
+    height: 4rem;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.07),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.1),
+      3px 6px 10px -3px rgb(17 20 58 / 0.16);
+  }
+  .st-head :global(.st-scene) {
+    width: 13rem;
+  }
+  @media (max-width: 760px) {
+    .st-head {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+    .st-head :global(.st-scene) {
+      display: none;
+    }
+  }
+  /* The header's stage map: one weft thread, a knot per stage, sized by how many tools it holds. */
+  .stage-map .sm {
+    position: relative;
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    align-items: start;
+  }
+  .stage-map .sm::before {
+    content: "";
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: calc(1.7rem - 3px);
+    height: 6px;
+    border-radius: 3px;
+    background: var(--neel-200);
+  }
+  .stage-map a {
+    position: relative;
+    display: grid;
+    grid-template-rows: 3.4rem auto;
+    justify-items: center;
+    align-items: center;
+    gap: 0.2rem;
+    text-decoration: none;
+    color: var(--ink-2);
+  }
+  .stage-map .knot {
+    display: grid;
+    place-items: center;
+    width: calc(var(--k) * 2.5rem);
+    height: calc(var(--k) * 2.5rem);
+    border-radius: 50%;
+    border: 2px solid var(--neel-700);
+    background: var(--paper);
+    color: var(--neel-800);
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 0 0 3px var(--canvas), 1.5px 2.5px 0 3px rgb(17 20 58 / 0.08);
+    transition: transform 180ms var(--ease-out), background-color 180ms, color 180ms;
+  }
+  .stage-map .lbl {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+  }
+  .stage-map a:hover .knot,
+  .stage-map a:focus-visible .knot {
+    background: var(--accent);
+    border-color: var(--haldi-700);
+    color: var(--neel-950);
+    transform: scale(1.06);
+  }
+  .stage-map a:hover .lbl {
+    color: var(--ink);
+  }
+  .kinds-line {
+    margin-top: 1.1rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    max-width: 40ch;
+  }
+  .st-head h2 {
+    font-size: var(--fs-lg);
+  }
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 1.4rem 1rem;
+  }
+  .link {
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  @media (max-width: 640px) {
+    .filters {
+      position: static;
+    }
+    .count {
+      margin-left: 0;
+    }
+  }
+</style>

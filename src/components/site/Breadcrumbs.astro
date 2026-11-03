@@ -1,0 +1,58 @@
+---
+import Icon from "../ui/Icon.astro";
+interface Props {
+  trail: { name: string; href: string }[];
+}
+const { trail } = Astro.props;
+---
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <ol>
+    {
+      trail.map((t, i) => (
+        <li>
+          {i < trail.length - 1 ? (
+            <>
+              <a href={t.href}>{t.name}</a>
+              <Icon name="chevron-right" size={14} />
+            </>
+          ) : (
+            <span aria-current="page">{t.name}</span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  a {
+    color: var(--ink-2);
+    text-decoration: none;
+    font-weight: 560;
+  }
+  a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  [aria-current] {
+    color: var(--ink-3);
+  }
+</style>

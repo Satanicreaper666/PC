@@ -1,0 +1,96 @@
+---
+title: Notice period calculator
+description: Find the last working day from a resignation date and a notice period in days or months, with month-end dates, buy-outs and waivers handled.
+kind: calculator
+calculator: notice-period
+glance:
+  inputs: ["Resignation date", "Notice period", "Days or months", "Notice starts", "Buy-out or waiver"]
+  output: "Last working day"
+  formula: "Last day = resignation date + notice − buy-out or waiver"
+stage: exit
+audiences: [employees, hr, founders]
+order: 12
+checked: 2026-11-02
+useWhen: Someone has resigned, or is about to, and you need the last working day their contract's notice period gives.
+tips:
+  - "Read the notice clause in the appointment letter: it says how long notice is and often when it starts."
+  - "Agree any buy-out or waiver <strong>in writing</strong>, with the new last working day, before the employee relies on it."
+  - "Book the exit formalities for the last working day early, so wages can be paid within two working days of it."
+sources:
+  - title: The Industrial Relations Code, 2020, sections 2(o) and 70 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/22040/1/aa202035.pdf
+    publisher: Ministry of Law and Justice
+  - title: The Code on Wages, 2019, section 17 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf
+    publisher: Ministry of Law and Justice
+  - title: Model Standing Orders, 2026 (reproduction of S.O. 2312(E))
+    url: https://www.taxheal.com/model-standing-orders-2026.html
+    publisher: TaxHeal
+related: [toolkit/resignation-letter, toolkit/full-and-final-settlement-calculator, toolkit/working-days-calculator, toolkit/relieving-letter, handbooks/labour-law/06-termination-grievance-and-disputes, glossary/notice-period]
+faq:
+  - q: How do I calculate my last working day?
+    a: Add the notice period to the date you resigned. With 30 days' notice starting the day after a resignation on 2 November 2026, the last working day is 2 December 2026.
+  - q: Is the notice period fixed by law in India?
+    a: Not for an employee resigning from a private company. The appointment letter or contract sets it. The law sets notice mainly for an employer retrenching a worker, which needs one month's notice or pay in lieu.
+  - q: Do weekends and holidays count in the notice period?
+    a: Yes, unless the contract says otherwise. Notice runs in calendar days or months, so a notice period that ends on a Sunday ends on that Sunday.
+  - q: What is one month's notice from 31 January?
+    a: It ends on 28 February (29 February in a leap year), because February has no 31st.
+keywords: [notice period calculator, last working day calculator, notice period 90 days from today, resignation notice period india, notice period buyout, one month notice period calculation]
+---
+
+## How the last day is worked out
+
+<Figure title="Last working day" caption="Add the notice to the resignation date, then take off any days bought out or waived.">
+  <Formula
+    result={{ value: "Last working day" }}
+    parts={[{ value: "Resignation date" }, { op: "+" }, { value: "Notice period", label: "days or calendar months" }, { op: "−" }, { value: "Days bought out or waived", label: "if agreed" }]}
+    example="Example: resigned on Monday 2 November 2026 with 30 days' notice starting the next day, so the last working day is Wednesday 2 December 2026."
+  />
+</Figure>
+
+<Figure title="A 30-day notice period" caption="Read left to right. The bracket is the notice period; wages then fall due within two working days of the last day." wide>
+  <Timeline
+    items={[
+      { when: "Mon 2 Nov 2026", label: "Resignation given" },
+      { when: "Tue 3 Nov 2026", label: "Notice starts" },
+      { when: "Wed 2 Dec 2026", label: "Last working day", accent: true },
+      { when: "Fri 4 Dec 2026", label: "Final wages due", note: "2 working days, Mon–Fri week" }
+    ]}
+    spans={[{ from: 1, to: 2, label: "30 days' notice" }]}
+  />
+</Figure>
+
+### Days or months
+
+- **Days:** the notice ends that many calendar days later. 90 days from 2 November 2026 ends on Sunday 31 January 2027.
+- **Months:** the notice ends on the same date that many months later. When that date does not exist, it ends on the last day of the shorter month: one month from 31 January 2027 ends on 28 February 2027.
+- **When notice starts:** notice is usually counted from the day after it is given. If yours counts the day it is given as day one, every date moves one day earlier.
+
+Weekends and holidays inside the notice period count as notice unless the contract says otherwise. A notice period can end on a Sunday; agree the handover for the working day before.
+
+## Notice is contractual
+
+<Callout type="law" title="What the law says">
+No Indian law sets a general notice period for an employee who resigns from a private employer; the appointment letter or contract does. The law sets notice mainly when an employer retrenches a worker: the Industrial Relations Code (section 70) requires <Fact id="notice.retrenchmentNoticeMonths" />'s written notice, or wages in lieu, for a worker with a year's continuous service.
+</Callout>
+
+<Figure title="Who sets the notice period?" caption="Follow the questions. Most resignations end at the first answer.">
+  <DecisionTree
+    node={{
+      q: "Is the employee resigning?",
+      yes: { result: "The contract or appointment letter sets the notice", detail: "Standing orders may apply in large establishments", tone: "neutral" },
+      no: {
+        q: "Is the employer retrenching a worker with a year's service?",
+        yes: { result: "One month's written notice or wages in lieu", detail: "Industrial Relations Code, section 70", tone: "accent" },
+        no: { result: "The contract, standing orders or state Shops and Establishments Act", tone: "neutral" }
+      }
+    }}
+  />
+</Figure>
+
+Standing orders also matter in larger establishments: under the Model Standing Orders, 2026, an employer gives a permanent worker one month's notice or wages in lieu, and no notice is due when a fixed-term contract ends or is not renewed. Some state Shops and Establishments Acts require employer notice too.
+
+### Buy-outs, waivers and leave
+
+A buy-out (paying instead of serving notice) and a waiver (the employer letting notice go) bring the last day forward. The calculator moves the date only. How a buy-out is priced, and whether leave can be set off against notice, depend on the contract and policy, so neither is worked out here. Once the date is settled, the [full and final settlement calculator](/toolkit/full-and-final-settlement-calculator/) shows what is due and by when.

@@ -1,0 +1,13 @@
+---
+/** A hand-drawn tick in pen. Decorative: say what it means in text nearby, or pass `label`. */
+interface Props {
+  label?: string;
+  class?: string;
+  red?: boolean;
+}
+const { label, class: cls, red } = Astro.props;
+---
+
+<svg class:list={["pen", "pen-tick", { "pen-red": red }, cls]} viewBox="0 0 24 24" data-mark role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : "true"}>
+  <path class="pen-stroke" pathLength="1" d="M3.5 13.2c1.6 1.2 3.2 3 4.6 5.3.3.5.9.5 1.2 0C11.9 13 15.6 8.1 20.8 4.2" />
+</svg>

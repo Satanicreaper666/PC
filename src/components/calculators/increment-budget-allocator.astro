@@ -1,0 +1,455 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import CalcScenarios from "../calc/CalcScenarios.astro";
+import Num from "../calc/Num.astro";
+import Icon from "../ui/Icon.astro";
+import { RATINGS, ZONES, ZONE_HELP } from "../../lib/calc/increment-budget-allocator";
+
+/** Starting values: the worked example on the page. */
+const HEADCOUNT = [10, 30, 45, 12, 3];
+const MIX = [25, 50, 25];
+const MATRIX = [
+  [14, 12, 9],
+  [11, 9, 7],
+  [8, 7, 5],
+  [3, 2, 0],
+  [0, 0, 0]
+];
+---
+
+<CalcShell id="increment-budget-allocator" resultLabel="Budget check" inputsLabel="Your review" scenarios="external">
+  <Fragment slot="inputs">
+    <Num name="payroll" label="Annual payroll of the people in this review" prefix="₹" value="5,00,00,000" help="Total annual CTC, or base pay if increments apply to base pay only." />
+    <Num name="budget" label="Increment budget" value="7" suffix="% of payroll" />
+
+    <div class="sep"><fieldset class="block">
+      <legend>People in each rating</legend>
+      <div class="pairs">
+        {
+          RATINGS.map((r, i) => (
+            <div class="pair">
+              <label for={`f-hc${i}`}>{r}</label>
+              <input class="control num" id={`f-hc${i}`} name={`hc${i}`} type="text" inputmode="decimal" value={HEADCOUNT[i]} autocomplete="off" />
+            </div>
+          ))
+        }
+      </div>
+    </fieldset></div>
+
+    <div class="sep"><fieldset class="block">
+      <legend>Where people sit in their band <span>% of people, by compa-ratio</span></legend>
+      <div class="pairs">
+        {
+          ZONES.map((z, i) => (
+            <div class="pair">
+              <label for={`f-mix${i}`} title={ZONE_HELP[i]}>
+                {z}
+              </label>
+              <input class="control num" id={`f-mix${i}`} name={`mix${i}`} type="text" inputmode="decimal" value={MIX[i]} autocomplete="off" aria-describedby="mix-help" />
+            </div>
+          ))
+        }
+      </div>
+      <p class="hint" id="mix-help">Should add up to 100%. Compa-ratio is pay ÷ the midpoint of the person's band. Total now: <strong data-mix-total>100%</strong></p>
+    </fieldset></div>
+
+    <div class="sep"><fieldset class="block">
+      <legend>Merit matrix <span>increase % for each rating and band position</span></legend>
+      <div class="matrix" role="group" aria-label="Merit matrix: increase percentage by rating and position in band">
+        <span class="mh corner">Rating</span>
+        {ZONES.map((z) => <span class="mh">{z}</span>)}
+        {
+          RATINGS.map((r, ri) => (
+            <>
+              <span class="mr">{r}</span>
+              {ZONES.map((z, zi) => (
+                <input
+                  class="control num cell"
+                  name={`m${ri}_${zi}`}
+                  type="text"
+                  inputmode="decimal"
+                  value={MATRIX[ri][zi]}
+                  autocomplete="off"
+                  aria-label={`${r}, compa-ratio ${z.toLowerCase()}: increase %`}
+                />
+              ))}
+            </>
+          ))
+        }
+      </div>
+    </fieldset></div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="cost">₹0</span>
+    <span class="sub" data-out="vs"></span>
+  </Fragment>
+  <div slot="visual" class="meter" data-meter>
+    <div class="meter-top">
+      <span class="status" data-status></span>
+      <span class="meter-val" data-used></span>
+    </div>
+    <div class="track" aria-hidden="true">
+      <span class="fill" data-fill></span>
+      <span class="budget-line" data-budget-line><span>Budget</span></span>
+    </div>
+  </div>
+</CalcShell>
+
+<section class="fit-area" data-fit-area aria-labelledby="iba-fit-title">
+  <div class="fit-head">
+    <div>
+      <h2 id="iba-fit-title" class="t">Matrix scaled to fit the budget</h2>
+      <p class="muted small" data-fit-note></p>
+    </div>
+    <button class="btn btn-secondary btn-sm" type="button" data-apply><Icon name="check" size={16} /> Use these numbers</button>
+  </div>
+  <div class="tw" role="region" tabindex="0" aria-label="Increase matrix">
+    <table class="fit">
+      <caption class="visually-hidden">Increase percentage for each rating and position in band, scaled so the matrix spends the budget</caption>
+      <thead>
+        <tr>
+          <th scope="col">Rating</th>
+          {ZONES.map((z) => <th scope="col">{z}</th>)}
+          <th scope="col">Average</th>
+        </tr>
+      </thead>
+      <tbody data-fit-rows></tbody>
+    </table>
+  </div>
+  <p class="tiny muted">Darker cells are larger increases. Values are rounded to one decimal place, so the total can differ from the budget by a small amount.</p>
+</section>
+<CalcScenarios id="increment-budget-allocator" external />
+
+<script>
+  import { bindCalculator, inr, num, type CalcLine } from "../../scripts/calc-kit";
+  import { allocateIncrements, RATINGS, ZONES } from "../../lib/calc/increment-budget-allocator";
+
+  const root = document.querySelector<HTMLElement>('[data-calc="increment-budget-allocator"]')!;
+  const form = root.querySelector("form")!;
+  const meter = root.querySelector<HTMLElement>("[data-meter]")!;
+  const fitArea = document.querySelector<HTMLElement>("[data-fit-area]")!;
+  const fitRows = fitArea.querySelector<HTMLElement>("[data-fit-rows]")!;
+  const RAMP = ["var(--neel-50)", "var(--neel-100)", "var(--neel-200)", "var(--neel-300)", "var(--neel-500)", "var(--neel-700)"];
+  const RAMP_INK = ["var(--ink)", "var(--ink)", "var(--ink)", "var(--ink)", "#fff", "#fff"];
+  let fitted: number[][] = [];
+
+  function drawMeter(usedPct: number, over: boolean) {
+    const max = Math.max(110, Math.ceil(Math.min(usedPct, 300) / 10) * 10 + 10);
+    const fill = meter.querySelector<HTMLElement>("[data-fill]")!;
+    const line = meter.querySelector<HTMLElement>("[data-budget-line]")!;
+    fill.style.width = `${(Math.min(usedPct, max) / max) * 100}%`;
+    fill.classList.toggle("over", over);
+    line.style.left = `${(100 / max) * 100}%`;
+    const status = meter.querySelector<HTMLElement>("[data-status]")!;
+    status.textContent = over ? "Over budget" : "Within budget";
+    status.className = `status ${over ? "is-over" : "is-ok"}`;
+    meter.querySelector<HTMLElement>("[data-used]")!.textContent = Number.isFinite(usedPct) ? `${num(usedPct, 1)}% of the budget` : "No budget set";
+  }
+
+  function drawFit(matrix: number[][], mix: number[]) {
+    const all = matrix.flat();
+    const maxV = Math.max(0.0001, ...all);
+    const mixTotal = mix.reduce((a, b) => a + b, 0) || 1;
+    fitRows.replaceChildren(
+      ...matrix.map((row, ri) => {
+        const tr = document.createElement("tr");
+        const th = Object.assign(document.createElement("th"), { scope: "row", textContent: RATINGS[ri] });
+        const tds = row.map((v) => {
+          const td = document.createElement("td");
+          const step = v <= 0 ? 0 : Math.min(5, 1 + Math.floor((v / maxV) * 4.999));
+          td.style.background = RAMP[step];
+          td.style.color = RAMP_INK[step];
+          td.textContent = `${num(v, 1)}%`;
+          return td;
+        });
+        const avg = row.reduce((a, v, z) => a + (v * (mix[z] ?? 0)) / mixTotal, 0);
+        const tdAvg = Object.assign(document.createElement("td"), { className: "avg", textContent: `${num(avg, 2)}%` });
+        tr.append(th, ...tds, tdAvg);
+        return tr;
+      })
+    );
+  }
+
+  fitArea.querySelector("[data-apply]")?.addEventListener("click", () => {
+    fitted.forEach((row, ri) =>
+      row.forEach((v, zi) => {
+        const input = form.querySelector<HTMLInputElement>(`[name="m${ri}_${zi}"]`);
+        if (input) input.value = String(v);
+      })
+    );
+    form.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
+  bindCalculator("increment-budget-allocator", (v) => {
+    const headcount = RATINGS.map((_, i) => v.num(`hc${i}`));
+    const zoneMix = ZONES.map((_, i) => v.num(`mix${i}`));
+    const matrix = RATINGS.map((_, r) => ZONES.map((_, z) => v.num(`m${r}_${z}`)));
+    const mixTotal = zoneMix.reduce((a, b) => a + b, 0);
+    root.querySelector<HTMLElement>("[data-mix-total]")!.textContent = `${num(mixTotal, 1)}%`;
+
+    const r = allocateIncrements({ payroll: v.num("payroll"), budgetPct: v.num("budget"), headcount, zoneMix, matrix });
+    if (!r.ok) {
+      meter.hidden = true;
+      fitArea.hidden = true;
+      return { outputs: { cost: "₹0", vs: "" }, message: r.message };
+    }
+    meter.hidden = false;
+    const over = r.difference > 0.5;
+    drawMeter(r.usedPct, over);
+
+    const canFit = r.weightedPct > 0 && Math.abs(r.fitFactor - 1) > 0.0005;
+    fitArea.hidden = !canFit;
+    fitted = r.fitted;
+    if (canFit) {
+      drawFit(r.fitted, zoneMix);
+      fitArea.querySelector<HTMLElement>("[data-fit-note]")!.textContent = `Every cell multiplied by ${num(r.fitFactor, 3)} so the weighted average increase equals the ${num(v.num("budget"), 2)}% budget.`;
+    }
+
+    const lines: CalcLine[] = [
+      { label: "Budget", value: inr(r.budget), note: `${num(v.num("budget"), 2)}% of ${inr(v.num("payroll"))}` },
+      { label: "Cost of the matrix", value: inr(r.cost), note: `Weighted average increase ${num(r.weightedPct, 2)}%` },
+      ...r.rows
+        .filter((x) => x.people > 0)
+        .map((x) => ({ label: `${x.rating} (${num(x.people, 0)})`, value: inr(x.cost), note: `Average increase ${num(x.avgPct, 2)}%` })),
+      over
+        ? { label: "Over budget by", value: inr(r.difference), strong: true, tone: "bad" as const }
+        : { label: "Left in the budget", value: inr(-r.difference), strong: true, tone: "good" as const }
+    ];
+    return {
+      outputs: {
+        cost: inr(r.cost),
+        vs: `Cost of this matrix, against a budget of ${inr(r.budget)}. Everyone is costed at the average salary of ${inr(r.avgSalary)}.`
+      },
+      lines,
+      notes: [
+        "Check the matrix shape as well as the total: people with top ratings who are low in their band should get the largest increase.",
+        "For exact costs, apply the matrix to each person's salary in a spreadsheet. Higher earners in some cells will move the total."
+      ]
+    };
+  });
+</script>
+
+<style>
+  .sep {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .block {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .block legend {
+    padding: 0;
+    margin-bottom: 0.6rem;
+    font-weight: 650;
+    font-size: var(--fs-sm);
+  }
+  .block legend span {
+    display: block;
+    font-weight: 500;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .pairs {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7.5rem;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .pair label {
+    font-size: var(--fs-sm);
+    font-weight: 560;
+  }
+  .num {
+    min-height: 2.5rem;
+    padding: 0.4rem 0.6rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 560;
+  }
+  .hint {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+  .hint strong {
+    color: var(--ink);
+  }
+  .matrix {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+    align-items: center;
+  }
+  .mh {
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+    text-align: right;
+    padding-right: 0.6rem;
+    line-height: 1.2;
+  }
+  .mh.corner {
+    text-align: left;
+    padding: 0;
+  }
+  .mr {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .meter {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .meter-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: var(--fs-sm);
+  }
+  .status {
+    font-weight: 650;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .status::before {
+    content: "";
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .status.is-ok {
+    color: var(--good);
+  }
+  .status.is-over {
+    color: var(--bad);
+  }
+  .meter-val {
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .track {
+    position: relative;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--sunken);
+    margin-bottom: 1.1rem;
+  }
+  .fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 999px;
+    background: var(--good);
+    transition: width 300ms var(--ease-out);
+  }
+  .fill.over {
+    background: var(--bad);
+  }
+  .budget-line {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background: var(--ink);
+  }
+  .budget-line span {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .fit-area {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    display: grid;
+    gap: 0.75rem;
+  }
+  .fit-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .fit-head .t {
+    font-size: var(--fs-md);
+  }
+  .fit-head p {
+    margin-top: 0.25rem;
+  }
+  .tw {
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .fit {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .fit thead th {
+    font-weight: 620;
+    color: var(--ink-2);
+    text-align: right;
+    padding: 0.45rem 0.7rem;
+    white-space: nowrap;
+  }
+  .fit thead th:first-child {
+    text-align: left;
+  }
+  .fit :global(tbody th) {
+    text-align: left;
+    font-weight: 600;
+    padding: 0.45rem 0.7rem;
+    white-space: nowrap;
+  }
+  .fit :global(td) {
+    text-align: right;
+    font-weight: 620;
+    padding: 0.5rem 0.7rem;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .fit :global(td.avg) {
+    color: var(--ink-2);
+    font-weight: 560;
+  }
+  @media (max-width: 560px) {
+    .pair {
+      grid-template-columns: minmax(0, 1fr) 6rem;
+    }
+    .matrix {
+      grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, 1fr));
+    }
+    .mh {
+      padding-right: 0.3rem;
+    }
+  }
+  @media print {
+    [data-apply] {
+      display: none;
+    }
+  }
+</style>

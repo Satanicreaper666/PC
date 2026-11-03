@@ -1,0 +1,90 @@
+---
+title: Headcount planning model
+description: Plan 12 months of headcount month by month, with new roles plus replacements for expected leavers, the hires needed, payroll cost and revenue per employee.
+kind: calculator
+calculator: headcount-planning-model
+glance:
+  inputs: ["Headcount today", "New roles", "Expected attrition", "Average annual CTC", "Days to hire"]
+  output: "12-month hiring plan"
+  formula: "Hires = new roles + expected leavers"
+stage: lead
+audiences: [hr, founders]
+order: 10
+checked: 2026-11-02
+useWhen: You are setting next year's hiring plan and budget and need to know how many people to hire each month, not just how many roles to add.
+tips:
+  - "Hires are new roles <strong>plus</strong> replacements. At 18% attrition, a 200-person company replaces about 39 people a year on top of its new roles."
+  - "Agree the attrition assumption with finance and the business heads. It drives both the hiring plan and the cost."
+  - "If hiring takes more than a month, open the first months' roles before the plan year starts."
+sources: []
+related:
+  - toolkit/hr-budget-builder
+  - toolkit/attrition-cost-calculator
+  - toolkit/cost-per-hire-calculator
+  - toolkit/hr-metrics-calculator
+  - handbooks/recruitment/01-do-you-need-this-role
+  - handbooks/hr-professional/03-business-acumen
+faq:
+  - q: How do you calculate how many people to hire in a year?
+    a: Add the new roles you plan to the leavers you expect. Expected leavers are roughly average headcount × annual attrition rate. A 200-person company adding 40 roles at 18% attrition needs about 79 hires.
+  - q: Why open roles before the plan year starts?
+    a: Because hiring takes time. If it takes 45 days from opening a role to the person joining, a role you need filled on 1 April must be open by mid-February.
+  - q: Should the payroll cost include employer PF?
+    a: Use the CTC you pay, which usually already includes employer PF and gratuity. Add a percentage only for costs outside CTC, so nothing is counted twice.
+  - q: What is revenue per employee?
+    a: Revenue for the year divided by average headcount. Track it over time in your own company; comparisons across companies depend heavily on the business model.
+keywords: [headcount planning template, workforce planning model, hiring plan calculator, headcount forecast, manpower planning, attrition replacement hiring]
+draft: false
+---
+
+## How the plan is built
+
+The plan starts from today's headcount, adds new roles across the year and replaces everyone expected to leave, so the year ends where you planned.
+
+<Figure title="Hires for the year" caption="Expected leavers are worked out month by month from the planned headcount, so they rise as the team grows.">
+  <Formula
+    result={{ value: "Hires for the year" }}
+    parts={[{ value: "New roles", label: "net growth you plan" }, { op: "+" }, { value: "Expected leavers", label: "headcount × attrition % ÷ 12, each month" }]}
+    example="Example: 40 new roles + 39 expected leavers = 79 hires. Headcount goes from 200 to 240, and averages 220 over the year."
+  />
+</Figure>
+
+Payroll cost follows the headcount month by month: average headcount in the month × average CTC ÷ 12, plus any employer costs outside CTC. In the example, 220 people on average × ₹12,00,000 = ₹26.4 crore for the year.
+
+## Start hiring early enough
+
+<Figure title="Opening a role for a 1 April start" caption="With 45 days to hire, the role must be open by mid-February. The calculator counts how many new roles need opening before the plan year begins." wide>
+  <Timeline
+    items={[
+      { when: "Mid-February", label: "Open the role", accent: true },
+      { when: "March", label: "Offer accepted, notice served" },
+      { when: "1 April", label: "Person joins" }
+    ]}
+    spans={[{ from: 0, to: 2, label: "45 days to hire" }]}
+  />
+</Figure>
+
+Replacements are different: you can only start when someone resigns. If hiring takes longer than the notice period, every replacement leaves a seat empty for a while.
+
+<Figure title="Seats empty while replacements are hired" caption="The longer hiring takes compared with notice periods, the more seats sit empty at any time.">
+  <Formula
+    result={{ value: "Seats empty on average" }}
+    parts={[{ value: "Leavers a month" }, { op: "×" }, { value: "Days to hire − notice period", label: "the gap for each replacement" }, { op: "÷" }, { value: "30.4", label: "days in a month" }]}
+    example="Example: 3.3 leavers a month × (45 − 30) days ÷ 30.4 = about 1.6 seats empty at any time."
+  />
+</Figure>
+
+## Agree the inputs first
+
+| Input | Where it comes from | Watch out for |
+| --- | --- | --- |
+| Attrition rate | The last 12 months, from the [HR metrics calculator](/toolkit/hr-metrics-calculator/) | Known changes, such as a new office or a restructure |
+| New roles | Business heads' plans for the year | Roles that depend on revenue targets being met |
+| Days to hire | Your applicant tracking system | Senior and niche roles take much longer |
+| Average CTC | Payroll | New hires can cost more than the current average |
+
+The plan feeds the hiring line of the [HR budget builder](/toolkit/hr-budget-builder/), and the [attrition cost calculator](/toolkit/attrition-cost-calculator/) puts a rupee figure on the leavers.
+
+<Callout type="note" title="What the model assumes">
+  Attrition is steady through the year, every leaver is replaced, and new joiners cost the current average CTC. Monthly figures are whole people, rounded from running totals so the months always add up to the year.
+</Callout>

@@ -1,0 +1,94 @@
+---
+import Icon from "../ui/Icon.astro";
+import { SITE } from "../../data/site";
+interface Props {
+  items: { title: string; url: string; publisher?: string }[];
+  checked: Date;
+}
+const { items, checked } = Astro.props;
+const when = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(checked);
+// "Report a correction" opens the reader's own email app with the page filled in.
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const fix = SITE.contactEmail
+  ? `mailto:${SITE.contactEmail}?subject=${encodeURIComponent("PeopleCraft correction")}&body=${encodeURIComponent(`Page: ${pageUrl}\n\nWhat looks wrong or out of date:\n\nSource, if you have one:\n`)}`
+  : "";
+---
+
+{
+  items.length > 0 && (
+    <section class="sources" aria-labelledby="sources-title">
+      <h2 id="sources-title">Sources</h2>
+      <p class="intro">
+        Every rule on this page was checked against these on {when}. Laws and their rules change; if something looks out of date, the
+        official source wins.
+      </p>
+      <ol>
+        {items.map((s) => (
+          <li>
+            <a href={s.url} rel="noopener" target="_blank">
+              {s.title}
+              <Icon name="external-link" size={14} />
+              <span class="visually-hidden">(opens in a new tab)</span>
+            </a>
+            {s.publisher && <span class="pub">{s.publisher}</span>}
+          </li>
+        ))}
+      </ol>
+      {fix && (
+        <p class="fix" data-print="hide">
+          <Icon name="edit" size={16} />
+          Spotted something out of date? <a href={fix}>Email a correction</a> and it will be checked against the source.
+        </p>
+      )}
+    </section>
+  )
+}
+
+<style>
+  .sources h2 {
+    font-size: var(--fs-lg);
+  }
+  .fix {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .intro {
+    margin-top: 0.4rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    max-width: 60ch;
+  }
+  ol {
+    margin: 0.9rem 0 0;
+    padding-left: 1.4rem;
+    display: grid;
+    gap: 0.55rem;
+    font-size: var(--fs-sm);
+  }
+  li::marker {
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  a {
+    color: var(--primary);
+    font-weight: 560;
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.3);
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+  }
+  a :global(svg) {
+    margin-left: 0.2rem;
+    vertical-align: -2px;
+  }
+  .pub {
+    display: block;
+    color: var(--ink-3);
+    font-size: var(--fs-xs);
+  }
+</style>

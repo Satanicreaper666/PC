@@ -1,0 +1,96 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import Flow from "../../components/diagrams/Flow.astro";
+import { SITE } from "../../data/site";
+import { breadcrumbLd } from "../../lib/library";
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "About", href: "/about/" },
+  { name: "How we check facts", href: "/about/how-we-check/" }
+];
+---
+
+<BaseLayout
+  title="How we check facts"
+  description="Where PeopleCraft's legal and statutory facts come from, how often pages are re-checked, and what the 'Checked on' date on every page means."
+  jsonLd={breadcrumbLd(Astro.site, trail)}
+>
+  <PageHero title="How we check facts" lede="Every rule, rate and date on PeopleCraft can be traced to a source you can open yourself. Here is how that works." trail={trail} />
+
+  <div class="wrap-narrow section">
+    <div class="prose">
+      <h2>Where facts come from</h2>
+      <p>We use sources in this order and stop at the first that settles the question:</p>
+      <ol>
+        <li><strong>The law itself:</strong> the Act or Code as published on India Code, and the rules and notifications in the Gazette of India or a state gazette.</li>
+        <li><strong>Official explanations:</strong> Press Information Bureau releases, and FAQs, circulars and forms from the Ministry of Labour and Employment, EPFO, ESIC, the Income Tax Department and state labour or tax departments.</li>
+        <li><strong>Court judgments</strong> where a court has settled how a rule applies.</li>
+        <li><strong>Reputable secondary sources</strong> (major law and accounting firms, PRS Legislative Research) only when the primary text isn't available, and never as the only source for a number.</li>
+      </ol>
+      <p>Each chapter and tool lists its sources at the bottom of the page.</p>
+    </div>
+
+    <figure class="flowfig">
+      <Flow
+        steps={[
+          { title: "Find the rule", detail: "Act, rules, notification" },
+          { title: "Check the latest change", detail: "Gazette, PIB, department notices" },
+          { title: "Write it plainly", detail: "One idea per sentence, with an example" },
+          { title: "Test the numbers", detail: "Worked examples for every calculator" },
+          { title: "Date the page", detail: "Checked-on date and sources list" }
+        ]}
+        label="The checking process, from finding the rule to dating the page"
+      />
+    </figure>
+
+    <div class="prose">
+      <h2>What "Checked on" means</h2>
+      <p>
+        The date under every chapter and tool title is the last day someone compared every fact on that page against its sources. It is not the date the page was written. If a page hasn't been checked in a
+        while, treat its numbers with more care.
+      </p>
+
+      <h2>How often pages are checked</h2>
+      <p>Pages are reviewed {SITE.reviewCadence}. When a rule changes, every page that depends on it is updated together.</p>
+
+      <h2>One number, one place</h2>
+      <p>
+        Statutory figures such as the EPF wage ceiling, the ESI limit or the gratuity cap are stored once and used everywhere. When a figure changes, the calculators, the chapters and the glossary all change with
+        it, so two pages can't disagree.
+      </p>
+
+      <h2>When the law isn't settled</h2>
+      <p>
+        Some questions don't have an official answer yet, for example exactly when the two-working-day clock for final wages starts. We say so on the page, explain the common reading and don't present it as
+        certain. We would rather tell you a question is open than guess.
+      </p>
+
+      <h2>Calculators</h2>
+      <p>
+        Every calculator shows its formula, the date its figures were checked and the law it follows. Each one is tested against worked examples before it is published. Calculators give the statutory minimum;
+        your contract or company policy may give you more.
+      </p>
+
+      <h2>Corrections</h2>
+      <p>
+        If you think something is wrong, tell us through the links on the <a href="/about/">About page</a>. We check the report against the source, fix the page and update its "Checked on" date.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .section {
+    display: grid;
+    gap: 1.75rem;
+    padding-bottom: var(--section);
+  }
+  .flowfig {
+    margin: 0;
+    padding: 1.25rem;
+    border-radius: var(--r-lg);
+    background: var(--canvas);
+  }
+</style>

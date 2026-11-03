@@ -1,0 +1,104 @@
+---
+title: Mail merge for HR letters
+description: Make offer, appointment, experience and other HR letters for a whole list at once from CSV or Excel, as one Word file with a letter on each page. Nothing is uploaded.
+kind: app
+calculator: mail-merge
+glance:
+  inputs: ["Letter or form", "CSV or Excel list", "Column matches"]
+  output: "One letter per row"
+stage: onboard
+audiences: [hr, founders]
+order: 5
+checked: 2026-11-02
+useWhen: You need the same letter for several people, such as offer letters for a hiring batch or experience letters for a group of leavers.
+tips:
+  - "Start from the <strong>CSV template</strong> for your letter. Its column headings are the letter's own details, so every column is matched for you."
+  - "Details that are the same in every letter, such as the company name and who signs, can be typed once in the column check instead of being repeated on every row."
+  - "Read a few letters in the preview before you download, and have someone check names, dates and amounts against your records. A mail merge repeats a mistake as quickly as it repeats a letter."
+  - "Keep the list to what the letter prints. Leave out PAN, Aadhaar, bank details and anything else the letter doesn't need."
+sources:
+  - title: "Government notifies the Digital Personal Data Protection Rules, 2025"
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2190014&reg=3&lang=2
+    publisher: Press Information Bureau, 14 November 2025
+related:
+  - toolkit/offer-letter
+  - toolkit/appointment-letter
+  - toolkit/experience-letter
+  - toolkit/relieving-letter
+  - toolkit/salary-revision-letter
+  - toolkit/annual-performance-appraisal
+  - toolkit/org-chart-builder
+  - glossary/dpdp-act
+faq:
+  - q: Is my list uploaded anywhere?
+    a: No. Your browser reads the file, fills in the letters and makes the Word file on your own device. Nothing is sent to PeopleCraft or anyone else, and nothing is saved, so the list is gone when you close or reload the page.
+  - q: What file can I use?
+    a: A CSV file or an Excel workbook (.xlsx) with one header row and one row per letter. Older .xls files need to be saved as .xlsx or CSV first. The headings don't have to match the template; you match each column to a detail in the letter before anything is made.
+  - q: How many letters can I make at once?
+    a: Up to 1,000 rows from one file. A bigger list is cut at 1,000 and the page tells you how many rows were left out. The Word file holds every letter, one to a page; very long runs take a little longer to prepare.
+  - q: Which letters can I merge?
+    a: Every letter in the toolkit, from offer and appointment letters to experience, relieving, salary revision and termination letters, plus the annual appraisal and interview evaluation forms, which teams often prepare for a whole group. The text is the same as on each letter's own page, so check it suits your organisation and edit the Word file if you need to.
+  - q: Why is a row marked "needs fixing"?
+    a: A required detail is empty, or a date or amount can't be read, such as 31/02/2026. Those rows are left out of the Word file and printout unless you include them, in which case a blank line marks each missing detail. Fix the row in your file and load it again.
+keywords:
+  - mail merge hr letters
+  - bulk offer letters from excel
+  - mail merge excel to word
+  - bulk experience letters
+  - generate letters from csv
+  - hr letter generator india
+draft: false
+---
+
+## How it works
+
+The mail merge uses the same letters as the rest of the toolkit. Each letter has a set of details, such as the candidate's name, the start date and the CTC, and the merge fills them in from one row of your list at a time.
+
+<Figure title="From a list to letters" caption="Each row of your list becomes one letter. Rows with a missing or unreadable detail are held back until you fix them or choose to include them.">
+  <Flow
+    steps={[
+      { title: "Choose the letter", detail: "Download its CSV template if you are starting from scratch" },
+      { title: "Load your list", detail: "CSV or Excel, one row per letter" },
+      { title: "Match the columns", detail: "Matched by heading; change any, or type one value for every letter" },
+      { title: "Check and preview", detail: "Every row is checked; read any letter before you download" }
+    ]}
+    outcomes={[
+      { title: "Ready", detail: "In the Word file and printout, one letter to a page", tone: "good" },
+      { title: "Needs fixing", detail: "Held back until fixed, or included with blank lines", tone: "bad" }
+    ]}
+  />
+</Figure>
+
+Dates are written the Indian way, so 02/11/2026 becomes 2 November 2026, and amounts in rupees with Indian digit grouping, so 1200000 or 12 LPA becomes ₹12,00,000. Paragraphs, list items and table rows that only hold optional details are left out of a letter when those details are empty, exactly as on each letter's own page. Forms keep them as lines to fill in by hand.
+
+## How to prepare your list
+
+<Steps
+  items={[
+    { title: "Download the template for your letter", body: "The CSV template has one column for each detail in the letter, with the same names as on the letter's own page. Open it in Excel or Google Sheets." },
+    { title: "Add one row per letter", body: "Fill in the details for each person. Dates can be written as 02/11/2026, 2-Nov-2026 or 2026-11-02, and amounts as 12,00,000, ₹45,000 or 12 LPA. Keep line breaks inside an address cell; they are kept in the letter." },
+    { title: "Leave out what's the same for everyone", body: "Company name, address and the person who signs can be typed once in the column check. Delete those columns, or leave them empty." },
+    { title: "Load it and check every row", body: "Fix the rows the check lists in your file, then load it again. Read a few letters in the preview before you download them all." }
+  ]}
+/>
+
+Your own export works too: headings such as Emp Code, Employee Name, Designation, DOJ and Annual CTC are matched for you, and you can change any match before the letters are made.
+
+| The check | What it means | What happens |
+| --- | --- | --- |
+| A required detail is empty | The letter would have a gap, such as no start date | Needs fixing: held back unless you include it |
+| A date or amount can't be read | For example 31/02/2026, or "about 5 lakh" | Needs fixing: held back unless you include it |
+| A choice isn't one of the letter's options | The text is used as written | Check: included, but read it in the preview |
+| An email or number looks wrong | For example "asha@" in an email column | Check: included, but read it in the preview |
+
+## Your data stays on your device
+
+<Callout type="note" title="What happens to your list">
+  <ul>
+    <li>Your browser reads the file, fills in the letters and makes the Word file on your device. The list is never uploaded to PeopleCraft or anyone else.</li>
+    <li>Nothing is stored. Reload or close the page, and the list is gone.</li>
+    <li>The Word file and the printout are yours to keep safe. They hold the names, pay and dates of everyone in the list.</li>
+  </ul>
+</Callout>
+
+Employee and candidate details are personal data under the Digital Personal Data Protection Act, 2023. Its Rules were notified in November 2025, and most of the duties they place on organisations apply after an 18-month phase-in. Working on your own device means the list doesn't pass to another service, but the letters still need the same care as any personnel record: share them only with the people they are for.

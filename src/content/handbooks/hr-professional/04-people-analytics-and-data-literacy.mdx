@@ -1,0 +1,183 @@
+---
+title: "People analytics and data literacy"
+description: "The four levels of HR analytics, 20 HR metrics with formulas, how to turn numbers into a story leaders act on, and the data traps that mislead HR teams."
+book: hr-professional
+chapter: 4
+stage: lead
+audiences: [hr, students]
+checked: 2026-11-02
+summary:
+  - "People analytics starts with a business question, not a dashboard. Most HR teams get real value from describing and diagnosing with a spreadsheet before any predictive tool."
+  - "Twenty metrics cover hiring, retention, engagement, productivity, pay and compliance. Define each one in writing so it is calculated the same way every time."
+  - "A good data story moves from what is happening, to why it matters in rupees, to the cause, the recommendation and the expected result."
+  - "Watch for the common traps: correlation mistaken for cause, survivor bias, tiny groups and vanity metrics."
+  - "Protect people's privacy in every report. Most duties under the Digital Personal Data Protection (DPDP) Act apply from 2027, but good practice starts now."
+sources:
+  - title: "2026 SHRM Body of Applied Skills and Knowledge (Analytical Aptitude)"
+    url: "https://www.shrm.org/content/dam/en/shrm/credentials/shrm-certification/bask/shrm-bask.pdf"
+    publisher: "SHRM"
+  - title: "Profession Map update history (People analytics, 2023)"
+    url: "https://www.cipd.org/en/the-people-profession/the-profession-map/update-history/"
+    publisher: "CIPD"
+  - title: "The T-Shaped HR Competency Model (Data Literacy)"
+    url: "https://www.aihr.com/hr-competency-model/"
+    publisher: "AIHR"
+  - title: "India's DPDP Act: phased rollout and key compliance milestones"
+    url: "https://www.azbpartners.com/bank/indias-digital-personal-data-protection-act-phased-rollout-and-key-compliance-milestones/"
+    publisher: "AZB & Partners"
+  - title: "Government notifies the Digital Personal Data Protection Rules, 2025"
+    url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2190014&reg=3&lang=2"
+    publisher: "Press Information Bureau"
+related:
+  - toolkit/people-analytics
+  - toolkit/hr-metrics-calculator
+  - toolkit/attrition-cost-calculator
+  - toolkit/pay-equity-analyzer
+  - toolkit/manager-effectiveness-survey
+  - handbooks/hr-professional/03-business-acumen
+  - handbooks/recruitment/09-metrics-mistakes-and-checklists
+  - glossary/attrition
+faq:
+  - q: "How do you calculate attrition rate?"
+    a: "Divide the number of people who left during the period by the average headcount for the period, and multiply by 100. Average headcount is usually the headcount at the start plus the headcount at the end, divided by two."
+  - q: "How is eNPS calculated?"
+    a: "Ask employees how likely they are to recommend the company as a place to work, on a scale of 0 to 10. eNPS is the percentage who answer 9 or 10 minus the percentage who answer 0 to 6. It ranges from −100 to +100."
+  - q: "What are the four types of HR analytics?"
+    a: "Descriptive (what happened), diagnostic (why it happened), predictive (what is likely to happen) and prescriptive (what we should do and what result to expect)."
+  - q: "Can HR use employee data for analytics under the DPDP Act?"
+    a: "The DPDP Act, 2023 and the DPDP Rules, 2025 will govern how employers process personal data, and most of their duties apply from 2027. Before then, map what employee data you hold and why, report in aggregate, and take advice on the legal basis for each use."
+keywords:
+  - hr metrics formulas
+  - attrition rate formula india
+  - enps calculation
+  - people analytics for beginners
+  - hr data storytelling
+  - hr analytics maturity
+draft: false
+---
+
+<Snapshot
+  who="HR analysts, HR business partners (HRBPs), HR managers and anyone who presents people data"
+  risks={[
+    "Decisions made on anecdotes and the loudest voice",
+    "Reports that expose individuals' personal data",
+    "Dashboards that inform no decision"
+  ]}
+  mistakes={[
+    "Collecting data before deciding the question",
+    "Quoting percentages for teams of three or four people",
+    "Showing numbers with no recommendation"
+  ]}
+  exposure="Expensive decisions made on weak evidence, and lost trust when private data leaks"
+  roles={[
+    { role: "HR executives", focus: "Keep the data clean: one employee ID, consistent exit reasons, accurate joining and leaving dates." },
+    { role: "HRBPs", focus: "Learn ten metrics well and explain them to managers in plain words." },
+    { role: "HR heads", focus: "Agree metric definitions with finance, and set rules for who sees what." }
+  ]}
+/>
+
+You don't need to become a data scientist. You need to ask the right business question, find the right numbers, check them, and explain what they mean and what to do. SHRM calls this Analytical Aptitude, CIPD covers it under evidence-based practice and its People analytics specialism, and AIHR under Data Literacy.
+
+## Four levels of HR analytics
+
+Analytics grows in four steps. Each depends on the one before it, so don't skip ahead.
+
+<Figure title="The analytics maturity ladder" caption="Climb in order. Clean, consistent data at step 1 is what makes steps 3 and 4 possible.">
+  <Steps
+    items={[
+      { title: "Descriptive: what happened?", body: "Example: “Attrition was 24% last year.” Tools: HR system reports and a spreadsheet." },
+      { title: "Diagnostic: why did it happen?", body: "Example: “Half of all exits came from teams with the lowest manager scores.” Tools: pivot tables, comparisons between groups, exit-interview themes." },
+      { title: "Predictive: what is likely to happen?", body: "Example: “Which teams are most at risk next quarter?” Tools: regression and similar models, which need several years of clean history." },
+      { title: "Prescriptive: what should we do, and what will change?", body: "Example: “Coach the 15 lowest-rated managers and track their teams' attrition for six months.” Tools: pilots, before-and-after comparisons, scenario models." }
+    ]}
+  />
+</Figure>
+
+Most of the value for a typical Indian company sits in steps 1 and 2, and both can be done well in a spreadsheet. Buy predictive tools only when your basic data is clean and you have a question they will answer.
+
+## Twenty metrics and how to calculate them
+
+Write down each definition, including what counts and what doesn't, and use it every time. A metric that changes definition from quarter to quarter is worse than no metric. The [HR metrics calculator](/toolkit/hr-metrics-calculator/) works out the common ones.
+
+| Area | Metric | Formula | What it tells you |
+| --- | --- | --- | --- |
+| Hiring | Time to fill | Days from role approved to offer accepted | How quickly you can staff the business |
+| Hiring | Cost per hire | Internal plus external recruiting costs ÷ hires | Whether hiring spend is under control |
+| Hiring | Offer acceptance rate | Offers accepted ÷ offers made × 100 | Whether your offers and process compete |
+| Hiring | Quality of hire | Share of hires rated "meets" or above and still with you at 12 months | Whether you hire the right people |
+| Retention | Attrition rate | Exits ÷ average headcount × 100 | How fast people leave |
+| Retention | Voluntary attrition | Resignations ÷ average headcount × 100 | Exits you might have prevented |
+| Retention | Early attrition | Exits within 12 months of joining ÷ joiners in that period × 100 | Problems with hiring or onboarding |
+| Retention | Regretted attrition share | Regretted exits ÷ all exits × 100 | Whether you are losing the people you need most |
+| Engagement | eNPS (employee net promoter score) | % answering 9–10 minus % answering 0–6 | Whether people would recommend you as an employer |
+| Engagement | Absence rate | Days absent ÷ scheduled working days × 100 | Early sign of disengagement or health issues |
+| Engagement | Survey participation | Responses ÷ people invited × 100 | Whether people believe surveys lead to action |
+| Engagement | Manager effectiveness score | Average team rating of the manager | Where coaching will help most |
+| Productivity | Revenue per employee | Revenue ÷ average headcount | Output per person |
+| Productivity | Employee cost ratio | Employee cost ÷ revenue × 100 | Whether people costs grow faster than revenue |
+| Productivity | Training return | (Benefit in ₹ − cost) ÷ cost × 100 | Whether a programme paid for itself |
+| Pay | Compa-ratio | Salary ÷ band midpoint | Where someone sits in their band |
+| Pay | Gender pay gap | (Average pay of men − average pay of women) ÷ average pay of men × 100, within the same level | Unexplained gaps to investigate |
+| Pay | Benefit uptake | Employees using a benefit ÷ eligible employees × 100 | Whether benefits are valued and understood |
+| Compliance | Filings on time | Statutory filings made on time ÷ filings due × 100 | Exposure to penalties and interest |
+| HR operations | HR staff ratio | Total headcount ÷ HR headcount | How many employees each HR person supports |
+
+<Figure title="Attrition rate" caption="Use the same period for exits and average headcount. For a year, the average of the twelve month-end headcounts is more accurate than start plus end divided by two.">
+  <Formula
+    result={{ value: "Attrition rate" }}
+    parts={[{ value: "Exits", label: "in the period" }, { op: "÷" }, { value: "Average headcount", label: "for the same period" }, { op: "×" }, { value: "100" }]}
+    example="Example: 60 exits ÷ 250 average headcount × 100 = 24%"
+  />
+</Figure>
+
+<Figure title="Employee net promoter score (eNPS)" caption="Ask “How likely are you to recommend this company as a place to work?” on a 0–10 scale. Answers of 7 and 8 count in the total but in neither group.">
+  <Formula
+    result={{ value: "eNPS", label: "from −100 to +100" }}
+    parts={[{ value: "% promoters", label: "answered 9 or 10" }, { op: "−" }, { value: "% detractors", label: "answered 0 to 6" }]}
+    example="Example: 45% promoters − 20% detractors = eNPS of +25"
+  />
+</Figure>
+
+## Telling a story with data
+
+Data without a narrative is noise. A list of metrics ("attrition 24%, time to fill 42 days, eNPS +15, cost per hire ₹45,000") leaves leaders asking "so what?". A story connects the numbers to money, a cause and a decision.
+
+<Figure title="The shape of a data story" caption="Every HR data presentation can follow this arc, from the metric to the decision you want." wide>
+  <Flow
+    steps={[
+      { title: "What's happening", detail: "The metric, against a target" },
+      { title: "Why it matters", detail: "The cost in rupees" },
+      { title: "What's causing it", detail: "The diagnosis" },
+      { title: "What we should do", detail: "One clear recommendation" }
+    ]}
+    outcomes={[{ title: "Expected result", detail: "What will change, by when, and how you will measure it", tone: "good" }]}
+  />
+</Figure>
+
+Here is the arc applied to a fictional 500-person company with an average cost to company (CTC) of ₹8 lakh:
+
+> "We are losing people faster than we can replace them. Attrition is 24%, six points above our target, and each vacancy takes 42 days to fill. Half of all exits come from the teams of our 15 lowest-rated managers. We propose ₹8 lakh to coach those managers. If attrition in their teams falls by a quarter, we keep about 15 people a year. At half a year's CTC to replace each one, that is about ₹60 lakh saved, against ₹8 lakh spent. We will report the result in six months."
+
+## Data traps that mislead HR
+
+- **Correlation is not cause.** Teams with free lunches may have lower attrition because they also have better managers or bigger budgets. Look for the real driver before you invest.
+- **Survivor bias.** A survey of current employees can't tell you why people left; the unhappy ones are already gone. Pair it with exit data.
+- **Tiny groups.** In a team of four, one exit is 25% attrition and two exits are 50%. Report counts, not percentages, for small teams, and look at trends over a longer period.
+- **Vanity metrics.** "5,000 applications" means little if 95% were irrelevant. Track shortlist rates, offer acceptance and quality of hire instead.
+- **Averages that hide spread.** An average engagement score of 3.8 can hide one team at 2.5. Always look at the range.
+- **Changing definitions.** If "attrition" includes interns one quarter and excludes them the next, the trend is meaningless.
+
+<Callout type="tip" title="Try this now">
+Ask your leadership team for the three business questions they most want people data to answer. Build your first report around those questions, not around whatever your HR system happens to export.
+</Callout>
+
+## Privacy and fairness in people data
+
+People data is personal data. India's Digital Personal Data Protection Act, 2023 is coming into force in phases: the DPDP Rules, 2025 were notified in November 2025, and most duties for employers apply from 2027. The [digital agility chapter](/handbooks/hr-professional/digital-agility-and-ai/) explains how to prepare. Good practice doesn't need to wait:
+
+- Report in aggregate. Don't show results for groups smaller than five people, so nobody can be identified.
+- Limit access. Managers see their own team's results; individual pay and health data stay with the few people who need them.
+- Collect only what you will use, and decide in advance how long you will keep it.
+- Check analyses for unfair patterns, for example by gender or location, before acting on them. The [pay equity analyser](/toolkit/pay-equity-analyzer/) helps with pay.
+
+For a guided start with your own data, try the [people analytics tool](/toolkit/people-analytics/).

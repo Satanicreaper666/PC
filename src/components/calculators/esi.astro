@@ -1,0 +1,168 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import AsAt from "./parts/AsAt.astro";
+import Icon from "../ui/Icon.astro";
+import { stat } from "../../data/statutory";
+
+const ends = stat("esi.transitionEnds").display;
+const lowWage = stat("esi.lowWageExemption").display;
+const minEmployees = stat("esi.coverageEmployees").display;
+---
+
+<p class="banner" role="note">
+  <Icon name="alert" size={18} />
+  <span
+    ><strong>ESI rules are changing.</strong> The old ESI rules and regulations are kept in force under the Code on Social Security only until {ends}. Re-check the wage limit and
+    rates after that date.</span
+  >
+</p>
+
+<CalcShell id="esi" resultLabel="ESI each month">
+  <Fragment slot="inputs">
+    <Num
+      name="wages"
+      label="Monthly wages counted for ESI"
+      prefix="₹"
+      value="18,500"
+      help="Wages as the Code on Social Security defines them: basic pay, dearness allowance and other pay not on the exclusion list, plus any excess over the 50% limit. Leave out overtime."
+    />
+    <Pick
+      name="covered"
+      label="Is the establishment covered by ESI?"
+      options={[
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" }
+      ]}
+      help={`Covered: ${minEmployees} or more, or registered voluntarily. Hazardous work is covered even with one worker.`}
+    />
+    <Pick
+      name="pwd"
+      label="Does the employee have a disability?"
+      options={[
+        { value: "no", label: "No" },
+        { value: "yes", label: "Yes" }
+      ]}
+      help="The wage limit is higher for employees with a disability."
+    />
+    <Num
+      name="daily"
+      label="Average daily wage (optional)"
+      prefix="₹"
+      placeholder="Leave blank if not needed"
+      help={`Employees whose average daily wage is ${lowWage} or less pay no employee share (as reported; confirm with ESIC).`}
+    />
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="total">₹0</span>
+    <span class="sub" data-out="status"></span>
+  </Fragment>
+</CalcShell>
+<AsAt ids={["esi.wageCeiling", "esi.wageCeilingPwd", "esi.employeeRate", "esi.employerRate", "esi.lowWageExemption", "esi.contributionPeriods", "esi.transitionEnds"]} />
+
+<script>
+  import { bindCalculator, inr, inrExact, type CalcStep } from "../../scripts/calc-kit";
+  import { computeEsi, esiRules } from "../../lib/calc/esi";
+  import { stat } from "../../data/statutory";
+  const rules = esiRules();
+  const periods = stat("esi.contributionPeriods").display;
+  const minEmployees = stat("esi.coverageEmployees").display;
+  /** rate% of an amount in basis points, as lib/calc/esi.ts works it. */
+  const exactPct = (amount: number, rate: number) => (amount * Math.round(rate * 100)) / 10000;
+
+  bindCalculator("esi", (v) => {
+    const G = v.num("wages");
+    if (G <= 0) return { outputs: { total: "₹0", status: "" }, message: "Enter the monthly wages counted for ESI." };
+    const dailyRaw = v.raw("daily").replace(/[₹,\s]/g, "");
+    const daily = dailyRaw === "" ? null : v.num("daily");
+    const r = computeEsi({
+      wages: G,
+      pwd: v.str("pwd", "no") === "yes",
+      establishmentCovered: v.str("covered", "yes") === "yes",
+      avgDailyWage: daily
+    });
+    // A month has at most 31 days, so for steady pay the average daily wage cannot be below wages ÷ 31.
+    const floor = G / 31;
+    const warnings =
+      daily !== null && daily > 0 && daily < floor
+        ? [
+            `An average daily wage of ${inr(daily)} is less than ${inr(G)} ÷ 31 days (${inrExact(floor)}), so it does not match these monthly wages unless pay changed during the contribution period. The employee's share is waived only when the average daily wage is ${inr(rules.lowWage)} or less.`
+          ]
+        : [];
+    if (!r.covered) {
+      return {
+        working: [
+          r.reason === "establishment"
+            ? { label: "Covered by ESI", formula: "the establishment is not covered", result: "No" }
+            : { label: "Covered by ESI", formula: `${inr(G)} is more than the ${inr(r.ceiling)} wage limit`, result: "No" }
+        ],
+        outputs: { total: "Not covered", status: r.reason === "establishment" ? "The establishment is not covered by ESI." : `Wages are above the ${inr(r.ceiling)} limit.` },
+        lines: [
+          { label: "Monthly wages", value: inr(G) },
+          { label: "ESI wage limit", value: inr(r.ceiling), note: v.str("pwd") === "yes" ? "For an employee with a disability" : undefined }
+        ],
+        notes: [
+          r.reason === "establishment"
+            ? `ESI is voluntary for establishments with fewer than ${minEmployees}. Hazardous work is covered even with one worker.`
+            : `Coverage is tested at the start of each contribution period (${periods}). Someone already covered stays covered until that period ends, even if pay rises above the limit.`
+        ]
+      };
+    }
+    const eeExact = exactPct(G, rules.employeeRate);
+    const erExact = exactPct(G, rules.employerRate);
+    const working: CalcStep[] = [
+      { label: "Covered by ESI", formula: `${inr(G)} is within the ${inr(r.ceiling)} wage limit`, result: "Yes" },
+      r.lowWageExempt
+        ? { label: "Employee share", formula: `average daily wage ${inr(daily ?? 0)} is ${inr(rules.lowWage)} or less`, result: "₹0" }
+        : { label: "Employee share", formula: `${rules.employeeRate}% × ${inr(G)} = ${inrExact(eeExact)}, rounded up`, result: inr(r.employee) },
+      { label: "Employer share", formula: `${rules.employerRate}% × ${inr(G)} = ${inrExact(erExact)}, rounded up`, result: inr(r.employer) },
+      { label: "ESI each month", formula: `${inr(r.employee)} + ${inr(r.employer)}`, result: inr(r.total) },
+      { label: "For a contribution period", formula: `${inr(r.total)} × 6 months`, result: inr(r.total * 6) }
+    ];
+    return {
+      working,
+      warnings,
+      outputs: {
+        total: inr(r.total),
+        status: `Covered by ESI. ${inr(r.employee)} is deducted from pay and the employer adds ${inr(r.employer)} each month.`
+      },
+      lines: [
+        {
+          label: "Employee share, deducted from pay",
+          value: inr(r.employee),
+          note: r.lowWageExempt ? "Nil: average daily wage within the low-wage limit" : `${rules.employeeRate}% of ${inr(G)}, rounded up`
+        },
+        { label: "Employer share", value: inr(r.employer), note: `${rules.employerRate}% of ${inr(G)}, rounded up` },
+        { label: "Total each month", value: inr(r.total), strong: true },
+        { label: "Total for a contribution period", value: inr(r.total * 6), note: "Six months" },
+        { label: "ESI wage limit", value: inr(r.ceiling) }
+      ],
+      notes: [
+        `Contribution periods run ${periods}. If pay rises above the limit during a period, contributions continue on actual wages until the period ends.`
+      ]
+    };
+  });
+</script>
+
+<style>
+  .banner {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--r);
+    background: var(--warn-soft);
+    color: var(--warn);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+  .banner :global(svg) {
+    flex: none;
+    margin-top: 0.15rem;
+  }
+  .banner strong {
+    font-weight: 680;
+  }
+</style>

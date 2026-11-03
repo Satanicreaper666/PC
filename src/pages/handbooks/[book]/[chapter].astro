@@ -1,0 +1,517 @@
+---
+import { render } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/site/Breadcrumbs.astro";
+import Icon from "../../../components/ui/Icon.astro";
+import Checked from "../../../components/content/Checked.astro";
+import InShort from "../../../components/content/InShort.astro";
+import Faq from "../../../components/content/Faq.astro";
+import Sources from "../../../components/content/Sources.astro";
+import Related from "../../../components/content/Related.astro";
+import Disclaimer from "../../../components/content/Disclaimer.astro";
+import BookThread from "../../../components/ui/BookThread.astro";
+import TermLinks from "../../../components/content/TermLinks.astro";
+import SpotIcon from "../../../components/art/SpotIcon.astro";
+import PinButton from "../../../components/desk/PinButton.astro";
+import SectionLinks from "../../../components/desk/SectionLinks.astro";
+import { mdxComponents } from "../../../components/content/mdx";
+import { BOOKS } from "../../../data/books";
+import { audienceList } from "../../../data/taxonomy";
+import { allChapters, chapterSlug, chapterUrl, bookUrl, readingMinutes, resolveRefs, breadcrumbLd, faqLd, type Chapter } from "../../../lib/library";
+
+export async function getStaticPaths() {
+  const chapters = await allChapters();
+  return chapters.map((c) => ({ params: { book: c.data.book, chapter: chapterSlug(c) }, props: { entry: c } }));
+}
+
+const { entry } = Astro.props as { entry: Chapter };
+const book = BOOKS[entry.data.book];
+const siblings = (await allChapters()).filter((c) => c.data.book === entry.data.book);
+const idx = siblings.findIndex((c) => c.id === entry.id);
+const prev = siblings[idx - 1];
+const next = siblings[idx + 1];
+const { Content, headings } = await render(entry);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const minutes = readingMinutes(entry.body);
+const related = await resolveRefs(entry.data.related);
+const useWith = related.filter((r) => r.href.startsWith("/toolkit/") || r.href.startsWith("/jd-library/")).slice(0, 4);
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Handbooks", href: "/handbooks/" },
+  { name: book.short, href: bookUrl(entry.data.book) },
+  { name: `Chapter ${entry.data.chapter}`, href: chapterUrl(entry) }
+];
+const articleLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: entry.data.title,
+  description: entry.data.description,
+  inLanguage: "en-IN",
+  dateModified: entry.data.checked.toISOString(),
+  author: { "@type": "Organization", name: "PeopleCraft", url: Astro.site?.toString() },
+  publisher: { "@type": "Organization", name: "PeopleCraft", url: Astro.site?.toString() },
+  isPartOf: { "@type": "Book", name: book.title, url: new URL(bookUrl(entry.data.book), Astro.site).toString() },
+  mainEntityOfPage: new URL(chapterUrl(entry), Astro.site).toString(),
+  keywords: entry.data.keywords.join(", ") || undefined
+};
+const ld = [articleLd, breadcrumbLd(Astro.site, trail), faqLd(entry.data.faq)].filter(Boolean) as Record<string, unknown>[];
+---
+
+<BaseLayout title={`${entry.data.title} — ${book.title}`} description={entry.data.description} type="article" jsonLd={ld} modified={entry.data.checked} image={`/og/${entry.data.book}.png`}>
+  <article data-pagefind-body data-pagefind-meta={`kind:${book.short} handbook, chapter ${entry.data.chapter}`} data-pagefind-filter="section:Handbooks">
+    <header class="head band">
+      <div class="wrap hero-split head-split">
+      <div class="head-inner">
+        <Breadcrumbs trail={trail} />
+        <p class="kicker">
+          <a href={bookUrl(entry.data.book)}>{book.title}</a>
+          <span class="of">Chapter {entry.data.chapter} of {siblings.length}</span>
+        </p>
+        <h1 class="display">{entry.data.title}</h1>
+        <p class="lede">{entry.data.description}</p>
+        <div class="meta">
+          <Checked date={entry.data.checked} sources={entry.data.sources.length} />
+          <span class="chip"><Icon name="clock" size={15} /> {minutes} min read</span>
+          <span class="chip">
+            <Icon name="people" size={15} /> For {audienceList(entry.data.audiences)}
+          </span>
+          <span class="meta-actions" data-print="hide">
+            <button class="btn btn-ghost btn-sm print" type="button" data-print-page>
+              <Icon name="printer" size={16} /> Print
+            </button>
+            <PinButton
+              item={{
+                href: chapterUrl(entry),
+                title: entry.data.title,
+                kind: `${book.short} handbook`,
+                art: entry.data.book,
+                description: entry.data.description,
+                meta: `Chapter ${entry.data.chapter}, ${minutes} min read`
+              }}
+            />
+          </span>
+          <SectionLinks />
+        </div>
+      </div>
+      <div class="head-glance" data-print="hide" data-pagefind-ignore>
+        <BookThread
+          book={entry.data.book}
+          bookHref={bookUrl(entry.data.book)}
+          current={entry.data.chapter}
+          chapters={siblings.map((c) => ({ n: c.data.chapter, title: c.data.title, href: chapterUrl(c) }))}
+        />
+      </div>
+      </div>
+    </header>
+
+    <div class="wrap body">
+      <aside class="side" data-print="hide" data-pagefind-ignore>
+        <details class="toc" open data-toc>
+          <summary>In this chapter</summary>
+          <ol>
+            {
+              toc.map((h) => (
+                <li class:list={[`d${h.depth}`]}>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))
+            }
+          </ol>
+        </details>
+        {
+          useWith.length > 0 && (
+            <section class="use-with" aria-labelledby="use-with-h">
+              <h2 id="use-with-h">Use with this chapter</h2>
+              <ul>
+                {useWith.map((r) => (
+                  <li>
+                    <a href={r.href}>
+                      <span class="uw-icon" aria-hidden="true">
+                        <SpotIcon name={r.art} size={40} />
+                      </span>
+                      <span class="uw-t">
+                        {r.title}
+                        <span class="uw-k">{r.kind}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+        <details class="book-nav">
+          <summary>All {siblings.length} chapters</summary>
+          <ol>
+            {
+              siblings.map((c) => (
+                <li>
+                  <a href={chapterUrl(c)} aria-current={c.id === entry.id ? "page" : undefined}>
+                    <span class="n">{c.data.chapter}</span>
+                    {c.data.title}
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+        </details>
+      </aside>
+
+      <div class="article">
+        <InShort items={entry.data.summary} />
+        <div class="prose content">
+          <TermLinks><Content components={mdxComponents} /></TermLinks>
+        </div>
+        <div class="after">
+          <Faq items={entry.data.faq} />
+          <Sources items={entry.data.sources} checked={entry.data.checked} />
+          <Disclaimer kind="law" />
+          <nav class="pager" aria-label="Chapters" data-print="hide" data-pagefind-ignore>
+            {
+              prev ? (
+                <a class="pg prev" href={chapterUrl(prev)}>
+                  <span class="pg-k">
+                    <Icon name="arrow-left" size={16} /> Chapter {prev.data.chapter}
+                  </span>
+                  <span class="pg-t">{prev.data.title}</span>
+                </a>
+              ) : (
+                <a class="pg prev" href={bookUrl(entry.data.book)}>
+                  <span class="pg-k">
+                    <Icon name="arrow-left" size={16} /> Handbook home
+                  </span>
+                  <span class="pg-t">{book.title}</span>
+                </a>
+              )
+            }
+            {
+              next && (
+                <a class="pg next" href={chapterUrl(next)}>
+                  <span class="pg-k">
+                    Chapter {next.data.chapter} <Icon name="arrow-right" size={16} />
+                  </span>
+                  <span class="pg-t">{next.data.title}</span>
+                </a>
+              )
+            }
+          </nav>
+          <div data-pagefind-ignore><Related items={related} /></div>
+        </div>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  // Highlight the section being read in the table of contents.
+  const links = new Map<string, HTMLAnchorElement>();
+  document.querySelectorAll<HTMLAnchorElement>("[data-toc] a").forEach((a) => links.set(a.hash.slice(1), a));
+  const heads = Array.from(document.querySelectorAll<HTMLElement>(".content h2[id], .content h3[id]"));
+  if (heads.length && "IntersectionObserver" in window) {
+    let current = "";
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (!visible.length) return;
+        const id = (visible[0].target as HTMLElement).id;
+        if (id === current) return;
+        links.get(current)?.removeAttribute("aria-current");
+        links.get(id)?.setAttribute("aria-current", "location");
+        current = id;
+      },
+      { rootMargin: "-20% 0px -65% 0px" }
+    );
+    heads.forEach((h) => io.observe(h));
+  }
+  // On small screens the contents list starts closed.
+  if (window.matchMedia("(max-width: 1023px)").matches) document.querySelector<HTMLDetailsElement>("[data-toc]")?.removeAttribute("open");
+</script>
+
+<style>
+  .head {
+    padding-block: 2rem 2.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .head-inner {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+  }
+  .head-split {
+    align-items: center;
+  }
+  .use-with h2 {
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    color: var(--ink);
+    padding: 0.2rem 0;
+  }
+  .use-with ul {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .side .use-with a {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0.35rem 0.4rem 0.35rem 0.35rem;
+    margin: 0;
+    border: 0;
+    border-radius: 10px;
+    color: var(--ink);
+  }
+  .side .use-with a:hover {
+    background: var(--canvas);
+  }
+  .uw-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.07),
+      1px 2px 0 rgb(17 20 58 / 0.08);
+  }
+  .uw-t {
+    display: grid;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .uw-k {
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    color: var(--ink-3);
+  }
+  /* The book thread on the right carries this on screen; print keeps the words. */
+  .kicker {
+    display: none;
+  }
+  @media print {
+    .kicker {
+      display: flex;
+    }
+  }
+  .kicker-print {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.9rem;
+    font-size: var(--fs-sm);
+  }
+  .kicker a {
+    color: var(--primary);
+    font-weight: 620;
+    text-decoration: none;
+  }
+  .kicker a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .of {
+    color: var(--ink-3);
+  }
+  h1 {
+    max-width: 22ch;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.75rem;
+    margin-top: 0.4rem;
+  }
+  .meta-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .body {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 3.5rem;
+    padding-block: 2.5rem var(--section);
+  }
+  .side {
+    position: sticky;
+    top: calc(var(--header-h) + 1.25rem);
+    align-self: start;
+    max-height: calc(100vh - var(--header-h) - 2.5rem);
+    overflow-y: auto;
+    display: grid;
+    gap: 1rem;
+    font-size: var(--fs-sm);
+  }
+  .side summary {
+    cursor: pointer;
+    font-weight: 650;
+    color: var(--ink);
+    padding: 0.2rem 0;
+  }
+  .side ol {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.1rem;
+    border-left: 2px solid var(--line);
+  }
+  .side a {
+    display: block;
+    padding: 0.3rem 0 0.3rem 0.8rem;
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    color: var(--ink-2);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .side .d3 a {
+    padding-left: 1.6rem;
+    font-size: var(--fs-xs);
+  }
+  .side a:hover {
+    color: var(--ink);
+  }
+  .side a[aria-current] {
+    color: var(--ink);
+    font-weight: 620;
+    border-left-color: var(--accent);
+  }
+  .book-nav .n {
+    display: inline-block;
+    min-width: 1.4rem;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .article {
+    display: grid;
+    grid-template-columns: [content-start] minmax(0, 44rem) [content-end] minmax(0, 1fr) [wide-end];
+    align-content: start;
+    row-gap: 2rem;
+  }
+  .article > :global(*) {
+    grid-column: content;
+    min-width: 0;
+  }
+  .content {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: content-start / wide-end;
+    max-width: none;
+  }
+  .content > :global(*) {
+    grid-column: content;
+    min-width: 0;
+  }
+  .content > :global(.wide) {
+    grid-column: content-start / wide-end;
+  }
+  .after {
+    display: grid;
+    gap: 2.5rem;
+    margin-top: 1rem;
+  }
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  /* Turning the page: a sheet with its lower corner lifted, the way you'd flick to the next page. */
+  .pg {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem 1.15rem;
+    border-radius: 3px;
+    background: var(--paper);
+    text-decoration: none;
+    color: inherit;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.09),
+      1px 1.5px 0 rgb(17 20 58 / 0.07);
+    transition: transform 200ms var(--ease-out), box-shadow 200ms;
+  }
+  .pg::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: width 220ms var(--ease-out), height 220ms var(--ease-out);
+  }
+  .pg.next::after {
+    right: 0;
+    background: linear-gradient(315deg, var(--paper) 0 45%, var(--neel-100) 50%, var(--neel-50) 100%);
+    border-top-left-radius: 4px;
+    box-shadow: -2px -2px 4px rgb(17 20 58 / 0.12);
+  }
+  .pg.prev::after {
+    left: 0;
+    background: linear-gradient(45deg, var(--paper) 0 45%, var(--neel-100) 50%, var(--neel-50) 100%);
+    border-top-right-radius: 4px;
+    box-shadow: 2px -2px 4px rgb(17 20 58 / 0.12);
+  }
+  .pg:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgb(59 68 166 / 0.3),
+      3px 8px 18px -10px rgb(17 20 58 / 0.35);
+  }
+  .pg:hover::after {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+  .pg.next {
+    text-align: right;
+    grid-column: 2;
+  }
+  .pg-k {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .next .pg-k {
+    justify-content: flex-end;
+  }
+  .pg-t {
+    font-weight: 640;
+    line-height: 1.3;
+  }
+  @media (max-width: 1023px) {
+    .body {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    /* On phones the same tools close the chapter, under "Keep going". */
+    .use-with {
+      display: none;
+    }
+    .side {
+      position: static;
+      max-height: none;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+    }
+    .article {
+      grid-template-columns: [content-start] minmax(0, 1fr) [content-end wide-end];
+    }
+  }
+  @media (max-width: 560px) {
+    .pager {
+      grid-template-columns: 1fr;
+    }
+    .pg.next {
+      grid-column: 1;
+    }
+  }
+</style>

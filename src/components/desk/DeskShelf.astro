@@ -1,0 +1,209 @@
+---
+/**
+ * Reading progress on My desk: each handbook with a knot per chapter, drawn like
+ * the thread in a chapter's header (src/components/ui/BookThread.astro). Every knot
+ * is a link to its chapter. Built here unread; desk-page.ts fills in the knots of
+ * chapters read (pc-desk-read), the count and the next chapter to read.
+ */
+import BookCover from "../ui/BookCover.astro";
+import PenTick from "../marks/PenTick.astro";
+import type { BookId } from "../../data/books";
+import type { BookMeta } from "./shared";
+interface Props {
+  books: BookMeta[];
+}
+const { books } = Astro.props;
+---
+
+<ul class="shelf" data-shelf>
+  {
+    books.map((b) => (
+      <li class="sb" data-book={b.id} data-total={b.chapters.length}>
+        <BookCover id={b.id as BookId} size="sm" class="sb-cover" />
+        <div class="sb-head">
+          <h3 class="sb-title">
+            <a href={b.href}>{b.title}</a>
+          </h3>
+          <p class="sb-count" data-book-count>
+            {b.chapters.length} chapters, none read yet
+          </p>
+        </div>
+        <ol class="sb-thread" style={`--n:${b.chapters.length}`} aria-label={`Chapters of ${b.title}`}>
+          {b.chapters.map((c) => (
+            <li data-ch={c.href} data-n={c.n} data-title={c.title}>
+              <a href={c.href} aria-label={`Chapter ${c.n}: ${c.title}`}>
+                <span class="knot" aria-hidden="true" />
+              </a>
+            </li>
+          ))}
+        </ol>
+        <p class="sb-next" data-book-next>
+          <span class="sb-k">Start with</span>
+          <a href={b.chapters[0].href}>
+            Chapter 1: {b.chapters[0].title}
+          </a>
+        </p>
+        <p class="sb-done" data-book-done hidden>
+          <PenTick class="sb-tick" />
+          <span>Every chapter read.</span>
+          <a href={b.href}>Back to the handbook</a>
+        </p>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .shelf {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .sb {
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    gap: 0.6rem 0.8rem;
+    align-items: center;
+    padding: 0.9rem 1rem 1rem;
+    border-radius: 4px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.06);
+  }
+  .sb :global(.sb-cover) {
+    width: 2.4rem;
+  }
+  .sb-head {
+    min-width: 0;
+  }
+  .sb-title {
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+  .sb-title a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .sb-title a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .sb-count {
+    margin-top: 0.1rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .sb.started .sb-count {
+    color: var(--ink-2);
+  }
+
+  /* One weft thread with a knot per chapter (as in BookThread.astro). */
+  .sb-thread {
+    grid-column: 1 / -1;
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    align-items: center;
+    height: 2.2rem;
+  }
+  .sb-thread::before {
+    content: "";
+    position: absolute;
+    left: calc(50% / var(--n));
+    right: calc(50% / var(--n));
+    top: calc(50% - 2.5px);
+    height: 5px;
+    border-radius: 3px;
+    background: var(--thread, var(--neel-200));
+  }
+  .sb-thread li {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+  .sb-thread a {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 2.2rem;
+    border-radius: 999px;
+    text-decoration: none;
+  }
+  .knot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    border: 2px solid var(--neel-600);
+    background: var(--paper);
+    box-shadow: 0 0 0 3px var(--paper);
+    transition: transform 160ms var(--ease-out);
+  }
+  .sb-thread .read .knot {
+    background: var(--neel-500);
+    border-color: var(--neel-500);
+  }
+  /* The next chapter to read: a turmeric knot. */
+  .sb-thread .next .knot {
+    width: 1rem;
+    height: 1rem;
+    background: var(--accent);
+    border-color: var(--haldi-700);
+  }
+  .sb-thread a:hover .knot {
+    transform: scale(1.3);
+  }
+  .sb-next,
+  .sb-done {
+    grid-column: 1 / -1;
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+  }
+  .sb-k {
+    margin-right: 0.35rem;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .sb-next a,
+  .sb-done a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-underline-offset: 3px;
+  }
+  .sb-next a:hover,
+  .sb-done a:hover {
+    text-decoration-color: currentColor;
+  }
+  .sb-done {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.2rem 0.45rem;
+    font-weight: 600;
+  }
+  .sb-done :global(.sb-tick) {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .knot {
+      transition: none;
+    }
+    .sb-thread a:hover .knot {
+      transform: none;
+    }
+  }
+</style>

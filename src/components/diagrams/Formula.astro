@@ -1,0 +1,158 @@
+---
+import "./desk.css";
+/**
+ * A formula people can read.
+ * <Formula
+ *   parts={[{ value: "Last drawn wages", label: "basic + DA, monthly" }, { op: "×" }, { value: "15", label: "days" }, { op: "×" }, { value: "Years", label: "completed years of service" }, { op: "÷" }, { value: "26", label: "working days in a month" }]}
+ *   result={{ value: "Gratuity", label: "subject to the legal ceiling" }}
+ * />
+ * On the desk: each term is a paper chip, the operators are written in pen, the result is
+ * highlighted (the figure to remember) and the worked example is pencilled underneath:
+ * provisional, an example only.
+ */
+type Part = { value: string; label?: string } | { op: string };
+interface Props {
+  parts: Part[];
+  result?: { value: string; label?: string };
+  label?: string;
+  example?: string;
+}
+const { parts, result, label, example } = Astro.props;
+const spoken = [result ? `${result.value} equals` : "", ...parts.map((p) => ("op" in p ? ({ "×": "times", "÷": "divided by", "+": "plus", "−": "minus", "-": "minus" } as Record<string, string>)[p.op] ?? p.op : p.value))].join(" ");
+// "Example (fixed-term):" becomes a pencilled label; the working itself stays in the text face.
+const lead = example?.match(/^\s*(Example[^:<]{0,40}):\s*/);
+const exLabel = lead && lead[1].trim().split(/\s+/).length <= 6 ? lead[1].trim() : undefined;
+const exBody = exLabel && lead ? example!.slice(lead[0].length) : example;
+---
+
+<div class="fx" data-draw role="group" aria-label={label ?? spoken}>
+  <div class="row" aria-hidden="true">
+    {
+      result && (
+        <>
+          <span class="tok dk-card result" style="--i:0">
+            <span class="v"><span class="hl" data-mark>{result.value}</span></span>
+            {result.label && <span class="l">{result.label}</span>}
+          </span>
+          <span class="op eq hand">=</span>
+        </>
+      )
+    }
+    {
+      parts.map((p, i) =>
+        "op" in p ? (
+          <span class:list={["op", "hand", { word: /[a-z]/i.test(p.op) }]}>{p.op}</span>
+        ) : (
+          <span class="tok dk-card" style={`--i:${i + 1}`}>
+            <span class="v">{p.value}</span>
+            {p.label && <span class="l">{p.label}</span>}
+          </span>
+        )
+      )
+    }
+  </div>
+  <p class="visually-hidden">{spoken}</p>
+  {
+    example && (
+      <p class="ex">
+        {exLabel && (
+          <span class="ex-label pencil">
+            {exLabel}
+            <span class="visually-hidden">: </span>
+          </span>
+        )}
+        <span class="ex-body" set:html={exBody} />
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .fx {
+    display: grid;
+    gap: 1rem;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem 0.6rem;
+    padding: 0.15rem 0.3rem 0.35rem 0;
+  }
+  /* A paper chip for each term. */
+  .tok {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.55rem 0.85rem 0.6rem;
+    max-width: 13rem;
+  }
+  .v {
+    font-weight: 660;
+    font-size: var(--fs-md);
+    font-stretch: 104%;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  .l {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.3;
+  }
+  /* The operators, written in pen. */
+  .op {
+    min-width: 1rem;
+    text-align: center;
+    font-size: 2.35rem;
+    font-weight: 700;
+    line-height: 1;
+    padding-bottom: 0.2rem;
+    transform: rotate(-4deg);
+  }
+  .op.word {
+    font-size: 1.65rem;
+  }
+  /* The worked example, pencilled under the formula. */
+  .ex {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.6rem;
+    padding: 0.55rem 0 0;
+    border-top: 1.5px solid rgb(91 95 110 / 0.28);
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+    color: #4f5363;
+  }
+  .ex-label {
+    flex-shrink: 0;
+    font-size: 1.35rem;
+    line-height: 1.1;
+  }
+  .ex-body {
+    flex: 1 1 18rem;
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  :global(html.js-anim) .fx:not(.draw):not(.drawn) .tok {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  .fx:global(.draw) .tok {
+    animation: fx-in 0.5s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 0.08s);
+  }
+  @keyframes fx-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  /* Printed: every chip is on the page, whether or not it was scrolled to. */
+  @media print {
+    .fx .tok {
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+    }
+  }
+</style>

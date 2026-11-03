@@ -1,0 +1,41 @@
+---
+import Icon from "../ui/Icon.astro";
+interface Props {
+  kind?: "law" | "tool" | "template" | "survey" | "plan";
+}
+const { kind = "law" } = Astro.props;
+const text = {
+  law: "This page explains the law in plain words; it is not legal advice. Rules can differ by state, industry and your contract. For a decision about a specific case, check the official source or ask a lawyer or the labour department.",
+  tool: "Results are estimates based on the rules and inputs shown. Your employer's policy, contract or a later change in the law can change the answer. Check important numbers before you rely on them.",
+  template: "Templates are a starting point. Adapt them to your company's policy and your state's rules, and have important letters checked before you send them.",
+  survey: "This is a practical self-check, not a validated psychometric test. Use the scores to start a conversation, not to make decisions about individuals on their own.",
+  plan: "This is a general guide. Adapt the steps and dates to your organisation, and check any legal deadline against the current notification."
+}[kind];
+---
+
+<aside class="disclaimer" aria-label="Disclaimer">
+  <Icon name="info" size={18} />
+  <p>{text} <a href="/disclaimer/">Read the full disclaimer</a>.</p>
+</aside>
+
+<style>
+  .disclaimer {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.9rem 1rem;
+    border-radius: var(--r);
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+  .disclaimer :global(svg) {
+    margin-top: 0.15rem;
+    color: var(--ink-3);
+  }
+  a {
+    color: var(--primary);
+    text-underline-offset: 3px;
+  }
+</style>

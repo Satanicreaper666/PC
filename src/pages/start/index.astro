@@ -1,0 +1,205 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import Icon from "../../components/ui/Icon.astro";
+import Scene from "../../components/art/Scene.astro";
+import MarginNote from "../../components/marks/MarginNote.astro";
+import { AUDIENCES, AUDIENCE_INFO } from "../../data/taxonomy";
+import { PATHS } from "../../data/paths";
+import { resolveRefs, breadcrumbLd } from "../../lib/library";
+
+const readers = await Promise.all(
+  AUDIENCES.map(async (a) => {
+    const refs = PATHS[a].groups.flatMap((g) => g.refs);
+    const links = await resolveRefs(refs);
+    return { id: a, info: AUDIENCE_INFO[a], first: links.slice(0, 3), total: links.length, steps: PATHS[a].groups.length };
+  })
+);
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Start here", href: "/start/" }
+];
+---
+
+<BaseLayout
+  title="Start here"
+  description="Four short reading paths through the PeopleCraft library: for HR professionals, founders, employees, and students or job seekers."
+  jsonLd={breadcrumbLd(Astro.site, trail)}
+>
+  <PageHero title="Start here" lede="Pick the description that fits you best. Each path is a short reading list through the library, in the order that makes most sense." trail={trail}>
+    <div slot="aside" class="hero-note">
+      <MarginNote point="down">pick the one that sounds like you</MarginNote>
+    </div>
+  </PageHero>
+
+  <section class="wrap section readers" aria-label="Reading paths">
+    {
+      readers.map((r) => (
+        <a class="reader" href={r.info.path}>
+          <span class="r-art" aria-hidden="true">
+            <Scene name={r.id} />
+          </span>
+          <span class="r-paper">
+            <span class="r-label">{r.info.label}</span>
+            <span class="r-blurb">{r.info.blurb}</span>
+            {r.first.length > 0 && (
+              <span class="r-list">
+                <span class="r-list-h hand">Reading list</span>
+                <ol class="r-first">
+                  {r.first.map((l) => (
+                    <li>
+                      <span class="box" aria-hidden="true" />
+                      {l.title}
+                    </li>
+                  ))}
+                </ol>
+              </span>
+            )}
+            <span class="r-meta small">
+              See all {r.steps} {r.steps === 1 ? "step" : "steps"}{r.total > 0 && `, ${r.total} ${r.total === 1 ? "page" : "pages"}`}
+            </span>
+          </span>
+        </a>
+      ))
+    }
+  </section>
+
+  <section class="wrap other" aria-labelledby="other-h">
+    <h2 id="other-h" class="small">Already know what you need?</h2>
+    <div class="other-links">
+      <button type="button" class="btn btn-secondary" data-search-open><Icon name="search" size={18} />Search the library</button>
+      <a class="btn btn-secondary" href="/handbooks/">Browse the handbooks</a>
+      <a class="btn btn-secondary" href="/toolkit/">Browse the toolkit</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .readers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 32rem), 1fr));
+    gap: 1rem;
+    padding-block: 2.5rem;
+  }
+  .hero-note {
+    display: flex;
+    justify-content: center;
+    padding-top: 2.5rem;
+  }
+  .reader {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+    gap: 0;
+    border-radius: 4px;
+    background: var(--paper);
+    color: inherit;
+    text-decoration: none;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07);
+    transition: transform 220ms var(--ease-out), box-shadow 220ms;
+  }
+  .reader:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 1px rgb(59 68 166 / 0.3),
+      4px 12px 24px -12px rgb(17 20 58 / 0.35);
+  }
+  .r-art {
+    display: grid;
+    place-items: center;
+    padding: 0.75rem;
+    background: var(--neel-50);
+    border-radius: 4px 0 0 4px;
+  }
+  .r-art :global(.scene) {
+    width: 100%;
+  }
+  /* The reading list is written on ruled notepaper with a margin line. */
+  .r-paper {
+    --rule: 1.75rem;
+    display: grid;
+    align-content: start;
+    gap: 0.35rem;
+    padding: 1.2rem 1.4rem 1.1rem 1.5rem;
+  }
+  .r-label {
+    font-size: var(--fs-lg);
+    font-weight: 750;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+  .reader:hover .r-label {
+    color: var(--primary);
+  }
+  .r-blurb {
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .r-list {
+    display: block;
+    margin-top: 0.5rem;
+    padding: 0.2rem 0 0.3rem 2.1rem;
+    background-image:
+      linear-gradient(90deg, transparent 1.55rem, rgb(214 69 80 / 0.4) 1.55rem, rgb(214 69 80 / 0.4) calc(1.55rem + 1px), transparent calc(1.55rem + 1px)),
+      repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), rgb(76 86 190 / 0.16) calc(var(--rule) - 1px) var(--rule));
+    background-position: 0 0, 0 calc(var(--rule) * 0.5 + 0.2rem);
+  }
+  .r-list-h {
+    display: block;
+    height: calc(var(--rule) * 1.5);
+    font-size: 1.3rem;
+    line-height: 1.6;
+  }
+  .r-first {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--fs-sm);
+    line-height: var(--rule);
+    color: var(--ink);
+  }
+  .r-first li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .box {
+    flex-shrink: 0;
+    width: 0.85rem;
+    height: 0.85rem;
+    border: 1.6px solid var(--pen-ink);
+    border-radius: 2px;
+    transform: rotate(-3deg);
+  }
+  .r-meta {
+    margin-top: 0.5rem;
+    color: var(--primary);
+    font-weight: 650;
+  }
+  @media (max-width: 640px) {
+    .reader {
+      grid-template-columns: 1fr;
+    }
+    .r-art {
+      border-radius: 4px 4px 0 0;
+      max-height: 11rem;
+      overflow: hidden;
+    }
+  }
+  .other {
+    padding-bottom: var(--section);
+    display: grid;
+    gap: 0.75rem;
+  }
+  .other h2 {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .other-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>

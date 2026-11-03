@@ -1,0 +1,94 @@
+---
+title: Attrition cost calculator
+description: Estimate what it costs when someone leaves, from the empty seat to hiring, onboarding and ramp-up, using assumptions you control. Per leaver and per year.
+kind: calculator
+calculator: attrition-cost-calculator
+glance:
+  inputs: ["Annual CTC", "Empty-seat days", "Agency fee", "Onboarding and training", "Months to productivity"]
+  output: "Cost of replacing one person"
+  formula: "Cost = empty seat + hiring + time + onboarding + ramp-up"
+stage: pay
+audiences: [hr, founders]
+order: 71
+checked: 2026-11-02
+useWhen: You need a rupee figure for attrition to make the case for a retention fix, or to plan the cost of the leavers you expect this year.
+tips:
+  - "Count only the days the seat is <strong>actually empty</strong>. Hiring often overlaps the notice period, so it can be short or even zero."
+  - "Run it for one role family at a time. A sales role and a support role cost very different amounts to replace."
+  - "Compare the result with what keeping people would cost, such as a pay correction, a retention bonus or a better manager."
+sources: []
+related:
+  - toolkit/cost-per-hire-calculator
+  - toolkit/headcount-planning-model
+  - toolkit/stay-interview-guide
+  - toolkit/exit-interview-questionnaire
+  - toolkit/hr-metrics-calculator
+  - toolkit/hr-budget-builder
+faq:
+  - q: How much does it cost to replace an employee?
+    a: It depends on the role, how long the seat stays empty and how long a new person takes to learn the job. Published estimates vary widely because they count different things, so this calculator builds the figure from your own assumptions.
+  - q: Is attrition cost the same as cost per hire?
+    a: No. Cost per hire is only the hiring part. Attrition cost adds the work lost while the seat is empty, onboarding, and the months a new person needs to reach full output.
+  - q: Should I count the notice period?
+    a: Count only the days the seat is actually empty. If the replacement joins on or before the leaver's last day, the empty-seat cost is zero, though handover time still counts.
+  - q: Why use CTC as the value of a day's work?
+    a: It is a simple, conservative stand-in for what a day's work is worth to you. For roles that bring in revenue directly, such as sales, the real loss is usually higher, so treat the result as a floor.
+keywords: [attrition cost calculator, cost of employee turnover, employee replacement cost, cost of attrition in india, turnover cost formula]
+draft: false
+---
+
+## How the cost is worked out
+
+<Figure title="Cost of replacing one person" caption="Five parts, each built from an assumption you can see and change.">
+  <Formula
+    result={{ value: "Cost per leaver" }}
+    parts={[
+      { value: "Empty seat", label: "work not done" },
+      { op: "+" },
+      { value: "Hiring", label: "fees and costs" },
+      { op: "+" },
+      { value: "Time", label: "interviews, handover" },
+      { op: "+" },
+      { value: "Onboarding" },
+      { op: "+" },
+      { value: "Ramp-up", label: "below full output" }
+    ]}
+    example="Example, ₹12 lakh role: ₹72,000 + ₹1,14,960 + ₹30,000 + ₹50,000 + ₹1,20,000 = ₹3,86,960, about 0.32 × the annual CTC. For 10 leavers a year: ₹38,69,600."
+  />
+</Figure>
+
+| Part | How it is worked out | Example |
+| --- | --- | --- |
+| Empty seat | Day's value × working days empty × share of work not covered | ₹4,800 × 30 × 50% = ₹72,000 |
+| Hiring | Annual CTC × agency fee % + other hiring costs | ₹99,960 + ₹15,000 = ₹1,14,960 |
+| Interview and handover time | Hours × hourly cost of the people involved | 30 × ₹1,000 = ₹30,000 |
+| Onboarding and training | Induction, training, equipment and set-up | ₹50,000 |
+| Ramp-up | Monthly CTC × months to full output × (100% − output while learning) | ₹1,00,000 × 3 × 40% = ₹1,20,000 |
+
+A day's value is the annual CTC divided by working days in a year: ₹12,00,000 ÷ 250 = ₹4,800.
+
+<Figure title="Where the costs fall" caption="Hiring during the notice period shortens or removes the empty-seat cost; the ramp-up cost comes after the new person joins." wide>
+  <Timeline
+    items={[
+      { when: "Day 0", label: "Resignation" },
+      { when: "End of notice", label: "Last working day" },
+      { when: "30 working days later", label: "Replacement joins", accent: true },
+      { when: "3 months later", label: "Full productivity" }
+    ]}
+    spans={[
+      { from: 0, to: 1, label: "Notice: hire and hand over" },
+      { from: 1, to: 2, label: "Empty seat" },
+      { from: 2, to: 3, label: "Ramp-up" }
+    ]}
+  />
+</Figure>
+
+## Using the number
+
+- **Make a retention case.** If a role costs ₹3.9 lakh to replace and five people leave it each year, a fix that keeps two of them is worth about ₹7.7 lakh a year.
+- **Plan the year.** Multiply by the leavers you expect, using the attrition rate from your [headcount plan](/toolkit/headcount-planning-model/).
+- **Find the biggest lever.** If ramp-up dominates, better onboarding pays off; if the empty seat dominates, start hiring during the notice period.
+
+<Callout type="note" title="What this leaves out">
+  Lost clients, delayed projects, overtime by colleagues and the effect on the team are real costs, but hard to price fairly. Add them only where you can put a number on them, and say so when you present the result. [Stay interviews](/toolkit/stay-interview-guide/) and [exit interviews](/toolkit/exit-interview-questionnaire/) help you find out why people leave in the first place.
+</Callout>

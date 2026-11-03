@@ -1,0 +1,193 @@
+---
+title: "Business acumen: speak the language of money"
+description: "Read a P&L as an HR professional, put a rupee value on attrition and vacancies, design fair salary bands and present a business case leaders will act on."
+book: hr-professional
+chapter: 3
+stage: lead
+audiences: [hr, founders, students]
+checked: 2026-11-02
+summary:
+  - "Five numbers from the P&L tell you most of what HR needs: revenue, employee cost, employee cost as a share of revenue, revenue per employee and operating profit."
+  - "Put a rupee value on people problems. Gallup's US estimate is that replacing an employee costs one-half to two times their annual salary; use your own data where you can."
+  - "Salary bands with a minimum, midpoint and maximum make pay fairer and easier to explain than pay set by whoever negotiated hardest."
+  - "Compare offers on in-hand pay and structure, not cost to company (CTC) alone. Under the Code on Wages, allowances above half of total pay can count as wages for provident fund (PF), gratuity and similar calculations."
+  - "Present proposals as situation, complication, question and answer, with the cost and the expected result in rupees."
+sources:
+  - title: "This fixable problem costs U.S. businesses $1 trillion (replacement cost estimate)"
+    url: "https://www.gallup.com/workplace/247391/fixable-problem-costs-businesses-trillion.aspx"
+    publisher: "Gallup"
+  - title: "The Code on Wages, 2019 (section 2(y), definition of wages; section 3, equal pay)"
+    url: "https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf"
+    publisher: "India Code, Government of India"
+  - title: "Government announces implementation of the four Labour Codes (21 November 2025)"
+    url: "https://labour.gov.in/sites/default/files/pib2192463.pdf"
+    publisher: "Press Information Bureau, Ministry of Labour and Employment"
+  - title: "2026 SHRM Body of Applied Skills and Knowledge (Business Acumen)"
+    url: "https://www.shrm.org/content/dam/en/shrm/credentials/shrm-certification/bask/shrm-bask.pdf"
+    publisher: "SHRM"
+related:
+  - toolkit/hr-budget-builder
+  - toolkit/attrition-cost-calculator
+  - toolkit/salary-band-designer
+  - toolkit/headcount-planning-model
+  - toolkit/take-home-salary-calculator
+  - handbooks/labour-law/02-wages-and-pay
+  - handbooks/tds/03-ctc-design-and-perquisites
+  - glossary/ctc
+faq:
+  - q: "Why does HR need to understand the P&L?"
+    a: "In many businesses employee cost is one of the largest lines in the P&L, and hiring, pay, training and retention all move revenue and profit. HR proposals that show their effect on these numbers are easier for leaders to approve."
+  - q: "How do you calculate the cost of attrition?"
+    a: "Multiply the number of exits in a year by the average annual CTC of those leaving and by a replacement cost factor. Gallup estimates replacement at one-half to two times annual salary; start with 0.5 as a cautious figure and refine it with your own hiring and ramp-up costs."
+  - q: "What is a compa-ratio?"
+    a: "Compa-ratio is an employee's salary divided by the midpoint of their salary band. A ratio of 1.0 means they are paid exactly at the midpoint; below 1.0 means below it."
+  - q: "Does basic pay have to be 50% of CTC under the Labour Codes?"
+    a: "Not exactly. The Code on Wages defines wages as all pay minus a list of exclusions such as HRA and conveyance. If those excluded items add up to more than half of total pay, the excess is counted as wages. That affects PF, gratuity and similar calculations, so many employers are restructuring pay."
+keywords:
+  - business acumen for hr
+  - hr p&l understanding
+  - cost of attrition calculation india
+  - revenue per employee formula
+  - salary band design india
+  - scqa framework presentation
+draft: false
+---
+
+<Snapshot
+  who="HR managers, HR business partners (HRBPs), founders who run HR, and anyone who wants a say in business decisions"
+  risks={[
+    "HR proposals rejected because they have no business case",
+    "Workforce decisions taken without knowing what they cost",
+    "Pay structures that look fine as CTC but miss the Labour Code wage rules"
+  ]}
+  mistakes={[
+    "Talking in HR jargon instead of rupees and outcomes",
+    "Quoting generic benchmarks instead of your own company's numbers",
+    "Comparing offers on CTC instead of in-hand pay and structure"
+  ]}
+  exposure="Being left out of the decisions that shape your organisation and its people"
+  roles={[
+    { role: "HR executives", focus: "Learn where employee cost sits in your company's accounts and how payroll feeds it." },
+    { role: "HRBPs", focus: "Know your business unit's revenue, margin and headcount from memory." },
+    { role: "HR heads", focus: "Build the HR budget from the business plan and defend it in rupees." }
+  ]}
+/>
+
+SHRM defines business acumen as understanding "the organization's operations, functions and external environment" and applying business tools that keep HR work in line with the company's strategy. You don't need an MBA for this. You need a handful of numbers, the habit of turning people problems into rupees, and a clear way to present them.
+
+## Five numbers to find in your P&L
+
+Ask your finance team for the latest annual and quarterly profit and loss statement (P&L). Staff costs usually sit on a single line, often labelled "Employee benefits expense"; ask finance which line it is in your accounts.
+
+| Number | What it means | How HR moves it |
+| --- | --- | --- |
+| Revenue | Money earned from customers | Speed and quality of hiring for revenue roles, and how quickly new joiners become productive |
+| Employee cost | Salaries, PF, gratuity, bonuses and other staff costs | Headcount, pay design, the mix of employees and contractors |
+| Employee cost as a share of revenue | Employee cost ÷ revenue | Productivity, spans of control, automation, attrition |
+| Revenue per employee | Revenue ÷ average headcount | Quality of hiring, training and retention |
+| Operating profit (EBITDA) | What's left after operating costs, before depreciation, interest and tax | Every people decision moves cost, revenue or both |
+
+<Figure title="Example: where ₹100 of revenue goes" caption="Example only, for a fictional services company. The split varies widely between industries; find your own company's numbers in its accounts." wide>
+  <Breakdown
+    total="₹100 of revenue"
+    parts={[
+      { label: "Employee cost", value: 55, display: "₹55", note: "Salaries, PF, gratuity, bonuses, staff welfare" },
+      { label: "Other operating costs", value: 27, display: "₹27", note: "Rent, travel, software, subcontractors, marketing" },
+      { label: "Operating profit (EBITDA)", value: 18, display: "₹18", note: "Before depreciation, interest and tax" }
+    ]}
+    groups={[{ label: "Operating costs", from: 0, to: 1 }]}
+  />
+</Figure>
+
+## Formulas worth knowing by heart
+
+These three turn workforce questions into business answers. Work them out for your own company before your next leadership meeting.
+
+<Figure title="Employee cost ratio" caption="Track it every quarter. A rising ratio means people costs are growing faster than revenue.">
+  <Formula
+    result={{ value: "Employee cost ratio", label: "share of revenue spent on people" }}
+    parts={[{ value: "Employee cost", label: "for the year" }, { op: "÷" }, { value: "Revenue", label: "for the same year" }, { op: "×" }, { value: "100" }]}
+    example="Example: ₹66 crore ÷ ₹120 crore × 100 = 55%"
+  />
+</Figure>
+
+<Figure title="Revenue per employee" caption="Use average headcount for the year, not the headcount on one day.">
+  <Formula
+    result={{ value: "Revenue per employee" }}
+    parts={[{ value: "Revenue", label: "for the year" }, { op: "÷" }, { value: "Average headcount", label: "(start + end) ÷ 2, or the monthly average" }]}
+    example="Example: ₹120 crore ÷ 400 people = ₹30 lakh per employee"
+  />
+</Figure>
+
+<Figure title="Cost of attrition" caption="The replacement factor covers hiring costs, lost output while the role is empty and the time a new joiner takes to get up to speed. Use your own estimate if you have one." wide>
+  <Formula
+    result={{ value: "Yearly cost of attrition" }}
+    parts={[{ value: "Exits in the year" }, { op: "×" }, { value: "Average annual CTC", label: "of the people who left" }, { op: "×" }, { value: "Replacement factor", label: "0.5 is a cautious start" }]}
+    example="Example: 40 exits × ₹12 lakh × 0.5 = ₹2.4 crore a year"
+  />
+</Figure>
+
+Gallup estimates that replacing an employee costs one-half to two times their annual salary, and calls that a conservative estimate. It is based on US data, so treat 0.5 as a cautious starting point rather than an Indian benchmark, and refine it with your own hiring, training and ramp-up costs. The [attrition cost calculator](/toolkit/attrition-cost-calculator/) does the arithmetic for you.
+
+### What a five-point cut in attrition is worth
+
+Using the same example company of 400 people: if attrition falls from 25% to 20%, the company loses 80 people a year instead of 100. That is 20 fewer exits. At ₹12 lakh average CTC and a factor of 0.5, that is 20 × ₹12 lakh × 0.5 = ₹1.2 crore a year. Numbers like this get a retention programme approved.
+
+<Callout type="tip" title="Try this now">
+Work out the cost of an empty revenue role. If a sales role is expected to bring in ₹1.2 crore a year, each of roughly 250 working days is worth about ₹48,000. A role that stays vacant for 40 extra days costs more than many recruitment budgets.
+</Callout>
+
+## Building and defending an HR budget
+
+Build the HR budget from the business plan, not from last year's budget plus a percentage. Start with the headcount plan (the [headcount planning model](/toolkit/headcount-planning-model/) helps), then cost each line from your own data: the HR team, recruitment, learning, HR technology, engagement and wellbeing, and legal and compliance. The [HR budget builder](/toolkit/hr-budget-builder/) gives you a structure.
+
+<Figure title="How to get an HR budget approved" caption="Follow the steps in order. Each line of the budget should trace back to a business outcome.">
+  <Steps
+    items={[
+      { title: "Start from the business plan", body: "Growth targets, new locations, products and the hiring they need." },
+      { title: "Cost each line from your own data", body: "Use last year's actual cost per hire, training spend and tool costs, not generic benchmarks." },
+      { title: "Tie every line to a number leaders care about", body: "Revenue protected, cost avoided, risk reduced, time saved." },
+      { title: "Show the cost of not doing it", body: "For example, the attrition cost if the retention programme is cut." },
+      { title: "Offer three options", body: "Minimum, recommended and stretch, with what each one buys." }
+    ]}
+  />
+</Figure>
+
+## Designing salary bands
+
+Without a structure, pay drifts towards whoever negotiated hardest. That is rarely fair, and it can leave men and women doing the same work on different pay, which the Code on Wages prohibits. Salary bands fix this.
+
+1. **Decide your market position.** Pay at the market median for most roles, above it for skills you can't afford to lose, or below it if you offer other value such as employee stock options (ESOPs) or faster learning. Write the choice down.
+2. **Build a band for each level.** Each band has a minimum, a midpoint (the pay for someone fully competent in the role) and a maximum. Example: a band for level 3 might run from ₹8 lakh to ₹12 lakh with a midpoint of ₹10 lakh.
+3. **Map everyone to a band.** You will find people below the minimum and above the maximum. Raise the first group over two or three cycles. Hold increases for the second group rather than cutting their pay.
+4. **Benchmark every year.** Use salary surveys, peer data and job-portal data, and compare like with like: the same city, level, role and pay structure.
+5. **Explain the philosophy to managers.** If managers can't explain the bands, employees won't trust them. The [salary band designer](/toolkit/salary-band-designer/) helps you build and check them.
+
+To see where someone sits in their band, use the compa-ratio: salary ÷ band midpoint. Someone on ₹9 lakh in a band with a ₹10 lakh midpoint has a compa-ratio of 0.90.
+
+<Callout type="law" title="CTC, in-hand pay and the Code on Wages">
+Two offers with the same CTC can mean very different in-hand pay, depending on PF, gratuity, variable pay and the tax regime. Compare in-hand pay and structure when you benchmark, not CTC alone.
+
+The Labour Codes have been in force since 21 November 2025. Under the Code on Wages, 2019, "wages" means all pay minus a list of exclusions such as HRA and conveyance. If the excluded items add up to more than half of total pay, the excess counts as wages, which feeds into PF, gratuity and other calculations. Read [wages and pay](/handbooks/labour-law/wages-and-pay/) and [CTC design](/handbooks/tds/ctc-design-and-perquisites/) before you redesign a structure.
+</Callout>
+
+## Presenting to leaders: the SCQA structure
+
+Leaders decide quickly. Put the problem, its cost and your recommendation in the first minute. The situation, complication, question and answer (SCQA) structure, from Barbara Minto's "The Pyramid Principle", is a reliable way to do that.
+
+<Callout type="warning" title="How HR proposals often sound">
+"I'd like to propose a new engagement survey. Engagement is important because engaged employees are more productive. We could use a vendor or build our own. The budget would be ₹3 lakh. Can we discuss?" The ask is buried, there is no business case and nothing says why now.
+</Callout>
+
+<Figure title="The same proposal in SCQA form" caption="Example numbers. Each step is one or two sentences; the whole pitch takes under a minute.">
+  <Steps
+    items={[
+      { title: "Situation", body: "“Attrition reached 28% last year, six points above the target we set.”" },
+      { title: "Complication", body: "“Exit interviews say most leavers saw no growth path, but we have no early warning on which teams are at risk.”" },
+      { title: "Question", body: "“How do we spot at-risk teams before people resign?”" },
+      { title: "Answer", body: "“A quarterly pulse survey costing ₹3 lakh a year, piloted in three business units. We will compare attrition in those units after six months.”" }
+    ]}
+  />
+</Figure>
+
+The next chapter covers the data behind these numbers: [people analytics and data literacy](/handbooks/hr-professional/people-analytics-and-data-literacy/).

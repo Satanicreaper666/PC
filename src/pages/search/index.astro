@@ -1,0 +1,458 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Icon from "../../components/ui/Icon.astro";
+import Breadcrumbs from "../../components/site/Breadcrumbs.astro";
+import { SITE } from "../../data/site";
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Search", href: "/search/" }
+];
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.name,
+  url: new URL("/", Astro.site).toString(),
+  potentialAction: {
+    "@type": "SearchAction",
+    target: { "@type": "EntryPoint", urlTemplate: new URL("/search/?q={search_term_string}", Astro.site).toString() },
+    "query-input": "required name=search_term_string"
+  }
+};
+const tabs = [
+  { id: "", label: "Everything" },
+  { id: "Handbooks", label: "Handbooks" },
+  { id: "Toolkit", label: "Toolkit" },
+  { id: "JD library", label: "JD library" },
+  { id: "Glossary", label: "Glossary" }
+];
+/* Each suggestion is highlighted for what it is (docs/ART-DIRECTION.md): green a tool you can use,
+   blue a defined term, orange renamed by the new law, pink a compliance risk. */
+const suggestions: { q: string; hl: string }[] = [
+  { q: "gratuity", hl: "hl-green" },
+  { q: "notice period", hl: "hl-green" },
+  { q: "offer letter", hl: "hl-green" },
+  { q: "earned leave", hl: "hl-blue" },
+  { q: "PF", hl: "hl-blue" },
+  { q: "Form 16", hl: "hl-orange" },
+  { q: "POSH", hl: "hl-pink" },
+  { q: "exit interview", hl: "hl-green" }
+];
+---
+
+<BaseLayout title="Search" description="Search every PeopleCraft handbook chapter, tool and glossary term. Search runs in your browser; nothing you type is sent anywhere." jsonLd={ld}>
+  <header class="band head">
+    <div class="wrap-narrow inner">
+      <Breadcrumbs trail={trail} />
+      <h1 class="display">Search the library</h1>
+      <form class="box" role="search" action="/search/" method="get" data-sp-form>
+        <Icon name="search" size={22} />
+        <label for="sp-q" class="visually-hidden">Search the library</label>
+        <input id="sp-q" name="q" type="search" placeholder="Try gratuity or Form 16" autocomplete="off" spellcheck="false" data-sp-input />
+        <button class="btn" type="submit">Search</button>
+      </form>
+      <div class="tabs" role="group" aria-label="Search in" data-sp-tabs>
+        {
+          tabs.map((t, i) => (
+            <button type="button" class="tab" aria-pressed={i === 0 ? "true" : "false"} data-section={t.id}>
+              {t.label}
+              <span class="n" data-count={t.id || "all"} />
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap-narrow body">
+    <p class="status" role="status" aria-live="polite" data-sp-status></p>
+    <ol class="results" data-sp-results></ol>
+    <button type="button" class="btn btn-secondary more" data-sp-more hidden>Show more results</button>
+    <div class="empty notepaper" data-sp-empty>
+      <p class="hand try">Try one of these</p>
+      <ul class="sugg">
+        {
+          suggestions.map((s) => (
+            <li>
+              <a href={`/search/?q=${encodeURIComponent(s.q)}`} class:list={["hl", s.hl]} data-sp-suggest={s.q}>
+                {s.q}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="key small">
+        <span class="hl hl-green">a tool you can use</span>
+        <span class="hl hl-blue">a defined term</span>
+        <span class="hl hl-orange">renamed by the new law</span>
+        <span class="hl hl-pink">a compliance risk</span>
+      </p>
+      <p class="small muted note">
+        Search runs inside your browser using an index that ships with the site. What you type is never sent to a server.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { loadPagefind, renderExcerpt } from "../../scripts/search";
+  import { siteHref } from "../../scripts/href";
+
+  type Sub = { title: string; url: string; excerpt: string };
+  type Data = {
+    url: string;
+    excerpt: string;
+    meta: { title?: string; kind?: string };
+    filters?: Record<string, string[]>;
+    sub_results?: Sub[];
+  };
+  type PF = {
+    search: (
+      q: string,
+      o?: { filters?: Record<string, string> }
+    ) => Promise<{ results: { data: () => Promise<Data> }[]; filters?: Record<string, Record<string, number>>; totalFilters?: Record<string, Record<string, number>> } | null>;
+  };
+
+  const form = document.querySelector<HTMLFormElement>("[data-sp-form]")!;
+  const input = document.querySelector<HTMLInputElement>("[data-sp-input]")!;
+  const status = document.querySelector<HTMLElement>("[data-sp-status]")!;
+  const list = document.querySelector<HTMLOListElement>("[data-sp-results]")!;
+  const more = document.querySelector<HTMLButtonElement>("[data-sp-more]")!;
+  const empty = document.querySelector<HTMLElement>("[data-sp-empty]")!;
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-sp-tabs] [data-section]"));
+  const PAGE = 12;
+  let section = "";
+  let pending: { data: () => Promise<Data> }[] = [];
+  let shown = 0;
+  let seq = 0;
+  let timer = 0;
+
+  const params = new URLSearchParams(location.search);
+  input.value = params.get("q") ?? "";
+  section = params.get("in") ?? "";
+
+  function syncUrl() {
+    const sp = new URLSearchParams();
+    if (input.value.trim()) sp.set("q", input.value.trim());
+    if (section) sp.set("in", section);
+    history.replaceState(null, "", `${location.pathname}${sp.toString() ? `?${sp}` : ""}`);
+  }
+
+  function item(r: Data): HTMLLIElement {
+    const li = document.createElement("li");
+    li.className = "res";
+    const a = document.createElement("a");
+    a.href = siteHref(r.url);
+    a.className = "res-main";
+    const kind = document.createElement("span");
+    kind.className = "kind";
+    kind.textContent = r.meta.kind ?? r.filters?.section?.[0] ?? "Page";
+    const title = document.createElement("span");
+    title.className = "title";
+    title.textContent = r.meta.title ?? r.url;
+    const ex = document.createElement("span");
+    ex.className = "excerpt";
+    ex.appendChild(renderExcerpt(r.excerpt));
+    a.append(kind, title, ex);
+    li.appendChild(a);
+    const subs = (r.sub_results ?? []).filter((s) => s.url !== r.url && s.url.includes("#")).slice(0, 3);
+    if (subs.length) {
+      const ul = document.createElement("ul");
+      ul.className = "subs";
+      for (const s of subs) {
+        const sli = document.createElement("li");
+        const sa = document.createElement("a");
+        sa.href = siteHref(s.url);
+        const st = document.createElement("span");
+        st.className = "st";
+        st.textContent = s.title;
+        const se = document.createElement("span");
+        se.className = "se";
+        se.appendChild(renderExcerpt(s.excerpt));
+        sa.append(st, se);
+        sli.appendChild(sa);
+        ul.appendChild(sli);
+      }
+      li.appendChild(ul);
+    }
+    return li;
+  }
+
+  async function showMore() {
+    const batch = pending.slice(shown, shown + PAGE);
+    const my = seq;
+    const data = await Promise.all(batch.map((r) => r.data()));
+    if (my !== seq) return;
+    list.append(...data.map(item));
+    shown += batch.length;
+    more.hidden = shown >= pending.length;
+  }
+
+  /** "in the handbooks", "in the JD library": keeps acronyms as written. */
+  const where = (sectionName: string) => `the ${/^[A-Z]{2}/.test(sectionName) ? sectionName : sectionName.toLowerCase()}`;
+
+  function setCounts(counts?: Record<string, number>, total = 0) {
+    document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
+      const key = el.dataset.count!;
+      const n = key === "all" ? total : (counts?.[key] ?? 0);
+      el.textContent = input.value.trim() ? String(n) : "";
+    });
+  }
+
+  async function run() {
+    const q = input.value.trim();
+    const my = ++seq;
+    tabs.forEach((t) => t.setAttribute("aria-pressed", String((t.dataset.section ?? "") === section)));
+    syncUrl();
+    list.replaceChildren();
+    more.hidden = true;
+    shown = 0;
+    if (!q) {
+      status.textContent = "";
+      empty.hidden = false;
+      setCounts();
+      return;
+    }
+    empty.hidden = true;
+    status.textContent = "Searching…";
+    const pf = (await loadPagefind()) as unknown as PF | null;
+    if (my !== seq) return;
+    if (!pf) {
+      status.textContent = "Search is available on the published site. Browse the handbooks or the toolkit meanwhile.";
+      return;
+    }
+    const [all, res] = await Promise.all([pf.search(q), section ? pf.search(q, { filters: { section } }) : null]);
+    if (my !== seq || !all) return;
+    const current = res ?? all;
+    setCounts(all.filters?.section, all.results.length);
+    pending = current.results;
+    if (!pending.length) {
+      status.textContent = `Nothing matches “${q}”${section ? ` in ${where(section)}` : ""}. Try a shorter or more common word, like “leave” or “PF”.`;
+      empty.hidden = false;
+      return;
+    }
+    status.textContent = `${pending.length} ${pending.length === 1 ? "result" : "results"} for “${q}”${section ? ` in ${where(section)}` : ""}`;
+    await showMore();
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    void run();
+  });
+  input.addEventListener("input", () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => void run(), 180);
+  });
+  tabs.forEach((t) =>
+    t.addEventListener("click", () => {
+      section = t.dataset.section ?? "";
+      void run();
+    })
+  );
+  more.addEventListener("click", () => void showMore());
+  document.querySelectorAll<HTMLAnchorElement>("[data-sp-suggest]").forEach((a) =>
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      input.value = a.dataset.spSuggest ?? "";
+      void run();
+      input.focus();
+    })
+  );
+  if (input.value) void run();
+  else input.focus();
+</script>
+
+<style>
+  .head {
+    padding-block: 2rem 1.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .inner {
+    display: grid;
+    gap: 1rem;
+  }
+  .box {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.4rem 0.4rem 1rem;
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    border: 2px solid var(--neel-700);
+    color: var(--ink-3);
+  }
+  .box:focus-within {
+    box-shadow: 0 0 0 4px var(--neel-100);
+  }
+  .box input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: var(--fs-md);
+    min-height: 2.8rem;
+    color: var(--ink);
+  }
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    color: var(--ink-2);
+    font-weight: 560;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+  }
+  .tab[aria-pressed="true"] {
+    background: var(--neel-700);
+    border-color: var(--neel-700);
+    color: #fff;
+  }
+  .n:empty {
+    display: none;
+  }
+  .n {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-xs);
+    opacity: 0.8;
+  }
+  .body {
+    padding-block: 1.5rem var(--section);
+    display: grid;
+    gap: 1rem;
+  }
+  .status {
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+  .results :global(.res) {
+    border-bottom: 1px solid var(--line);
+    padding-block: 0.4rem 0.8rem;
+  }
+  .results :global(.res-main) {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.6rem 0.75rem;
+    margin-inline: -0.75rem;
+    border-radius: var(--r);
+    color: inherit;
+    text-decoration: none;
+  }
+  .results :global(.res-main:hover) {
+    background: var(--canvas);
+  }
+  .results :global(.kind) {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .results :global(.title) {
+    font-size: var(--fs-md);
+    font-weight: 650;
+    color: var(--primary);
+    line-height: 1.3;
+  }
+  .results :global(.excerpt),
+  .results :global(.se) {
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .results :global(mark) {
+    background: linear-gradient(100deg, color-mix(in srgb, var(--hl-yellow) 55%, transparent), var(--hl-yellow) 0.25em, var(--hl-yellow) calc(100% - 0.25em), color-mix(in srgb, var(--hl-yellow) 50%, transparent)) 0 90% / 100% 0.8em no-repeat;
+    color: inherit;
+    border-radius: 0.25em 0.1em;
+    padding-inline: 0.12em;
+  }
+  .results :global(.subs) {
+    list-style: none;
+    margin: 0.15rem 0 0;
+    padding: 0 0 0 0.9rem;
+    border-left: 2px solid var(--neel-100);
+    display: grid;
+    gap: 0.1rem;
+  }
+  .results :global(.subs a) {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--r-sm);
+    color: inherit;
+    text-decoration: none;
+  }
+  .results :global(.subs a:hover) {
+    background: var(--canvas);
+  }
+  .results :global(.st) {
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    color: var(--ink);
+  }
+  .more {
+    justify-self: start;
+  }
+  /* A page from a notebook: search words someone has already highlighted. */
+  .empty {
+    --rule: 2.1rem;
+    --margin-x: 2.4rem;
+    display: grid;
+    padding: 0.5rem 1.5rem var(--rule) 3.2rem;
+    border-radius: 3px;
+    line-height: var(--rule);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07);
+  }
+  .empty[hidden] {
+    display: none;
+  }
+  .try {
+    font-size: 1.6rem;
+    line-height: var(--rule);
+  }
+  .sugg {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.1rem;
+    font-size: var(--fs-md);
+    font-weight: 600;
+  }
+  .sugg a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .sugg a:hover {
+    color: var(--primary);
+  }
+  .key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1rem;
+    margin-top: calc(var(--rule) * 0.25);
+    color: var(--ink-2);
+    font-weight: 560;
+  }
+  .note {
+    margin-top: calc(var(--rule) * 0.25);
+    line-height: var(--rule);
+  }
+</style>

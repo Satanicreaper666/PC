@@ -1,0 +1,438 @@
+---
+import Icon from "../ui/Icon.astro";
+import type { IconName } from "../../lib/icons";
+/**
+ * The loom: the whole library as a weave. Weft threads (rows) are stages of
+ * working life; warp threads (columns) are formats. Each crossing is a knot
+ * sized by how much the library holds there; choosing it lists the items.
+ */
+type Item = { title: string; href: string };
+interface Props {
+  rows: { id: string; label: string; blurb: string; icon: string }[];
+  cols: { id: string; label: string; icon: string }[];
+  cells: { count: number; items: Item[] }[][];
+  start?: [number, number];
+}
+const { rows, cols, cells, start = [3, 1] } = Astro.props;
+const max = Math.max(1, ...cells.flat().map((c) => c.count));
+const size = (n: number) => (n === 0 ? 0 : 0.9 + Math.sqrt(n / max) * 1.5);
+const [sr, sc] = start;
+---
+
+<div class="loom" data-loom data-reveal style={`--rows:${rows.length};--cols:${cols.length}`}>
+  <div class="grid" role="group" aria-label="Library map: stages of working life by format. Each button opens the list for that stage and format.">
+    <div class="corner" aria-hidden="true"></div>
+    {
+      cols.map((c, ci) => (
+        <div class="col-head" aria-hidden="true" style={`--c:${ci}`}>
+          <Icon name={c.icon as IconName} size={18} />
+          <span>{c.label}</span>
+        </div>
+      ))
+    }
+    {
+      rows.map((r, ri) => (
+        <>
+          <div class="row-head" aria-hidden="true" style={`--r:${ri}`}>
+            <Icon name={r.icon as IconName} size={18} />
+            <span class="rl">{r.label}</span>
+          </div>
+          {cols.map((c, ci) => {
+            const cell = cells[ri]?.[ci] ?? { count: 0, items: [] };
+            const id = `loom-${r.id}-${c.id}`;
+            return (
+              <div class:list={["cell", (ri + ci) % 2 === 0 ? "warp-over" : "weft-over"]} style={`--r:${ri};--c:${ci}`}>
+                <span class="thread weft" aria-hidden="true" />
+                <span class="thread warp" aria-hidden="true" />
+                <button
+                  class="knot"
+                  type="button"
+                  data-knot={id}
+                  aria-pressed={ri === sr && ci === sc ? "true" : "false"}
+                  aria-controls="loom-dock"
+                  disabled={cell.count === 0}
+                  style={`--s:${size(cell.count)}`}
+                >
+                  <span class="n" aria-hidden="true">{cell.count || ""}</span>
+                  <span class="visually-hidden">
+                    {r.label}: {cell.count} {c.label.toLowerCase()}
+                  </span>
+                </button>
+                <template data-items={id}>
+                  <p class="dock-title">
+                    {r.label} <span class="x">×</span> {c.label}
+                  </p>
+                  <p class="dock-blurb">{r.blurb}</p>
+                  <ul>
+                    {cell.items.map((it) => (
+                      <li>
+                        <a href={it.href}>{it.title}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </template>
+              </div>
+            );
+          })}
+        </>
+      ))
+    }
+  </div>
+  <div class="dock" id="loom-dock" aria-live="polite" data-dock></div>
+
+  <div class="phone" data-loom-phone>
+    {
+      rows.map((r, ri) => (
+        <details class="stage" open={ri === 0}>
+          <summary>
+            <Icon name={r.icon as IconName} size={18} />
+            <span>{r.label}</span>
+            <span class="tot">{cells[ri].reduce((a, c) => a + c.count, 0)}</span>
+          </summary>
+          {cols.map((c, ci) =>
+            cells[ri][ci].count ? (
+              <div class="ph-group">
+                <p class="ph-label">{c.label}</p>
+                <ul>
+                  {cells[ri][ci].items.map((it) => (
+                    <li>
+                      <a href={it.href}>{it.title}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null
+          )}
+        </details>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-loom]").forEach((loom) => {
+    const dock = loom.querySelector<HTMLElement>("[data-dock]")!;
+    const knots = Array.from(loom.querySelectorAll<HTMLButtonElement>("[data-knot]"));
+    const show = (btn: HTMLButtonElement) => {
+      knots.forEach((k) => k.setAttribute("aria-pressed", String(k === btn)));
+      const tpl = loom.querySelector<HTMLTemplateElement>(`template[data-items="${btn.dataset.knot}"]`);
+      if (tpl) dock.replaceChildren(tpl.content.cloneNode(true));
+      const cell = btn.closest<HTMLElement>(".cell");
+      loom.style.setProperty("--ar", cell?.style.getPropertyValue("--r") ?? "-1");
+      loom.style.setProperty("--ac", cell?.style.getPropertyValue("--c") ?? "-1");
+      loom.querySelectorAll(".cell").forEach((c) => {
+        const el = c as HTMLElement;
+        el.classList.toggle("on-row", el.style.getPropertyValue("--r") === cell?.style.getPropertyValue("--r"));
+        el.classList.toggle("on-col", el.style.getPropertyValue("--c") === cell?.style.getPropertyValue("--c"));
+      });
+    };
+    knots.forEach((k) => {
+      k.addEventListener("click", () => show(k));
+      k.addEventListener("mouseenter", () => {
+        if (window.matchMedia("(hover: hover)").matches) show(k);
+      });
+    });
+    const first = knots.find((k) => k.getAttribute("aria-pressed") === "true" && !k.disabled) ?? knots.find((k) => !k.disabled);
+    if (first) show(first);
+    // Arrow keys move between knots like a grid.
+    loom.addEventListener("keydown", (e) => {
+      const i = knots.indexOf(document.activeElement as HTMLButtonElement);
+      if (i < 0) return;
+      const cols = Number(getComputedStyle(loom).getPropertyValue("--cols"));
+      const move = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
+      if (!move) return;
+      e.preventDefault();
+      let j = i + move;
+      while (knots[j]?.disabled) j += move;
+      if (knots[j]) {
+        knots[j].focus();
+        show(knots[j]);
+      }
+    });
+  });
+</script>
+
+<style>
+  .loom {
+    --cell: minmax(0, 1fr);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(9rem, 11.5rem) repeat(var(--cols), var(--cell));
+    grid-auto-rows: 5.2rem;
+    position: relative;
+  }
+  .grid > .corner,
+  .col-head {
+    height: 4.2rem;
+  }
+  .col-head {
+    display: grid;
+    justify-items: center;
+    align-content: end;
+    gap: 0.3rem;
+    padding-bottom: 0.6rem;
+    text-align: center;
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+    line-height: 1.2;
+  }
+  .row-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--fs-sm);
+    font-weight: 620;
+    padding-right: 0.75rem;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .row-head :global(svg),
+  .col-head :global(svg) {
+    color: var(--neel-500);
+  }
+  .cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+  .thread {
+    position: absolute;
+    border-radius: 3px;
+    transition: background-color 250ms var(--ease);
+  }
+  .weft {
+    left: -1px;
+    right: -1px;
+    top: calc(50% - 4px);
+    height: 8px;
+    background: var(--neel-200);
+  }
+  .warp {
+    top: -1px;
+    bottom: -1px;
+    left: calc(50% - 4px);
+    width: 8px;
+    background: var(--neel-600);
+  }
+  /* over / under: the thread on top gets a paper gap around it */
+  .warp-over .warp {
+    z-index: 2;
+    box-shadow: 0 0 0 2.5px var(--paper);
+  }
+  .warp-over .weft {
+    z-index: 1;
+  }
+  .weft-over .weft {
+    z-index: 2;
+    box-shadow: 0 0 0 2.5px var(--paper);
+  }
+  .weft-over .warp {
+    z-index: 1;
+  }
+  .cell.on-row .weft {
+    background: var(--haldi-400);
+  }
+  .cell.on-col .warp {
+    background: var(--haldi-500);
+  }
+  .knot {
+    position: relative;
+    z-index: 3;
+    width: calc(var(--s) * 1.6rem);
+    height: calc(var(--s) * 1.6rem);
+    min-width: 1.9rem;
+    min-height: 1.9rem;
+    border-radius: 50%;
+    border: 2px solid var(--neel-700);
+    background: var(--paper);
+    color: var(--neel-800);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: var(--fs-xs);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    box-shadow: 0 0 0 3px var(--paper), var(--shadow-lift);
+    transition: transform 200ms var(--ease-out), background-color 200ms, color 200ms, border-color 200ms;
+  }
+  .knot:hover {
+    transform: scale(1.08);
+  }
+  .knot[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--haldi-700);
+    color: var(--neel-950);
+  }
+  .knot:disabled {
+    width: 0.9rem;
+    height: 0.9rem;
+    min-width: 0;
+    min-height: 0;
+    border-width: 2px;
+    border-color: var(--neel-300);
+    cursor: default;
+    box-shadow: 0 0 0 3px var(--paper);
+  }
+  .knot:disabled .n {
+    display: none;
+  }
+  .dock {
+    position: sticky;
+    top: calc(var(--header-h) + 1rem);
+    min-height: 14rem;
+    padding: 1.1rem 1.2rem 1.25rem;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+  }
+  .dock :global(.dock-title) {
+    font-weight: 650;
+    font-size: var(--fs-md);
+    line-height: 1.25;
+  }
+  .dock :global(.x) {
+    color: var(--ink-3);
+    font-weight: 400;
+  }
+  .dock :global(.dock-blurb) {
+    margin-top: 0.25rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .dock :global(ul) {
+    list-style: none;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.15rem;
+    max-height: 22rem;
+    overflow-y: auto;
+  }
+  .dock :global(a),
+  .phone a {
+    display: block;
+    padding: 0.4rem 0.5rem;
+    margin-inline: -0.5rem;
+    border-radius: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    line-height: 1.35;
+  }
+  .dock :global(a:hover),
+  .phone a:hover {
+    background: var(--canvas);
+    color: var(--primary);
+  }
+  .phone {
+    display: none;
+  }
+
+  /* one orchestrated moment: threads draw in, then knots appear */
+  :global(html.js-anim) .loom:not(.shown) .weft {
+    transform: scaleX(0);
+  }
+  :global(html.js-anim) .loom:not(.shown) .warp {
+    transform: scaleY(0);
+  }
+  :global(html.js-anim) .loom:not(.shown) .knot {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  :global(html.js-anim) .loom.shown .weft {
+    transform-origin: left;
+    animation: loom-x 0.9s var(--ease-draw) both;
+    animation-delay: calc(var(--r) * 0.08s);
+  }
+  :global(html.js-anim) .loom.shown .warp {
+    transform-origin: top;
+    animation: loom-y 0.9s var(--ease-draw) both;
+    animation-delay: calc(0.35s + var(--c) * 0.08s);
+  }
+  :global(html.js-anim) .loom.shown .knot {
+    animation: loom-k 0.45s var(--ease-out) both;
+    animation-delay: calc(0.9s + (var(--r) + var(--c)) * 0.04s);
+  }
+  @keyframes loom-x {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes loom-y {
+    from {
+      transform: scaleY(0);
+    }
+  }
+  @keyframes loom-k {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+
+  @media (max-width: 980px) {
+    .loom {
+      grid-template-columns: 1fr;
+    }
+    .dock {
+      position: static;
+    }
+  }
+  @media (max-width: 720px) {
+    .grid,
+    .dock {
+      display: none;
+    }
+    .phone {
+      display: grid;
+      gap: 0.5rem;
+    }
+    .stage {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 0.2rem 1rem;
+    }
+    .stage summary {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem 0;
+      font-weight: 640;
+      cursor: pointer;
+    }
+    .stage summary :global(svg) {
+      color: var(--neel-500);
+    }
+    .tot {
+      margin-left: auto;
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      color: var(--neel-800);
+      background: var(--neel-50);
+      border-radius: 999px;
+      padding: 0.05rem 0.55rem;
+    }
+    .ph-group {
+      padding-bottom: 0.75rem;
+    }
+    .ph-label {
+      font-size: var(--fs-xs);
+      font-weight: 650;
+      color: var(--ink-3);
+      margin-bottom: 0.2rem;
+    }
+    .phone ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+  }
+</style>

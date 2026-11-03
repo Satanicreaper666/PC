@@ -1,0 +1,112 @@
+---
+title: ESI calculator
+description: Check whether ESI applies and work out the employee's 0.75% and the employer's 3.25% on wages up to ₹21,000 a month, rounded up as the 2026 rules require.
+kind: calculator
+calculator: esi
+glance:
+  inputs: ["Monthly ESI wages", "Establishment covered", "Disability", "Average daily wage"]
+  output: "ESI each month"
+  formula: "Employee ESI = 0.75% × wages; employer ESI = 3.25% × wages"
+stage: pay
+audiences: [hr, founders, employees]
+order: 30
+checked: 2026-11-02
+useWhen: You need to know whether an employee is covered by ESI and what the monthly employee and employer contributions are.
+tips:
+  - "Test coverage at the <strong>start of each contribution period</strong> (April and October) or when someone joins, not every month."
+  - "ESI contributions are worked out on <strong>wages as the Code on Social Security defines them</strong>, the same definition used for PF and gratuity."
+  - "The old ESI rules are kept in force only until <strong>20 November 2026</strong>. Check for new ESI regulations after that date."
+sources:
+  - title: The Code on Social Security, 2020, Chapter IV and section 164 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/16823/1/aA2020-36.pdf
+    publisher: Ministry of Law and Justice
+  - title: Social Security (Central) Rules, 2026, rule 19 on contribution rates (PRS copy)
+    url: https://prsindia.org/files/bills_acts/bills_parliament/2026/Social_Security_(Central)_Rules_2026.pdf
+    publisher: PRS Legislative Research
+  - title: Government makes the four Labour Codes effective (21 November 2025)
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2192463
+    publisher: Press Information Bureau
+  - title: Ministry FAQs on the four Labour Codes, including the additional FAQs of 16 March 2026 (summary)
+    url: https://www.scconline.com/blog/post/2026/04/26/ministry-faqs-four-labour-codes-india-2026/
+    publisher: SCC Online
+  - title: Status of ESI compliance under the Code on Social Security (9 June 2026)
+    url: https://www.lkslaw.com/insights/articles/status-of-esi-compliance-under-the-code-on-social-security-2020-an-analytical-review
+    publisher: Lakshmikumaran & Sridharan
+  - title: "ESI contribution: wage ceiling, rates and the 2026 transition"
+    url: https://mercans.com/glossary/employees-state-insurance-esi-contribution/
+    publisher: Mercans
+related: [toolkit/take-home-salary-calculator, toolkit/epf-calculator, handbooks/labour-law/04-social-security-and-benefits, glossary/esi]
+faq:
+  - q: What is the ESI wage limit in 2026?
+    a: ₹21,000 a month, or ₹25,000 for an employee with a disability. The Labour Ministry's FAQs say the existing limit continues until revised rules are made.
+  - q: What are the ESI contribution rates?
+    a: 0.75% of wages from the employee and 3.25% from the employer, each rounded up to the next rupee. On ₹18,500 that is ₹139 and ₹602.
+  - q: What happens if salary goes above ₹21,000 during the year?
+    a: An employee covered at the start of a contribution period (April to September, or October to March) stays covered until that period ends, with contributions on actual wages.
+  - q: Does ESI apply to a company with fewer than 10 employees?
+    a: Not compulsorily. Under the Code on Social Security, ESI is voluntary for establishments with fewer than 10 employees, but it applies where even one person does hazardous work.
+keywords: [esi calculator, esi contribution rate, esi wage limit 21000, esi employee employer contribution, esi eligibility, esi under social security code]
+---
+
+## How the contributions are worked out
+
+<Figure title="Monthly ESI contributions" caption="Each share is worked out separately on the same wages and rounded up to the next rupee.">
+  <div style={{ display: "grid", gap: "1.75rem" }}>
+    <Formula
+      result={{ value: "Employee ESI", label: "deducted from pay" }}
+      parts={[{ value: "0.75%", label: "employee rate" }, { op: "×" }, { value: "Monthly wages", label: "up to ₹21,000" }]}
+    />
+    <Formula
+      result={{ value: "Employer ESI", label: "on top of pay" }}
+      parts={[{ value: "3.25%", label: "employer rate" }, { op: "×" }, { value: "Monthly wages", label: "the same wages" }]}
+      example="Example: on wages of ₹18,500, the employee pays ₹138.75, rounded up to ₹139, and the employer pays ₹601.25, rounded up to ₹602."
+    />
+  </div>
+</Figure>
+
+The Social Security (Central) Rules, 2026 set the employer's share at <Fact id="esi.employerRate" /> and the employee's share at <Fact id="esi.employeeRate" />, each "rounded to the next higher rupee". Wages are worked out as the Code on Social Security defines them: basic pay, dearness allowance and other pay not on the exclusion list, plus any excess of excluded allowances over half of total pay. The Labour Ministry's FAQs say this definition governs ESI contributions from 21 November 2025.
+
+## Who is covered
+
+<Figure title="Does ESI apply to this employee?" caption="Follow the questions. The wage test is applied at the start of a contribution period or on joining.">
+  <DecisionTree
+    node={{
+      q: "Is the establishment covered by ESI?",
+      detail: "10 or more employees, voluntary registration, or hazardous work",
+      yes: {
+        q: "Are wages ₹21,000 a month or less?",
+        detail: "₹25,000 for an employee with a disability",
+        yes: { result: "Covered: both shares are payable", tone: "good" },
+        no: { result: "Not covered for this contribution period", tone: "neutral" }
+      },
+      no: { result: "ESI does not apply", tone: "neutral" }
+    }}
+  />
+</Figure>
+
+<KeyNumbers
+  items={[
+    { value: "₹21,000", label: "monthly wage limit for ESI", note: "₹25,000 for an employee with a disability" },
+    { value: "0.75%", label: "employee's share, rounded up" },
+    { value: "3.25%", label: "employer's share, rounded up" },
+    { value: "20 Nov 2026", label: "last day the old ESI rules are kept in force" }
+  ]}
+/>
+
+### Contribution periods
+
+ESI runs in two contribution periods: <Fact id="esi.contributionPeriods" />. An employee covered at the start of a period stays covered until it ends, even if a raise takes wages above the limit, and contributions continue on actual wages until then. Coverage is tested again at the start of the next period.
+
+<Callout type="warning" title="Rules in transition">
+The Code on Social Security keeps the old ESI rules, regulations and schemes in force for one year from 21 November 2025, that is until <Fact id="esi.transitionEnds" />. New ESI regulations, and any change to the wage limit, had not been published by late October 2026. Check the wage limit and rates again after that date.
+</Callout>
+
+### Very low wages
+
+ESIC's rules have exempted employees whose average daily wage is <Fact id="esi.lowWageExemption" /> or less from paying their own share; the employer still pays. This figure comes from secondary sources, so confirm it with ESIC before relying on it.
+
+## What this calculator leaves out
+
+- Benefits: sickness, maternity, disablement and medical care.
+- The government's support for employers of employees with disabilities.
+- Interest and damages for late payment.

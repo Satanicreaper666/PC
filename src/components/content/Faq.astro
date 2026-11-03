@@ -1,0 +1,78 @@
+---
+import Icon from "../ui/Icon.astro";
+/** Questions people actually ask. The layout also emits FAQPage structured data. */
+interface Props {
+  items: { q: string; a: string }[];
+  title?: string;
+}
+const { items, title = "Common questions" } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <section class="faq" aria-labelledby="faq-title">
+      <h2 id="faq-title">{title}</h2>
+      <div class="list">
+        {items.map((f) => (
+          <details>
+            <summary>
+              <span class="q hand" aria-hidden="true">Q.</span>
+              <span>{f.q}</span>
+              <Icon name="plus" size={18} class="pm" />
+            </summary>
+            <p class="a" set:html={f.a} />
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .faq h2 {
+    font-size: var(--fs-xl);
+  }
+  .list {
+    margin-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  details {
+    border-bottom: 1px solid var(--line);
+  }
+  summary {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0.25rem;
+    font-weight: 620;
+    cursor: pointer;
+  }
+  .q {
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--pen-ink);
+    transform: rotate(-6deg);
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary :global(.pm) {
+    color: var(--ink-3);
+    transition: transform 200ms var(--ease);
+  }
+  details[open] summary :global(.pm) {
+    transform: rotate(45deg);
+  }
+  .a {
+    padding: 0 0.25rem 1.1rem 2.85rem;
+    color: var(--ink-2);
+    max-width: 66ch;
+  }
+  @media print {
+    details > *:not(summary) {
+      display: block;
+    }
+  }
+</style>

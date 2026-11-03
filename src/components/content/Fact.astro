@@ -1,0 +1,19 @@
+---
+import { stat } from "../../data/statutory";
+/** Inline statutory value with its source on hover: <Fact id="gratuity.ceiling" /> */
+interface Props {
+  id: string;
+}
+const f = stat(Astro.props.id);
+---
+
+<abbr class="fact" title={`${f.label}. ${f.law}. Checked ${f.checked}.`}>{f.display}</abbr>
+
+<style>
+  .fact {
+    text-decoration: underline dotted var(--neel-400);
+    text-underline-offset: 3px;
+    cursor: help;
+    font-weight: 620;
+  }
+</style>

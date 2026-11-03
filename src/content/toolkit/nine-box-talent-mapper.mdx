@@ -1,0 +1,95 @@
+---
+title: 9-box talent mapper
+description: Place your team on a 9-box grid of performance and potential, see the spread at a glance and export it. Names stay in your browser; nothing is uploaded.
+kind: calculator
+calculator: nine-box-talent-mapper
+glance:
+  inputs: ["Name", "Performance this year", "Potential"]
+  output: "9-box grid of your team"
+  formula: "Share = people in the box ÷ people on the grid × 100"
+stage: grow
+audiences: [hr, founders]
+order: 61
+checked: 2026-11-02
+useWhen: You are preparing a talent review or succession discussion and want a shared picture of performance and potential across a team.
+tips:
+  - "Rate performance and potential <strong>separately</strong>, from evidence. A strong performer is not automatically ready for a bigger role."
+  - "Calibrate as a group: managers place their own people, then the leadership team discusses every box before anything is final."
+  - "Share development actions with each person, not a box label."
+sources: []
+related:
+  - toolkit/annual-performance-appraisal
+  - toolkit/increment-budget-allocator
+  - toolkit/performance-improvement-plan
+  - toolkit/competency-self-assessment
+  - toolkit/stay-interview-guide
+  - handbooks/hr-professional/09-performance-and-learning
+faq:
+  - q: What is the 9-box grid?
+    a: A talent-review tool that places each person on two axes, current performance and potential for a bigger role, each rated low, moderate or high. The nine boxes help a leadership team discuss development, succession and retention.
+  - q: How do you assess potential?
+    a: Look for evidence of the ability to learn and handle more complex work, the aspiration to take on a bigger role, and engagement with the organisation. Ask people about their aspirations rather than assuming them.
+  - q: Should employees be told their 9-box placement?
+    a: Practice varies. Sharing the agreed development actions is usually more useful than sharing the box, because box labels can feel permanent. If you do share it, explain that it is a view at one point in time.
+  - q: Can the 9-box grid be used to decide pay or layoffs?
+    a: It is a discussion tool, not a decision tool. Pay should follow your rating and pay policy, and any separation needs its own fair process under the contract, standing orders and the law.
+  - q: Where is my data stored?
+    a: Names and ratings are kept in your browser's local storage on this device only. Nothing is sent to PeopleCraft or anyone else. Clear all removes them.
+keywords: [9 box grid, nine box talent grid, performance potential matrix, talent review template, succession planning grid, 9 box grid template]
+draft: false
+---
+
+## How the grid works
+
+Each person gets two ratings: **performance** this year (left to right) and **potential** for a bigger role in the next two to three years (bottom to top). The pair puts them in one of nine boxes.
+
+<Figure title="The nine boxes and a sensible next step for each" caption="Read the grid from bottom left to top right. Each box suggests a conversation to have, not a decision." wide>
+  <Matrix
+    xLabel="Performance"
+    yLabel="Potential"
+    rows={["High", "Moderate", "Low"]}
+    cols={["Low", "Moderate", "High"]}
+    cells={[
+      [{ title: "Rough diamond", note: "Coach closely; check role fit" }, { title: "Rising star", note: "Stretch work with support" }, { title: "Future leader", note: "Plan the next role", tone: "accent" }],
+      [{ title: "Inconsistent", note: "Find the blocker" }, { title: "Core player", note: "Clear goals, regular feedback" }, { title: "High performer", note: "Recognise; widen scope" }],
+      [{ title: "Under-performer", note: "Clear expectations and support", tone: "bad" }, { title: "Effective", note: "Clarify goals; recognise" }, { title: "Trusted professional", note: "Retain; coach others", tone: "good" }]
+    ]}
+  />
+</Figure>
+
+The tool also shows what share of the team sits in each box.
+
+<Figure title="Share of the team in a box" caption="A quick check on how ratings are spread across the grid.">
+  <Formula
+    result={{ value: "Share in a box", label: "shown in each cell" }}
+    parts={[{ value: "People in the box" }, { op: "÷" }, { value: "People on the grid" }, { op: "×" }, { value: "100" }]}
+    example="Example: in the 12-person example team, 3 people are core players: 3 ÷ 12 × 100 = 25%."
+  />
+</Figure>
+
+If most people land in one box, check whether managers are using the scales the same way before you act on the result. There is no correct distribution; the point is a fair, evidence-based picture.
+
+## Rating performance and potential
+
+| Level | Performance (this year) | Potential (next two to three years) |
+| --- | --- | --- |
+| High | Clearly exceeded agreed goals | Ready for a bigger or broader role soon; learns fast and wants to grow |
+| Moderate | Met agreed goals | Could grow within the current area, with time and support |
+| Low | Missed key goals | Suited to the current scope for now |
+
+If your appraisal uses a 1–5 rating, the paste option can convert it: 1–2 is low, 3 is moderate and 4–5 is high.
+
+## Run a talent review
+
+<Steps
+  items={[
+    { title: "Managers place their people", body: "Each manager rates their own team, with one line of evidence for each rating." },
+    { title: "Calibrate together", body: "The leadership team reviews every box. Ask what evidence put each person there, and whether two managers would rate the same work the same way." },
+    { title: "Agree one action per person", body: "Development, a stretch project, a succession slot or a clear improvement conversation." },
+    { title: "Follow up", body: "Review progress in six months. Potential changes as people grow." }
+  ]}
+/>
+
+<Callout type="warning" title="Use it fairly">
+  Potential ratings are especially open to bias. People who work part-time, have recently returned from leave, or are quieter in meetings are easy to under-rate. If one group keeps landing in the lower boxes, look at how the ratings were given before acting on them. An under-performer needs clear expectations and support in writing, and any later decision needs its own fair process; see the [performance improvement plan](/toolkit/performance-improvement-plan/).
+</Callout>

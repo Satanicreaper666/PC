@@ -1,0 +1,113 @@
+---
+/**
+ * Demo of the home hero's paper diorama, laid out like the home hero.
+ * Not indexed. `?poster` renders one settled frame at 2x for scripts/render-hero-poster.mjs.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PaperHero from "../../components/home/PaperHero.astro";
+---
+
+<BaseLayout title="Hero diorama" description="The paper diorama in the home hero, live and as a poster." noindex>
+  <section class="demo-hero">
+    <div class="wrap demo-grid">
+      <div>
+        <p class="demo-k">Style guide · home hero</p>
+        <h1 class="display demo-title">Working life, cut from paper</h1>
+        <p class="lede demo-lede">
+          Six stations along a woven road: hiring, onboarding, growing, pay, leaving and leading. The poster loads first; on wide screens with motion allowed, the live scene fades in, settles once and turns a
+          few degrees with the pointer.
+        </p>
+      </div>
+      <PaperHero class="demo-art" />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap demo-notes">
+      <h2>How it behaves</h2>
+      <ul>
+        <li>Poster first: <code>/art/hero-poster.webp</code> with a PNG fallback, 1120 × 920 for a 560 × 460 box.</li>
+        <li>Live only when the hero is in view, WebGL 2 works, reduced motion is off, the viewport is at least 600px wide and Save-Data is off.</li>
+        <li>Renders only while something changes. Pauses off screen and in hidden tabs. Nothing loops.</li>
+        <li>Regenerate the poster with <code>node scripts/render-hero-poster.mjs</code> while the dev server runs.</li>
+      </ul>
+    </div>
+  </section>
+  <div class="poster-stage" data-poster-stage hidden></div>
+</BaseLayout>
+
+<script>
+  // Poster mode: hide the demo, render one settled frame at 2x, hand it to the script.
+  const params = new URLSearchParams(location.search);
+  if (params.has("poster")) {
+    const demo = document.querySelector<HTMLElement>(".demo-hero");
+    if (demo) demo.style.display = "none";
+    const stage = document.querySelector<HTMLElement>("[data-poster-stage]");
+    if (stage) {
+      stage.hidden = false;
+      import("../../scripts/paper-hero/index").then(async ({ mount }) => {
+        const at = params.get("t");
+        const hero = mount(stage, { poster: true, at: at === null ? undefined : Number(at) });
+        await hero.ready;
+        const out = {
+          webp: hero.canvas.toDataURL("image/webp", 0.86),
+          png: hero.canvas.toDataURL("image/png"),
+          width: hero.canvas.width,
+          height: hero.canvas.height
+        };
+        (window as unknown as { __heroPoster: typeof out }).__heroPoster = out;
+      });
+    }
+  }
+</script>
+
+<style>
+  .demo-hero {
+    padding-block: clamp(2.5rem, 2rem + 3vw, 5rem) clamp(3rem, 2rem + 4vw, 6rem);
+    background:
+      radial-gradient(60rem 30rem at 85% -10%, rgb(221 225 247 / 0.7), transparent 60%),
+      var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .demo-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(2rem, 4vw, 4.5rem);
+    align-items: center;
+  }
+  .demo-k {
+    font-size: var(--fs-sm);
+    font-weight: 620;
+    color: var(--ink-3);
+  }
+  .demo-title {
+    margin-top: 0.5rem;
+    font-size: var(--fs-3xl);
+    max-width: 14ch;
+  }
+  .demo-lede {
+    margin-top: 1.25rem;
+    max-width: 52ch;
+  }
+  .demo-notes {
+    max-width: 52rem;
+  }
+  .demo-notes ul {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.5rem;
+    color: var(--ink-2);
+  }
+  .poster-stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 560px;
+    height: 460px;
+  }
+  @media (max-width: 900px) {
+    .demo-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

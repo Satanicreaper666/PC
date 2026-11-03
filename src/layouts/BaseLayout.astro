@@ -1,0 +1,130 @@
+---
+import "@fontsource-variable/anek-latin/standard.css";
+import fontUrl from "@fontsource-variable/anek-latin/files/anek-latin-latin-standard-normal.woff2?url";
+import "../styles/global.css";
+import Header from "../components/site/Header.astro";
+import Footer from "../components/site/Footer.astro";
+import SearchDialog from "../components/site/SearchDialog.astro";
+import { SITE } from "../data/site";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Page-specific Open Graph image path under /public, e.g. "/og/guides.png" */
+  image?: string;
+  imageAlt?: string;
+  type?: "website" | "article";
+  /** One schema.org object or a list; nulls are dropped. */
+  jsonLd?: Record<string, unknown> | (Record<string, unknown> | null)[] | null;
+  noindex?: boolean;
+  /** Full title override (skips the " | PeopleCraft" suffix) */
+  fullTitle?: string;
+  modified?: Date;
+}
+
+const {
+  title,
+  description,
+  image = "/og/default.png",
+  imageAlt = "PeopleCraft — the free HR library for India",
+  type = "website",
+  jsonLd = [],
+  noindex = false,
+  fullTitle,
+  modified
+} = Astro.props;
+
+const pageTitle = fullTitle ?? `${title} | PeopleCraft`;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const imageUrl = new URL(image, Astro.site).toString();
+
+const siteLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${Astro.site}#website`,
+  name: "PeopleCraft",
+  url: Astro.site?.toString(),
+  description: SITE.description,
+  inLanguage: "en-IN",
+  publisher: { "@id": `${Astro.site}#org` },
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${Astro.site}search/?q={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+};
+const orgLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${Astro.site}#org`,
+  name: "PeopleCraft",
+  url: Astro.site?.toString(),
+  logo: new URL("/icons/icon-512.png", Astro.site).toString(),
+  description: SITE.description
+};
+const isHome = Astro.url.pathname === "/";
+const extraLd = (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).filter((x): x is Record<string, unknown> => !!x);
+const ld = [...(isHome ? [siteLd, orgLd] : []), ...extraLd];
+---
+
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    <meta name="robots" content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"} />
+    <meta name="theme-color" content="#2F3786" />
+    <meta name="color-scheme" content="light" />
+    <meta name="generator" content={Astro.generator} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
+
+    <meta property="og:site_name" content="PeopleCraft" />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={fullTitle ?? title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:locale" content="en_IN" />
+    {modified && <meta property="article:modified_time" content={modified.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle ?? title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+
+    {ld.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+
+    <script is:inline>
+      // Motion gate: hide-then-reveal only when JS runs and motion is welcome.
+      (function () {
+        try {
+          var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (!reduce && "IntersectionObserver" in window) document.documentElement.classList.add("js-anim");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <SearchDialog />
+    <script>
+      import "../scripts/site";
+      import "../scripts/desk";
+    </script>
+  </body>
+</html>

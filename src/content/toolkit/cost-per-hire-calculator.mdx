@@ -1,0 +1,106 @@
+---
+title: Cost per hire calculator
+description: Work out what each hire costs from your external and internal hiring costs, see which costs drive it and get your recruiting cost ratio. Free, in your browser.
+kind: calculator
+calculator: cost-per-hire-calculator
+glance:
+  inputs: ["External costs", "Internal costs", "People who joined", "Their annual CTC"]
+  output: "Cost per hire"
+  formula: "Cost per hire = total hiring costs ÷ hires"
+stage: recruit
+audiences: [hr, founders]
+order: 60
+checked: 2026-11-02
+useWhen: You need to know what each hire really costs, or want to compare hiring channels, teams or years.
+tips:
+  - "Count recruiters' pay only for the <strong>share of their time</strong> spent on hiring."
+  - "Use the same period for costs and hires. If an advert is paid in March and the person joins in April, pick a rule and keep it every year."
+  - "Work it out separately for agency hires and direct hires to see what each channel really costs."
+sources: []
+related:
+  - toolkit/attrition-cost-calculator
+  - toolkit/hr-metrics-calculator
+  - toolkit/hr-budget-builder
+  - handbooks/recruitment/09-metrics-mistakes-and-checklists
+  - handbooks/recruitment/03-sourcing
+  - glossary/ctc
+faq:
+  - q: What is a good cost per hire in India?
+    a: There is no single reliable figure. It depends on the role, the city, how many people you hire and how much you use agencies. Set your own target from your past years and compare channels and teams inside your company.
+  - q: Should recruiters' salaries be included in cost per hire?
+    a: Yes, for the share of their time spent on hiring. Leaving out internal costs makes in-house hiring look free and agencies look expensive by comparison.
+  - q: Is a joining bonus part of cost per hire?
+    a: Many companies count joining and relocation bonuses as external hiring costs, because they are paid to get the person to join. Decide once and keep it the same every year.
+  - q: What is the recruiting cost ratio?
+    a: Total hiring costs divided by the annual CTC of the people hired, as a percentage. It lets you compare hiring costs across roles with very different pay.
+keywords: [cost per hire calculator, cost per hire formula, how to calculate cost per hire, recruitment cost per hire india, recruiting cost ratio]
+draft: false
+---
+
+## How cost per hire is worked out
+
+<Figure title="The cost per hire formula" caption="Add up every hiring cost in the period, then divide by the people who joined in the same period.">
+  <Formula
+    result={{ value: "Cost per hire", label: "₹ for each person hired" }}
+    parts={[{ value: "Total hiring costs", label: "external + internal, for the period" }, { op: "÷" }, { value: "Hires", label: "people who joined in the same period" }]}
+    example="Example: (₹7,75,000 external + ₹9,20,000 internal) ÷ 30 hires = ₹56,500 a hire"
+  />
+</Figure>
+
+Count people who actually joined, not offers made. An offer that is declined costs money but produces no hire, which is exactly why it belongs in the cost and not in the count.
+
+<Figure title="Example: where ₹16,95,000 of hiring costs went" caption="One year, 30 hires. Brackets group the costs paid to outside parties and the costs of your own team and tools." wide>
+  <Breakdown
+    total="₹16,95,000 in a year (example)"
+    parts={[
+      { label: "Agency fees", value: 500000, display: "₹5,00,000" },
+      { label: "Job boards and ads", value: 120000, display: "₹1,20,000" },
+      { label: "Referrals, checks, branding", value: 155000, display: "₹1,55,000" },
+      { label: "Recruiting team", value: 700000, display: "₹7,00,000", note: "Share of time spent on hiring" },
+      { label: "Interviewers' time", value: 160000, display: "₹1,60,000" },
+      { label: "Recruiting software", value: 60000, display: "₹60,000" }
+    ]}
+    groups={[{ label: "External", from: 0, to: 2 }, { label: "Internal", from: 3, to: 5 }]}
+  />
+</Figure>
+
+## What to count
+
+| Cost | Type | How to find it |
+| --- | --- | --- |
+| Job boards, paid posts and ads | External | Invoices from finance for the period |
+| Agency and search fees | External | Invoices; count fees for people who joined in the period |
+| Referral bonuses | External | Payroll records of referral payouts |
+| Assessments, background checks, medicals | External | Vendor invoices |
+| Candidate travel, relocation, joining bonuses | External | Expense claims and payroll |
+| Employer branding and hiring events | External | Careers site, campus drives, event costs |
+| Recruiting team | Internal | Their CTC × share of time spent on hiring |
+| Recruiting software | Internal | Annual subscription of the applicant tracking system and tools |
+| Interviewers' time | Internal | Interview hours × an hourly cost (annual CTC ÷ about 2,000 hours) |
+
+## Gather the numbers in an afternoon
+
+<Steps
+  items={[
+    { title: "Pick the period", body: "A financial year is easiest because finance already closes its books on it." },
+    { title: "Pull external costs from finance", body: "Ask for invoices tagged to recruitment: job boards, agencies, checks, events." },
+    { title: "Estimate internal time", body: "Agree with each recruiter what share of their time went on hiring. Estimate interview hours from your applicant tracking system or calendars." },
+    { title: "Count joiners", body: "Use the joining dates in payroll, not offers made or accepted." },
+    { title: "Divide, then split", body: "Work out the overall figure, then the same for agency and direct hires, or for each team." }
+  ]}
+/>
+
+## Reading the result
+
+Cost per hire is most useful as a trend in your own company. Compare it with last year, between hiring channels and between role families, such as sales and engineering.
+
+A low cost per hire is not good on its own. If cheaper hiring brings people who leave within a year, the [attrition cost calculator](/toolkit/attrition-cost-calculator/) will show the bill arriving later. Read cost per hire next to [first-year attrition and quality of hire](/toolkit/hr-metrics-calculator/).
+
+<Callout type="warning" title="Common mistakes">
+  <ul>
+    <li>Counting only agency fees, which hides what your own team costs.</li>
+    <li>Dividing by offers made instead of people who joined.</li>
+    <li>Mixing periods, such as a full year of costs against six months of joiners.</li>
+    <li>Comparing your number with a figure from a blog without knowing what it counted.</li>
+  </ul>
+</Callout>

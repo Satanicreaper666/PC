@@ -1,0 +1,32 @@
+---
+/**
+ * One stick person, for use inside any <svg> (docs/ART-DIRECTION.md,
+ * "Stick people"). The same primitive draws everyone in the spot icons and
+ * scenes; see ./lib/figure.ts for the unit grid, the angle conventions and
+ * the joint limits a pose must respect.
+ *
+ *   <svg viewBox="0 0 320 180">
+ *     <Figure x={120} ground={151} u={6} pose="walk" paper="mid" layer="p2" />
+ *   </svg>
+ *
+ * `pose` is a name from POSES (stand, walk, sit, read, wave, point) or a Pose
+ * object. `layer` adds class p1/p2/p3; map those to var(--paper-1/2/3) in the
+ * host SVG's CSS for the cast shadow.
+ */
+import { figure, POSES, type Pose, type Paper, type Pt } from "./lib/figure.ts";
+interface Props {
+  x: number;
+  y?: number;
+  ground?: number;
+  u: number;
+  pose: keyof typeof POSES | Pose;
+  face?: 1 | -1;
+  paper?: Paper;
+  layer?: string;
+  reach?: { hands?: [Pt?, Pt?]; feet?: [Pt?, Pt?] };
+}
+const { pose, ...rest } = Astro.props;
+const f = figure({ ...rest, pose: typeof pose === "string" ? POSES[pose] : pose, standalone: true });
+---
+
+<Fragment set:html={f.svg} />

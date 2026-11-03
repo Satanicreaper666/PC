@@ -1,0 +1,403 @@
+---
+/**
+ * The level ladder: six rungs from Entry to Executive, drawn in the loom's
+ * language. Rails are neel threads, rungs weave over and under them, and
+ * turmeric marks "this one". Each rung links to the JD library filtered to
+ * that level, named for screen readers as "Senior roles: 11 JDs".
+ *
+ * 64rem and wider: an upright ladder, Executive at the top. Narrower, with
+ * `compact`: the ladder lies on its side, Entry on the left, labels below.
+ * With `bars`, each rung runs on past the ladder as a bar sized by its count.
+ * The `current` level's name also gets the yellow highlighter: the fact to remember.
+ * Draw it on a flat ground and pass that colour as --ground (default canvas),
+ * so the gaps where threads cross match what is behind them.
+ */
+import type { Jd } from "../../lib/library";
+import { LEVEL_INFO, LEVEL_ORDER } from "./jd-template";
+
+type Level = Jd["data"]["level"];
+interface Props {
+  counts: Record<Level, number>;
+  /** The level to mark in turmeric. */
+  current?: Level;
+  bars?: boolean;
+  compact?: boolean;
+  /** Fragment added to each link, e.g. "#find" to land on the filters. */
+  hash?: string;
+  /** Names the list for screen readers. */
+  label: string;
+  class?: string;
+}
+const { counts, current, bars = false, compact = false, hash = "", label, class: cls } = Astro.props;
+const max = Math.max(1, ...LEVEL_ORDER.map((l) => counts[l] ?? 0));
+const href = (l: Level) => `/jd-library/?level=${encodeURIComponent(l)}${hash}`;
+const plural = (n: number) => (n === 1 ? "JD" : "JDs");
+---
+
+<ol class:list={["ladder", bars && "bars", compact && "compact", cls]} aria-label={label} data-ladder>
+  {
+    LEVEL_ORDER.map((l) => {
+      const n = counts[l] ?? 0;
+      const here = l === current;
+      const inner = (
+        <>
+          <span class="lbl">
+            <span class:list={["long", here && "hl"]} data-mark={here ? "" : undefined}>
+              {LEVEL_INFO[l].label}
+            </span>
+            <span class:list={["short", here && "hl"]} data-mark={here ? "" : undefined}>
+              {l}
+            </span>
+          </span>
+          <span class="visually-hidden"> roles: </span>
+          <span class="cell" aria-hidden="true">
+            <span class="rung" />
+          </span>
+          <span class="end">
+            {bars && <span class="bar" aria-hidden="true" />}
+            <span class="n">{n}</span>
+            <span class="visually-hidden"> {plural(n)}</span>
+          </span>
+        </>
+      );
+      return (
+        <li style={`--f:${(n / max).toFixed(3)}`}>
+          {n > 0 ? (
+            <a class="row" href={href(l)} data-level={l} aria-current={here ? "true" : undefined}>
+              {inner}
+            </a>
+          ) : (
+            <span class="row empty">{inner}</span>
+          )}
+        </li>
+      );
+    })
+  }
+</ol>
+
+<style>
+  .ladder {
+    --row: 2.5rem; /* rung spacing */
+    --rail: 5px;
+    --rung: 5px;
+    --cw: 3rem; /* outer width of the ladder; rungs overhang the rails a little */
+    --inset: 0.5rem; /* rail position inside that width */
+    --cap: 0.35rem; /* how far the rails run past the end rungs' rows stop short */
+    --lw: 5.6rem; /* label column */
+    --g: 2px; /* the gap that shows which thread is on top */
+    --ground: var(--canvas);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .row {
+    position: relative;
+    z-index: 0; /* each rung weaves within its own row */
+    display: grid;
+    grid-template-columns: var(--lw) var(--cw) minmax(0, 1fr);
+    align-items: center;
+    min-height: var(--row);
+    color: var(--ink-2);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    line-height: 1.2;
+  }
+  .lbl {
+    padding-right: 0.7rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .short {
+    display: none;
+  }
+  .cell {
+    position: relative;
+    align-self: stretch;
+  }
+  /* The rails: one piece per row, so together they read as two continuous threads. */
+  .cell::before,
+  .cell::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--rail);
+    background: var(--neel-600);
+    z-index: 1;
+  }
+  .cell::before {
+    left: var(--inset);
+  }
+  .cell::after {
+    right: var(--inset);
+  }
+  li:first-child .cell::before,
+  li:first-child .cell::after {
+    top: 0;
+    bottom: var(--cap);
+    border-radius: 0 0 3px 3px;
+  }
+  li:last-child .cell::before,
+  li:last-child .cell::after {
+    top: var(--cap);
+    bottom: 0;
+    border-radius: 3px 3px 0 0;
+  }
+  .rung {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: var(--rung);
+    margin-top: calc(var(--rung) / -2);
+    border-radius: 99px;
+    background: var(--neel-300);
+    transition: background-color 150ms var(--ease);
+  }
+  /* Odd rungs pass over the rails, even rungs under them. */
+  li:nth-child(odd) .rung {
+    z-index: 2;
+    box-shadow:
+      0 calc(-1 * var(--g)) 0 var(--ground),
+      0 var(--g) 0 var(--ground);
+  }
+  li:nth-child(even) .cell::before,
+  li:nth-child(even) .cell::after {
+    z-index: 3;
+    box-shadow:
+      calc(-1 * var(--g)) 0 0 var(--ground),
+      var(--g) 0 0 var(--ground);
+  }
+  .end {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+    padding-left: 0.55rem;
+  }
+  .n {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* States: hover darkens the thread, turmeric marks the current level. */
+  a.row:hover .lbl {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  a.row:not([aria-current="true"]):hover .rung,
+  a.row:not([aria-current="true"]):hover .bar {
+    background: var(--neel-500);
+  }
+  /* The current rung always lies on top, so the turmeric reads whole. */
+  .row[aria-current="true"] {
+    --rung: 8px;
+  }
+  li .row[aria-current="true"] .rung {
+    z-index: 4;
+    box-shadow:
+      0 calc(-1 * var(--g)) 0 var(--ground),
+      0 var(--g) 0 var(--ground);
+  }
+  .row[aria-current="true"] .lbl {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .row[aria-current="true"] .n {
+    color: var(--ink);
+  }
+  .row[aria-current="true"] .rung,
+  .row[aria-current="true"] .bar {
+    background: var(--haldi-400);
+  }
+  .empty {
+    color: var(--ink-3);
+  }
+
+  /* Bars: the rung runs on past the ladder, as long as its share of JDs. */
+  .bars .rung {
+    border-radius: 99px 0 0 99px;
+    background: var(--neel-300);
+  }
+  .bars .end {
+    padding-left: 0;
+  }
+  .bar {
+    flex: none;
+    width: max(0.5rem, calc(var(--f) * (100% - 2.25rem)));
+    height: var(--rung);
+    border-radius: 0 99px 99px 0;
+    background: var(--neel-300);
+    transition: background-color 150ms var(--ease);
+  }
+
+  /* Narrow screens: the ladder lies on its side, Entry on the left, labels below. */
+  @media (max-width: 63.99rem) {
+    .compact {
+      --cw: 1.9rem;
+      --inset: 0.35rem;
+      flex-direction: row;
+    }
+    .compact li {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .compact .row {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: var(--cw) auto;
+      row-gap: 0.3rem;
+      justify-items: center;
+      min-height: 2.75rem;
+      padding-bottom: 0.15rem;
+      font-size: var(--fs-xs);
+    }
+    .compact .lbl {
+      grid-row: 2;
+      grid-column: 1;
+      padding: 0 0.1rem;
+      text-align: center;
+    }
+    .compact .long {
+      display: none;
+    }
+    .compact .short {
+      display: inline;
+    }
+    .compact .cell {
+      grid-row: 1;
+      grid-column: 1;
+      justify-self: stretch;
+    }
+    .compact li .cell::before,
+    .compact li .cell::after {
+      left: 0;
+      right: 0;
+      width: auto;
+      height: var(--rail);
+      border-radius: 0;
+    }
+    .compact li .cell::before {
+      top: var(--inset);
+      bottom: auto;
+    }
+    .compact li .cell::after {
+      top: auto;
+      bottom: var(--inset);
+    }
+    .compact li:first-child .cell::before,
+    .compact li:first-child .cell::after {
+      left: var(--cap);
+      border-radius: 3px 0 0 3px;
+    }
+    .compact li:last-child .cell::before,
+    .compact li:last-child .cell::after {
+      right: var(--cap);
+      border-radius: 0 3px 3px 0;
+    }
+    .compact li:first-child .cell::before,
+    .compact li:last-child .cell::before {
+      top: var(--inset);
+      bottom: auto;
+    }
+    .compact li:first-child .cell::after,
+    .compact li:last-child .cell::after {
+      top: auto;
+      bottom: var(--inset);
+    }
+    .compact .rung {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: auto;
+      width: var(--rung);
+      height: auto;
+      margin: 0 0 0 calc(var(--rung) / -2);
+      border-radius: 99px;
+    }
+    .compact li:nth-child(odd) .rung {
+      box-shadow:
+        calc(-1 * var(--g)) 0 0 var(--ground),
+        var(--g) 0 0 var(--ground);
+    }
+    .compact li:nth-child(even) .cell::before,
+    .compact li:nth-child(even) .cell::after {
+      box-shadow:
+        0 calc(-1 * var(--g)) 0 var(--ground),
+        0 var(--g) 0 var(--ground);
+    }
+    .compact li .row[aria-current="true"] .rung {
+      box-shadow:
+        calc(-1 * var(--g)) 0 0 var(--ground),
+        var(--g) 0 0 var(--ground);
+    }
+    /* The count stays in each link's name but isn't drawn. */
+    .compact .end {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+
+  /* Narrow screens with bars: each count stands as a short column on the ladder. */
+  @media (max-width: 63.99rem) {
+    .compact.bars .row {
+      grid-template-rows: 3.1rem var(--cw) auto;
+      row-gap: 0;
+    }
+    .compact.bars .end {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+      grid-row: 1;
+      grid-column: 1;
+      align-self: end;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0;
+    }
+    .compact.bars .cell {
+      grid-row: 2;
+    }
+    .compact.bars .lbl {
+      grid-row: 3;
+      margin-top: 0.3rem;
+    }
+    .compact.bars .bar {
+      width: var(--rung);
+      height: max(0.3rem, calc(var(--f) * 2rem));
+      border-radius: 99px 99px 0 0;
+    }
+    .compact.bars .rung {
+      border-radius: 0 0 99px 99px;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .cell::before,
+    .cell::after,
+    .rung,
+    .bar {
+      background: CanvasText;
+    }
+    .row[aria-current="true"] .rung,
+    .row[aria-current="true"] .bar {
+      background: Highlight;
+    }
+  }
+</style>

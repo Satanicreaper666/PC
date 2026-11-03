@@ -1,0 +1,113 @@
+---
+/**
+ * <Callout type="law" title="What the law says">…</Callout>
+ * Each type is a different piece of stationery (docs/ART-DIRECTION.md, "Marks and stationery"):
+ *   tip      a yellow sticky note: advice to act on
+ *   warning  a pink sticky note: a common mistake or a risk
+ *   note     a blue sticky note: good to know
+ *   law      an extract clipped to the page: a rule with a source
+ */
+import StickyNote from "../marks/StickyNote.astro";
+interface Props {
+  type?: "note" | "law" | "tip" | "warning";
+  title?: string;
+}
+const { type = "note", title } = Astro.props;
+const label: Record<string, string> = {
+  note: "Good to know",
+  law: "What the law says",
+  tip: "Tip",
+  warning: "Watch out"
+};
+const color = { tip: "yellow", warning: "pink", note: "blue" } as const;
+const t = title ?? label[type];
+---
+
+{
+  type === "law" ? (
+    <aside class="extract" aria-label={t}>
+      <svg class="clip" viewBox="0 0 24 56" aria-hidden="true">
+        <path d="M8 40V10a6 6 0 0 1 12 0v34a8 8 0 0 1-16 0V14" />
+      </svg>
+      <p class="title">
+        <span class="sect" aria-hidden="true">§</span>
+        {t}
+      </p>
+      <div class="body">
+        <slot />
+      </div>
+    </aside>
+  ) : (
+    <StickyNote color={color[type]} title={t} tilt={type === "warning" ? 0.35 : -0.35} class="callout-note">
+      <div class="body">
+        <slot />
+      </div>
+    </StickyNote>
+  )
+}
+
+<style>
+  /* A photocopied extract of the rule, clipped to the page. */
+  .extract {
+    position: relative;
+    padding: 1.1rem 1.35rem 1.2rem 1.5rem;
+    border-radius: 2px;
+    background:
+      linear-gradient(180deg, rgb(238 240 251 / 0.75), rgb(238 240 251 / 0.75)) left / 4px 100% no-repeat,
+      var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.09),
+      1.5px 2px 0 rgb(17 20 58 / 0.07),
+      4px 12px 22px -14px rgb(17 20 58 / 0.3);
+  }
+  .clip {
+    position: absolute;
+    top: -1.35rem;
+    left: 1.1rem;
+    width: 1rem;
+    height: 2.4rem;
+    fill: none;
+    stroke: #8b90a6;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    filter: drop-shadow(1px 1.5px 0 rgb(17 20 58 / 0.2));
+  }
+  .title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding-left: 0.9rem;
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    color: var(--neel-800);
+  }
+  .sect {
+    font-size: 1.15em;
+    color: var(--neel-500);
+  }
+  .body {
+    margin-top: 0.4rem;
+    font-size: var(--fs-base);
+    line-height: 1.6;
+  }
+  .callout-note .body {
+    margin-top: 0;
+    font-size: var(--fs-sm);
+  }
+  .body :global(> * + *) {
+    margin-top: 0.6em;
+  }
+  .body :global(ul) {
+    padding-left: 1.2rem;
+    margin: 0.4rem 0 0;
+  }
+  @media print {
+    .extract {
+      box-shadow: none;
+      border: 1px solid #ccc;
+    }
+    .clip {
+      display: none;
+    }
+  }
+</style>

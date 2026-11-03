@@ -1,0 +1,124 @@
+---
+title: EPF calculator
+description: Split monthly PF into the employee's share, the employer's EPF and pension (EPS) shares, EDLI and admin charges, with the ₹25,000 wage ceiling from 17 September 2026.
+kind: calculator
+calculator: epf
+glance:
+  inputs: ["Monthly PF wages", "Wage month", "Contribution basis", "EPS member", "Existing PF member"]
+  output: "PF each month"
+  formula: "Employee PF = 12% × PF wages"
+stage: pay
+audiences: [hr, employees, founders]
+order: 20
+checked: 2026-11-02
+useWhen: You need the monthly PF deduction and the employer's PF cost for a salary, or want to check a payslip or PF passbook entry.
+tips:
+  - "The PF wage ceiling rose from ₹15,000 to <strong>₹25,000 a month from 17 September 2026</strong>. Employees earning between the two who were outside PF or EPS had to be enrolled from that date."
+  - "Ask whether the employee is in the pension scheme (EPS) before you split the employer's share. Do not assume."
+  - "Contributions on wages above the ceiling are voluntary for both sides. The employer does not have to match a higher employee contribution."
+sources:
+  - title: The Code on Social Security, 2020, sections 2(88), 2(89) and 16 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/16823/1/aA2020-36.pdf
+    publisher: Ministry of Law and Justice
+  - title: Cabinet approves EPFO wage ceiling of ₹25,000 a month (16 September 2026)
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2310811
+    publisher: Press Information Bureau
+  - title: EPFO wage ceiling FAQs on S.O. 5109(E), October 2026
+    url: https://www.staffnews.in/wp-content/uploads/2026/10/EPFO_Wage_Ceiling_FAQs.pdf
+    publisher: StaffNews (copy)
+  - title: EPF, EPS and EDLI contribution rates notified on 1 July 2026
+    url: https://www.scconline.com/blog/post/2026/07/06/epf-eps-edli-contribution-rates-notified/
+    publisher: SCC Online
+  - title: "KPMG Flash News: new social security schemes, 2026"
+    url: https://assets.kpmg.com/content/dam/kpmgsites/in/pdf/2026/07/KPMG-Flash-News-New-Social-Security-Schemes-2026.pdf
+    publisher: KPMG in India
+related: [toolkit/take-home-salary-calculator, toolkit/esi-calculator, toolkit/full-and-final-settlement-calculator, handbooks/labour-law/04-social-security-and-benefits, handbooks/tds/03-ctc-design-and-perquisites, glossary/epf, glossary/ctc]
+faq:
+  - q: What is the PF wage ceiling in 2026?
+    a: ₹25,000 a month from 17 September 2026, up from ₹15,000. PF is mandatory on wages up to the ceiling; contributions above it are voluntary.
+  - q: How much PF is deducted from salary?
+    a: 12% of PF wages, usually capped at the wage ceiling. At or above ₹25,000 of PF wages that is ₹3,000 a month.
+  - q: How is the employer's 12% split between EPF and EPS?
+    a: For an EPS member, 8.33% of wages up to the ceiling goes to the pension scheme and the rest of the 12% goes to the PF account. At ₹25,000 that is ₹2,083 to pension and ₹917 to PF.
+  - q: Who pays EDLI and admin charges?
+    a: The employer, on top of its 12%. Each is 0.5% of wages, with EDLI worked out on wages up to the ceiling.
+keywords: [epf calculator, pf calculator, pf contribution employer employee, eps contribution 8.33, pf wage ceiling 25000, edli admin charges]
+---
+
+## How the split is worked out
+
+<Figure title="Monthly PF contributions" caption="The employee and the employer each pay 12%. The employer's 12% is then split between pension and the PF account.">
+  <div style={{ display: "grid", gap: "1.75rem" }}>
+    <Formula
+      result={{ value: "Employee PF", label: "deducted from pay" }}
+      parts={[{ value: "12%", label: "employee rate" }, { op: "×" }, { value: "PF wages", label: "up to ₹25,000, unless on full wages" }]}
+    />
+    <Formula
+      result={{ value: "Employer to PF", label: "the rest of the employer's 12%" }}
+      parts={[{ value: "12% of PF wages", label: "employer rate" }, { op: "−" }, { value: "8.33% of wages", label: "pension (EPS), up to the ceiling" }]}
+      example="Example: PF wages of ₹20,000 give ₹2,400 from the employee, ₹1,666 to pension and ₹734 to the PF account from the employer, plus ₹100 EDLI and ₹100 admin charges. These match EPFO's own example."
+    />
+  </div>
+</Figure>
+
+The employee contributes <Fact id="epf.employeeRate" /> of PF wages and the employer matches it. For a member of the Employees' Pension Scheme (EPS), <Fact id="epf.epsRate" /> of wages up to the ceiling goes from the employer's share to pension; the rest goes to the PF account. The employer also pays EDLI insurance at <Fact id="epf.edliRate" /> and an admin charge at <Fact id="epf.adminRate" />, outside the 12%.
+
+<Figure title="Where PF goes at ₹25,000 of PF wages" caption="Example for an EPS member. The first two parts reach the PF account; pension is credited separately; the last two are employer costs on top." wide>
+  <Breakdown
+    total="₹6,250 a month in all"
+    parts={[
+      { label: "Employee PF", value: 3000, display: "₹3,000", note: "12%, from pay" },
+      { label: "Employer to PF", value: 917, display: "₹917", note: "3.67%" },
+      { label: "Employer to pension", value: 2083, display: "₹2,083", note: "8.33%" },
+      { label: "EDLI insurance", value: 125, display: "₹125", note: "0.5%" },
+      { label: "Admin charges", value: 125, display: "₹125", note: "0.5%" }
+    ]}
+    groups={[{ label: "PF account ₹3,917", from: 0, to: 1 }]}
+  />
+</Figure>
+
+## What PF wages are
+
+PF is worked out on "wages" as the Code on Social Security defines them: basic pay, dearness allowance and retaining allowance, plus any other pay that is not on the exclusion list. If HRA, conveyance and other excluded items add up to more than <Fact id="wages.halfRule" /> of total pay, the excess counts as wages too. The [take-home salary calculator](/toolkit/take-home-salary-calculator/) runs that check.
+
+## The wage ceiling and who must join
+
+<Figure title="PF wage ceiling before and after 17 September 2026" caption="Compare the columns. The higher ceiling raises the mandatory contribution and brings more employees into PF and pension.">
+  <Compare
+    columns={["Up to 16 Sep 2026", "From 17 Sep 2026"]}
+    highlight={1}
+    rows={[
+      { label: "Wage ceiling", values: ["₹15,000 a month", "₹25,000 a month"] },
+      { label: "Largest mandatory employee PF", values: ["₹1,800 a month", "₹3,000 a month"] },
+      { label: "Largest pension (EPS) share", values: ["₹1,250 a month", "₹2,083 a month"] },
+      { label: "New joiners who need not join", values: ["Wages above ₹15,000", "Wages above ₹25,000"] }
+    ]}
+  />
+</Figure>
+
+<Figure title="Must the employee be a PF member?" caption="Follow the questions for one employee in an establishment covered by PF.">
+  <DecisionTree
+    node={{
+      q: "Already a PF member?",
+      yes: { result: "Stays a member and keeps contributing", detail: "Existing members cannot opt out", tone: "good" },
+      no: {
+        q: "PF wages at joining are ₹25,000 or less?",
+        yes: { result: "Must be enrolled", tone: "good" },
+        no: { result: "Not mandatory; may join with the employer's consent", tone: "neutral" }
+      }
+    }}
+  />
+</Figure>
+
+PF applies to establishments with <Fact id="epf.coverageEmployees" /> or more. September 2026 was a split month: 1 to 16 September used the ₹15,000 ceiling and 17 to 30 September used ₹25,000, in a single return due by 15 October 2026.
+
+<Callout type="note" title="Lower rate for a few industries">
+A rate of <Fact id="epf.reducedRate" /> instead of 12% applies to establishments under an insolvency resolution or repayment plan, and to jute, beedi, brick, coir (other than spinning) and guar-gum units. This calculator uses 12%.
+</Callout>
+
+## What this calculator leaves out
+
+- Interest, which EPFO credits once a year.
+- Whether someone qualifies for EPS, which depends on joining dates and past options. Enter the answer instead.
+- International workers, who have no wage ceiling.
+- The minimum admin charge of <Fact id="epf.adminMinimum" />, which applies to the establishment as a whole, not to each employee.

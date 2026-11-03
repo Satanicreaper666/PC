@@ -1,0 +1,347 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PageHero from "../../../components/site/PageHero.astro";
+import Checked from "../../../components/content/Checked.astro";
+import BookCover from "../../../components/ui/BookCover.astro";
+import { BOOKS, BOOK_IDS, type BookId } from "../../../data/books";
+import { audienceList } from "../../../data/taxonomy";
+import { chaptersOf, chapterUrl, bookUrl, readingMinutes, breadcrumbLd } from "../../../lib/library";
+
+export function getStaticPaths() {
+  return BOOK_IDS.map((book) => ({ params: { book } }));
+}
+
+const id = Astro.params.book as BookId;
+const book = BOOKS[id];
+const list = await chaptersOf(id);
+const mins = list.reduce((a, c) => a + readingMinutes(c.body), 0);
+const latest = list.map((c) => c.data.checked).sort((a, b) => b.getTime() - a.getTime())[0];
+const diagrams = list.reduce((a, c) => a + ((c.body ?? "").match(/<(Timeline|Flow|Breakdown|Formula|DecisionTree|Matrix|Cycle|KeyNumbers|Compare)\b/g) ?? []).length, 0);
+const sources = new Set(list.flatMap((c) => c.data.sources.map((x) => x.url))).size;
+const stats = [
+  { n: list.length, l: list.length === 1 ? "chapter" : "chapters" },
+  { n: mins, l: "minutes to read" },
+  { n: diagrams, l: "diagrams" },
+  { n: sources, l: "official sources" }
+].filter((x) => x.n > 0);
+// Old single-page links (labor-law-handbook.html#c3) arrive here via a 301; send them to the chapter.
+const legacy = Object.fromEntries(list.map((c) => [`c${c.data.chapter}`, chapterUrl(c)]));
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Handbooks", href: "/handbooks/" },
+  { name: book.short, href: bookUrl(id) }
+];
+const ld = [
+  breadcrumbLd(Astro.site, trail),
+  {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    name: book.title,
+    description: book.description,
+    inLanguage: "en-IN",
+    isAccessibleForFree: true,
+    publisher: { "@type": "Organization", name: "PeopleCraft" },
+    url: new URL(bookUrl(id), Astro.site).toString(),
+    hasPart: list.map((c) => ({ "@type": "Chapter", name: c.data.title, position: c.data.chapter, url: new URL(chapterUrl(c), Astro.site).toString() }))
+  }
+];
+---
+
+<BaseLayout title={book.title} description={book.description} jsonLd={ld} image={`/og/${id}.png`}>
+  <script is:inline define:vars={{ legacy }}>
+    (function () {
+      var to = legacy[location.hash.slice(1)];
+      if (to) location.replace(to);
+    })();
+  </script>
+  <PageHero title={book.title} lede={book.subtitle} trail={trail} tone="ink">
+    <div class="meta">
+      <span class="pill">For {audienceList(book.audiences)}</span>
+    </div>
+    {
+      list[0] && (
+        <div>
+          <a class="btn btn-accent" href={chapterUrl(list[0])}>
+            Start with chapter 1
+          </a>
+        </div>
+      )
+    }
+    <div slot="aside" class="book-glance">
+      <BookCover id={id} size="lg" class="bg-cover" />
+      <dl class="stats">
+        {
+          stats.map((x) => (
+            <div>
+              <dt>{x.l}</dt>
+              <dd>{x.n}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      {
+        book.changes.length > 0 && (
+          <div class="errata">
+            <svg class="clip" viewBox="0 0 24 56" aria-hidden="true">
+              <path d="M8 40V10a6 6 0 0 1 12 0v34a8 8 0 0 1-16 0V14" />
+            </svg>
+            <table>
+              <caption>Erratum: renamed by the new law</caption>
+              <thead class="visually-hidden">
+                <tr>
+                  <th scope="col">Old name</th>
+                  <th scope="col">Name now</th>
+                </tr>
+              </thead>
+              <tbody>
+                {book.changes.map((c) => (
+                  <tr>
+                    <td class="was">
+                      <span class="w" aria-hidden="true">for</span>
+                      <s>{c.old}</s>
+                    </td>
+                    <td class="now">
+                      <span class="w" aria-hidden="true">read</span>
+                      <strong class="hl" data-mark>
+                        {c.now}
+                      </strong>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+    </div>
+  </PageHero>
+
+  <div class="wrap section body" data-pagefind-ignore>
+    <div class="intro">
+      <p class="desc">{book.description}</p>
+      {latest && <Checked date={latest} />}
+    </div>
+    <ol class="chapters">
+      {
+        list.map((c) => (
+          <li>
+            <a href={chapterUrl(c)} class="ch">
+              <span class="num">{String(c.data.chapter).padStart(2, "0")}</span>
+              <span class="txt">
+                <span class="t">{c.data.title}</span>
+                <span class="d">{c.data.description}</span>
+                <span class="m">{readingMinutes(c.body)} min read</span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+    {list.length === 0 && <p class="muted">Chapters are being checked against current law and will appear here.</p>}
+  </div>
+</BaseLayout>
+
+<style>
+  .book-glance {
+    display: grid;
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    gap: 1.75rem;
+    align-items: end;
+  }
+  /* An erratum slip, the kind printers tuck into a book when a name has changed since it went to press. */
+  .errata {
+    grid-column: 1 / -1;
+    position: relative;
+    margin-top: 0.9rem;
+    padding: 0.85rem 1.1rem 0.7rem;
+    border-radius: 2px;
+    background: var(--paper);
+    color: var(--ink);
+    transform: rotate(-0.8deg);
+    box-shadow:
+      2px 3px 0 rgb(0 0 0 / 0.25),
+      8px 16px 26px -12px rgb(0 0 0 / 0.55);
+  }
+  .errata .clip {
+    position: absolute;
+    top: -1.2rem;
+    left: 1.2rem;
+    width: 0.9rem;
+    height: 2.2rem;
+    fill: none;
+    stroke: #a7acc2;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    filter: drop-shadow(1px 1.5px 0 rgb(0 0 0 / 0.35));
+  }
+  .errata table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .errata caption {
+    text-align: left;
+    padding: 0 0 0.45rem 1.6rem;
+    font-weight: 700;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .errata td {
+    padding: 0.42rem 0;
+    border-bottom: 1px dashed var(--line);
+    vertical-align: baseline;
+  }
+  .errata tr:last-child td {
+    border-bottom: 0;
+  }
+  .errata .w {
+    display: inline-block;
+    min-width: 2.1rem;
+    font-size: var(--fs-xs);
+    font-style: italic;
+    color: var(--ink-3);
+  }
+  /* The old name, struck through in red pen. */
+  .errata s {
+    text-decoration: none;
+    color: var(--ink-2);
+    padding: 0 0.1em;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6.2C22 4.8 44 6.6 63 5.1S91 4.6 99 5.4' fill='none' stroke='%23c8323c' stroke-width='1.6' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 0.7em no-repeat;
+  }
+  .errata .now strong {
+    font-weight: 700;
+  }
+  .stats {
+    margin: 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .stats div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.1rem;
+    padding-left: 0.9rem;
+    border-left: 3px solid var(--neel-600);
+  }
+  .stats div:first-child {
+    border-left-color: var(--accent);
+  }
+  .stats dd {
+    margin: 0;
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .stats dt {
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    color: var(--neel-200);
+  }
+  @media (max-width: 64rem) {
+    .book-glance {
+      grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr);
+      gap: 1.25rem;
+      max-width: 26rem;
+    }
+    .stats dd {
+      font-size: var(--fs-lg);
+    }
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .pill {
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    color: var(--neel-100);
+    font-size: var(--fs-xs);
+    font-weight: 560;
+  }
+  .body {
+    display: grid;
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+    gap: 3rem;
+    align-items: start;
+  }
+  .intro {
+    position: sticky;
+    top: calc(var(--header-h) + 1.5rem);
+    display: grid;
+    gap: 1.25rem;
+    justify-items: start;
+  }
+  .desc {
+    color: var(--ink-2);
+  }
+  .chapters {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--neel-700);
+  }
+  /* The numbers are a real sequence: chapters are read in order. */
+  .ch {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr auto;
+    gap: 1rem;
+    align-items: start;
+    padding: 1.25rem 0.25rem;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 150ms;
+  }
+  .ch:hover {
+    background: var(--canvas);
+  }
+  .num {
+    font-size: var(--fs-xl);
+    font-weight: 660;
+    color: var(--neel-400);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .txt {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .t {
+    font-weight: 650;
+    font-size: var(--fs-md);
+  }
+  .d {
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .m {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .ch :global(.go) {
+    color: var(--ink-3);
+    margin-top: 0.3rem;
+  }
+  .ch:hover :global(.go) {
+    color: var(--primary);
+  }
+  @media (max-width: 860px) {
+    .body {
+      grid-template-columns: 1fr;
+    }
+    .intro {
+      position: static;
+    }
+    .ch {
+      grid-template-columns: 2.5rem 1fr;
+    }
+    .ch :global(.go) {
+      display: none;
+    }
+  }
+</style>

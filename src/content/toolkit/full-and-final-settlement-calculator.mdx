@@ -1,0 +1,111 @@
+---
+title: Full and final settlement calculator
+description: Work out an exit settlement (final salary, leave encashment, gratuity, other dues and recoveries) and the dates it is due under the Code on Wages and other Codes.
+kind: calculator
+calculator: full-and-final
+glance:
+  inputs: ["Exit reason", "Date of joining", "Last working day", "Monthly gross salary", "Unused leave"]
+  output: "Full and final settlement"
+  formula: "Net = final salary + leave + gratuity + other dues − recoveries"
+stage: exit
+audiences: [hr, employees, founders]
+order: 14
+checked: 2026-11-02
+useWhen: An employee is leaving and you need to work out what they are owed, what can be recovered and the last date to pay each part.
+tips:
+  - "Under the Code on Wages, wages due on resignation, removal, dismissal, retrenchment or closure must be paid within <strong>two working days</strong>. Plan the settlement before the last working day, not after it."
+  - "Recover only what the employee agreed to or the law allows, and show each recovery on the settlement statement."
+  - "Gratuity has its own deadline: <strong>30 days</strong> from when it becomes payable."
+sources:
+  - title: The Code on Wages, 2019, section 17 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf
+    publisher: Ministry of Law and Justice
+  - title: The Occupational Safety, Health and Working Conditions Code, 2020, section 32 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/22041/1/2020-37.pdf
+    publisher: Ministry of Law and Justice
+  - title: The Code on Social Security, 2020, sections 53 to 56 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/16823/1/aA2020-36.pdf
+    publisher: Ministry of Law and Justice
+  - title: Government makes the four Labour Codes effective (21 November 2025)
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2192463
+    publisher: Press Information Bureau
+  - title: "Two working days: Code on Wages and an employee's final settlement (3 October 2026)"
+    url: https://www.livelaw.in/articles/two-working-days-code-wages-employee-final-settlement-552780
+    publisher: LiveLaw
+related: [toolkit/gratuity-calculator, toolkit/leave-encashment-calculator, toolkit/notice-period-calculator, toolkit/offboarding-checklist, toolkit/relieving-letter, handbooks/labour-law/06-termination-grievance-and-disputes, handbooks/tds/05-joiners-leavers-and-transfers, glossary/full-and-final-settlement]
+faq:
+  - q: What is the time limit for full and final settlement in India?
+    a: Under the Code on Wages, wages due on resignation, removal, dismissal, retrenchment or closure must be paid within two working days. Gratuity has a separate 30-day limit.
+  - q: Do the two working days start from the resignation letter or the last working day?
+    a: The Code says "within two working days of his resignation". It is commonly read as the date the resignation takes effect, the last working day. There is no official clarification yet.
+  - q: What is included in a full and final settlement?
+    a: Salary for the days worked in the last month, encashment of unused leave, gratuity if eligible, bonus or other dues, and notice pay if the employer pays in lieu of notice, less agreed recoveries such as loans or a notice shortfall.
+  - q: Is PF part of the full and final settlement?
+    a: No. The employer files the last PF contribution, but the employee withdraws or transfers PF by making a claim to EPFO.
+keywords: [full and final settlement calculator, f&f settlement calculation, full and final settlement time limit, final settlement 2 working days, f&f settlement new labour code, exit settlement calculator]
+---
+
+## How the amount is worked out
+
+<Figure title="Full and final settlement" caption="Add everything owed, then take away the recoveries. Each part has its own rules.">
+  <Formula
+    result={{ value: "Net settlement", label: "before income tax" }}
+    parts={[{ value: "Final salary", label: "days payable in the last month" }, { op: "+" }, { value: "Leave encashment" }, { op: "+" }, { value: "Gratuity", label: "if eligible" }, { op: "+" }, { value: "Other dues" }, { op: "−" }, { value: "Recoveries" }]}
+    example="Example: ₹12,000 salary for 4 days of December + ₹41,538 for 18 days of leave + ₹2,76,923 gratuity − ₹10,000 loan = ₹3,20,461."
+  />
+</Figure>
+
+The example is for someone who joined on 1 April 2019 and resigned with a last working day of Friday 4 December 2026, on a gross salary of ₹93,000 a month and wages (as the Labour Codes define them) of ₹60,000.
+
+- **Final salary:** gross monthly pay ÷ the days in the month × the days payable. Payroll may use 30 or 26 instead; the calculator lets you choose. ₹93,000 ÷ 31 × 4 = ₹12,000.
+- **Leave encashment:** wages ÷ 26 (or 30) × unused leave days, as the [leave encashment calculator](/toolkit/leave-encashment-calculator/) explains. ₹60,000 ÷ 26 × 18 = ₹41,538.
+- **Gratuity:** if the employee has <Fact id="gratuity.minYears" /> of continuous service, or a fixed-term employee has <Fact id="gratuity.fixedTermMinYears" />, as the [gratuity calculator](/toolkit/gratuity-calculator/) explains. Seven years and eight months counts as 8 years: ₹2,76,923.
+- **Other dues and recoveries:** you enter these. They include bonus, reimbursements, arrears, notice pay, loans and the agreed value of assets not returned.
+
+<Figure title="Example settlement" caption="The parts of the ₹3,30,461 owed, before the ₹10,000 loan is recovered. Gratuity is most of it after long service.">
+  <Breakdown
+    total="₹3,30,461 owed"
+    parts={[
+      { label: "Final salary", value: 12000, display: "₹12,000", note: "4 of 31 days" },
+      { label: "Leave encashment", value: 41538, display: "₹41,538", note: "18 days" },
+      { label: "Gratuity", value: 276923, display: "₹2,76,923", note: "8 years counted" }
+    ]}
+  />
+</Figure>
+
+<Callout type="warning" title="Notice pay is set by the contract">
+How much is recovered for notice not served, or paid in lieu of notice, depends on the contract: which pay it counts and how many days make a month. Work it out from the contract and enter the amount. Recover only what the employee agreed to or the law allows.
+</Callout>
+
+## When each part is due
+
+<Figure title="Payment deadlines after the last working day" caption="Example for a last working day of Friday 4 December 2026, with Saturdays and Sundays off and no holidays." wide>
+  <Timeline
+    items={[
+      { when: "Fri 4 Dec 2026", label: "Last working day", accent: true },
+      { when: "Tue 8 Dec 2026", label: "Wages and leave encashment due", note: "2nd working day after" },
+      { when: "Sun 3 Jan 2027", label: "Gratuity due", note: "30 days" }
+    ]}
+    spans={[{ from: 0, to: 1, label: "2 working days" }, { from: 0, to: 2, label: "30 days for gratuity" }]}
+  />
+</Figure>
+
+<Callout type="law" title="What the law says">
+The Code on Wages, 2019 (section 17(2)) says wages due to an employee who is removed, dismissed, retrenched, resigns or loses the job because the establishment closes must be paid within <Fact id="wages.separationPayDays" />. For workers under the OSH Code, unused leave is paid within <Fact id="leave.exitPaymentWorkingDays" /> of discharge, dismissal or quitting, and within <Fact id="leave.retirementPaymentMonths" /> of retirement or death. Gratuity is due within <Fact id="gratuity.paymentDays" /> of becoming payable under the Code on Social Security.
+</Callout>
+
+The Code counts the two working days from the resignation itself. It is commonly read as the date the resignation takes effect, the last working day, but there is no official clarification yet. The two-working-day rule does not name retirement, death or the end of a fixed-term contract; for those, pay on the normal pay date (<Fact id="wages.monthlyPayDay" /> for monthly-paid staff) or sooner if your policy says so.
+
+## Running the settlement
+
+<Steps
+  items={[
+    { title: "Confirm the last working day", body: "Use the <a href=\"/toolkit/notice-period-calculator/\">notice period calculator</a> and agree any buy-out or waiver in writing." },
+    { title: "Collect the numbers early", body: "Leave balance, loans and advances, unpaid reimbursements, and assets to be returned, before the last week." },
+    { title: "Work out the settlement", body: "Use this calculator, then check it against payroll and the employee's contract." },
+    { title: "Pay on time", body: "Pay wages and leave encashment within two working days, and gratuity within 30 days. Deduct TDS as the TDS handbook explains." },
+    { title: "Close the records", body: "File the final PF and ESI returns, give a settlement statement, and issue the relieving and experience letters." }
+  ]}
+/>
+
+Income tax (TDS) on the settlement is not worked out here; see the TDS handbook chapter on [joiners and leavers](/handbooks/tds/joiners-leavers-and-transfers/). PF withdrawal or transfer is a claim the employee makes to EPFO; it is not part of the employer's settlement.

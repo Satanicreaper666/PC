@@ -1,0 +1,170 @@
+---
+/**
+ * A survey or assessment: how many questions, the answer scale, and the result
+ * bands drawn to scale on the average score, darker for higher.
+ */
+import { bandSpans, fmtScore, type Band } from "./glance";
+interface Props {
+  questions: number;
+  areas: number;
+  scale: { min: number; max: number; labels: string[] };
+  bands: Band[];
+}
+const { questions, areas, scale, bands } = Astro.props;
+const spans = bandSpans(bands, scale.min, scale.max);
+const RAMP = ["var(--neel-200)", "var(--neel-300)", "var(--neel-400)", "var(--neel-500)", "var(--neel-600)", "var(--neel-700)"];
+const colour = (i: number) => {
+  if (spans.length <= 1) return RAMP[3];
+  const steps = spans.length <= 4 ? [0, 1, 3, 5] : [0, 1, 2, 3, 5];
+  return RAMP[steps[i] ?? Math.round((i / (spans.length - 1)) * 5)];
+};
+/** Boundaries between bands, as a share of the scale, for the numbers over the bar. */
+let at = 0;
+const ticks = spans.map((b) => {
+  const t = { pos: at, value: fmtScore(Math.max(scale.min, b.min)) };
+  at += b.share;
+  return t;
+});
+ticks.push({ pos: 1, value: fmtScore(scale.max) });
+const lo = scale.labels[0];
+const hi = scale.labels[scale.labels.length - 1];
+const sr = (i: number) => {
+  const b = spans[i];
+  const next = spans[i + 1];
+  return next ? `average from ${fmtScore(Math.max(scale.min, b.min))} to under ${fmtScore(next.min)}` : `average from ${fmtScore(b.min)} to ${fmtScore(scale.max)}`;
+};
+---
+
+<div class="sv">
+  <p class="glance-label" id="glance-kind">How it's scored</p>
+  <p class="big">
+    <strong>{questions} questions</strong>, each scored {scale.min}–{scale.max}
+  </p>
+  {
+    (areas > 1 || (lo && hi)) && (
+      <p class="sub">
+        {areas > 1 && <>In {areas} areas</>}
+        {areas > 1 && lo && hi && <span aria-hidden="true"> · </span>}
+        {areas > 1 && lo && hi && <span class="visually-hidden">, </span>}
+        {lo && hi && <>{areas > 1 ? "from" : "From"} “{lo}” to “{hi}”</>}
+      </p>
+    )
+  }
+  {
+    spans.length > 0 && (
+      <div class="result">
+        <p class="cap" id="glance-bands">Result bands, on the average score</p>
+        <div class="ticks" aria-hidden="true">
+          {ticks.map((t, i) => (
+            <span class:list={["tick", { first: i === 0, last: i === ticks.length - 1 }]} style={`--at:${(t.pos * 100).toFixed(2)}%`}>
+              {t.value}
+            </span>
+          ))}
+        </div>
+        <div class="bar" aria-hidden="true">
+          {spans.map((b, i) => (
+            <span style={`flex-grow:${b.share.toFixed(4)};background:${colour(i)}`} />
+          ))}
+        </div>
+        <ol class:list={["bands", { many: spans.length > 4 }]} aria-labelledby="glance-bands">
+          {spans.map((b, i) => (
+            <li style={`flex-grow:${b.share.toFixed(4)};--c:${colour(i)}`}>
+              {b.label}
+              <span class="visually-hidden">: {sr(i)}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .glance-label {
+    margin-bottom: 0.55rem;
+  }
+  .big {
+    font-size: var(--fs-md);
+    line-height: 1.3;
+    color: var(--ink-2);
+  }
+  .big strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .sub {
+    margin-top: 0.2rem;
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+  .result {
+    margin-top: 1.25rem;
+  }
+  .cap {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+    margin-bottom: 0.35rem;
+  }
+  .ticks {
+    position: relative;
+    height: 1.15rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .tick {
+    position: absolute;
+    left: var(--at);
+    bottom: 0.1rem;
+    transform: translateX(-50%);
+    line-height: 1;
+  }
+  .tick.first {
+    transform: none;
+  }
+  .tick.last {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+  .bar {
+    display: flex;
+    gap: 3px;
+    height: 0.75rem;
+  }
+  .bar span {
+    flex-basis: 0;
+    min-width: 0;
+  }
+  .bar span:first-child {
+    border-radius: 6px 0 0 6px;
+  }
+  .bar span:last-child {
+    border-radius: 0 6px 6px 0;
+  }
+  .bands {
+    list-style: none;
+    margin: 0.45rem 0 0;
+    padding: 0;
+    display: flex;
+    gap: 3px;
+  }
+  /* Each label hangs from its band on a short tick in the band's colour. */
+  .bands li {
+    flex-basis: 0;
+    min-width: 0;
+    padding: 0.2rem 0.25rem 0 0.4rem;
+    border-left: 2px solid var(--c);
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    line-height: 1.25;
+    color: var(--ink);
+    overflow-wrap: break-word;
+  }
+  .bands.many li {
+    font-size: 0.75rem;
+  }
+</style>

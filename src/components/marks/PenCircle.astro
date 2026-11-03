@@ -1,0 +1,37 @@
+---
+/** Circles a few words in pen: "don't miss this". The words stay plain text for screen readers. */
+interface Props {
+  red?: boolean;
+  class?: string;
+}
+const { red, class: cls } = Astro.props;
+---
+
+<span class:list={["pen-circle", cls]} data-mark>
+  <slot />
+  <svg class:list={["pen", { "pen-red": red }]} viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+    <path class="pen-stroke" pathLength="1" d="M58 4C33 2 8 7 4 18c-4 11 19 19 47 18 28-1 47-8 45-18-1.6-8.2-21-13.5-46-12" />
+  </svg>
+</span>
+
+<style>
+  .pen-circle {
+    position: relative;
+    display: inline-block;
+    padding: 0 0.3em;
+    white-space: nowrap;
+  }
+  .pen-circle .pen {
+    position: absolute;
+    top: -0.35em;
+    left: -0.35em;
+    width: calc(100% + 0.65em);
+    height: calc(100% + 0.65em);
+    max-width: none;
+    stroke-width: 2;
+    pointer-events: none;
+  }
+  .pen-circle .pen :global(path) {
+    vector-effect: non-scaling-stroke;
+  }
+</style>

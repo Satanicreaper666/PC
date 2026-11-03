@@ -1,0 +1,357 @@
+---
+/**
+ * The offline page. public/sw.js shows it in place of a page that isn't saved on this
+ * device when there is no connection; the address bar keeps the page that was asked
+ * for, so the script names it, lists what is saved here, and reloads once the
+ * connection is back. Opened directly (the privacy page links here), it lists what
+ * this device keeps. Kept out of search, the sitemap and My desk.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Scene from "../components/art/Scene.astro";
+import StickyNote from "../components/marks/StickyNote.astro";
+import PinIcon from "../components/desk/PinIcon.astro";
+import Icon from "../components/ui/Icon.astro";
+import { BOOKS, BOOK_IDS } from "../data/books";
+import { AUDIENCES, AUDIENCE_INFO, TOOL_KIND_INFO } from "../data/taxonomy";
+import { isBlankJd } from "../components/jds/jd-template";
+import { allChapters, allTools, allJds, chapterUrl, toolUrl, jdUrl, bookUrl } from "../lib/library";
+
+const [chapters, tools, jds] = await Promise.all([allChapters(), allTools(), allJds()]);
+
+/** Every page's name and what it is, so the script can say which page isn't saved. */
+const pages: Record<string, [string, string]> = {
+  "/": ["Home", ""],
+  "/start/": ["Start here", ""],
+  "/handbooks/": ["Handbooks", ""],
+  "/toolkit/": ["Toolkit", ""],
+  "/jd-library/": ["JD library", ""],
+  "/glossary/": ["Glossary", ""],
+  "/search/": ["Search", ""],
+  "/desk/": ["My desk", ""],
+  "/about/": ["About PeopleCraft", ""],
+  "/privacy/": ["Privacy", ""],
+  "/terms/": ["Terms of use", ""],
+  "/disclaimer/": ["Disclaimer", ""]
+};
+for (const a of AUDIENCES) pages[AUDIENCE_INFO[a].path] = [`Start here for ${AUDIENCE_INFO[a].label.toLowerCase()}`, ""];
+for (const id of BOOK_IDS) pages[bookUrl(id)] = [BOOKS[id].title, "Handbook"];
+for (const c of chapters) pages[chapterUrl(c)] = [c.data.title, `${BOOKS[c.data.book].short} handbook`];
+for (const t of tools) pages[toolUrl(t)] = [t.data.title, TOOL_KIND_INFO[t.data.kind].label];
+for (const j of jds) pages[jdUrl(j)] = [isBlankJd(j) ? "Blank job description" : j.data.title, "Job description"];
+const data = JSON.stringify(pages);
+---
+
+<BaseLayout title="You're offline" description="The pages saved on this device, which open without a connection." noindex>
+  <section class="wrap off-wrap" data-offline data-desk-skip data-pages={data}>
+    <div class="off">
+      <h1 class="display" data-off-title>You're offline</h1>
+      <p class="lede" data-off-lede>
+        This page isn't saved on this device yet, so it needs a connection. Pages you have opened here before still work, calculators and templates
+        included.
+      </p>
+      <div class="again" data-off-again>
+        <a class="btn" href="" data-off-retry><Icon name="refresh" size={18} /> Try again</a>
+        <p class="small muted" role="status" aria-live="polite" data-off-status>It opens by itself when your connection is back.</p>
+      </div>
+
+      <section class="saved notepaper" aria-labelledby="off-saved-title" data-off-saved hidden>
+        <h2 id="off-saved-title" class="label hand">Saved on this device</h2>
+        <div data-off-group="pinned" hidden>
+          <h3 class="sub"><PinIcon size={16} class="is-pinned" /> Pinned to My desk</h3>
+          <ul data-off-list="pinned"></ul>
+        </div>
+        <div data-off-group="recent" hidden>
+          <h3 class="sub">Opened recently</h3>
+          <ul data-off-list="recent"></ul>
+          <button type="button" class="more" data-off-more hidden></button>
+        </div>
+        <p class="none" data-off-none hidden>Nothing is saved yet. Pages you open from now on are kept here, so they work without a connection.</p>
+      </section>
+    </div>
+
+    <div class="off-art">
+      <Scene name="offline" />
+      <StickyNote color="green" title="Pin what you need" tilt={1.5} class="off-note">
+        <p>A page you pin to My desk is always kept on this device, and refreshed whenever you're online.</p>
+      </StickyNote>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .off-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+    gap: 3rem;
+    align-items: start;
+    padding-block: 3rem var(--section);
+  }
+  .off {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 44rem;
+  }
+  .again {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+  .again .btn {
+    gap: 0.5rem;
+  }
+  .again p {
+    margin: 0;
+  }
+  .off-art {
+    display: grid;
+    gap: 1.5rem;
+    padding-top: 1rem;
+  }
+  .off-art :global(.off-note) {
+    margin-left: 2rem;
+  }
+
+  /* The list of saved pages, on a page from a ring binder like the chapter summaries. */
+  .saved {
+    --rule: 1.9rem;
+    --margin-x: 2.6rem;
+    --rule-start: -0.6rem;
+    position: relative;
+    margin-top: 0.75rem;
+    padding: 0 1.5rem var(--rule) 3.4rem;
+    border-radius: 3px;
+    line-height: var(--rule);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07),
+      4px 12px 24px -14px rgb(17 20 58 / 0.25);
+  }
+  .saved::before,
+  .saved::after {
+    content: "";
+    position: absolute;
+    left: 0.95rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--canvas);
+    box-shadow: inset 1px 1.5px 2px rgb(17 20 58 / 0.22);
+  }
+  .saved::before {
+    top: calc(var(--rule) * 1.5);
+  }
+  .saved::after {
+    bottom: calc(var(--rule) * 1.5);
+  }
+  .label {
+    height: calc(var(--rule) * 2);
+    display: flex;
+    align-items: flex-end;
+    margin: 0;
+    padding-bottom: 0.2rem;
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .sub {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: var(--rule) 0 0;
+    font-size: var(--fs-sm);
+    line-height: var(--rule);
+    color: var(--ink-2);
+  }
+  .saved ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .saved li {
+    line-height: var(--rule);
+  }
+  .saved li::marker {
+    color: var(--pen-ink);
+  }
+  .saved :global(.kind) {
+    margin-left: 0.6rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3, var(--ink-2));
+    white-space: nowrap;
+  }
+  .saved :global(.missing) {
+    color: var(--ink-2);
+  }
+  .more {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    line-height: var(--rule);
+    color: var(--link, var(--neel-700));
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+  .none {
+    margin: 0;
+    line-height: var(--rule);
+  }
+  @media (max-width: 860px) {
+    .off-wrap {
+      grid-template-columns: 1fr;
+    }
+    .off-art {
+      max-width: 26rem;
+    }
+  }
+  @media print {
+    .again,
+    .off-art {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { PAGES_CACHE_PREFIX } from "../components/desk/shared";
+  import { getPins, sitePath, siteHref } from "../scripts/desk";
+
+  type Names = Record<string, [string, string]>;
+  type Row = { href: string; title: string; kind: string; ok: boolean };
+  /** Recently opened pages shown before "Show all". */
+  const SHOW = 12;
+
+  const root = document.querySelector<HTMLElement>("[data-offline]");
+  if (root) void start(root);
+
+  async function start(root: HTMLElement) {
+    const names: Names = JSON.parse(root.dataset.pages ?? "{}");
+    const $ = <T extends Element>(sel: string) => root.querySelector<T>(sel);
+    const asked = sitePath();
+    const direct = asked === "/offline/";
+
+    const title = $<HTMLElement>("[data-off-title]");
+    const lede = $<HTMLElement>("[data-off-lede]");
+    const again = $<HTMLElement>("[data-off-again]");
+    const status = $<HTMLElement>("[data-off-status]");
+
+    if (direct) {
+      if (title) title.textContent = "Pages saved on this device";
+      if (lede)
+        lede.textContent =
+          "These pages open without a connection, calculators and templates included. Your browser keeps every page you pin to My desk and the pages you opened most recently.";
+      if (again) again.hidden = true;
+    } else {
+      const name = names[asked]?.[0];
+      if (lede && name) lede.textContent = `${name} isn't saved on this device yet, so it needs a connection. Pages you have opened here before still work, calculators and templates included.`;
+      // The worker also lands here when the network is too slow to answer.
+      if (status && navigator.onLine) status.textContent = "Your connection is too weak to open it right now. Try again in a moment.";
+      window.addEventListener("online", () => {
+        if (status) status.textContent = "You're back online. Opening the page…";
+        location.reload();
+      });
+    }
+
+    const saved = await savedPages(names);
+    const pins = getPins();
+    const pinned = new Set(pins.map((p) => p.href.replace(/#.*$/, "")));
+    const kindOf = (path: string, fallback = "") => names[path]?.[1] || fallback;
+
+    const pinRows: Row[] = pins.map((p) => {
+      const path = p.href.replace(/#.*$/, "");
+      return { href: p.href, title: p.title, kind: kindOf(path, p.kind ?? ""), ok: saved.has(path) };
+    });
+    const recentRows: Row[] = [...saved]
+      .filter(([path]) => !pinned.has(path) && path !== "/offline/" && path !== asked)
+      .map(([path, name]) => ({ href: path, title: name, kind: kindOf(path), ok: true }));
+
+    const pinList = $<HTMLUListElement>('[data-off-list="pinned"]');
+    const recentList = $<HTMLUListElement>('[data-off-list="recent"]');
+    // Online, a pinned page not kept yet is on its way; offline, it can't open.
+    const missing = direct ? "not saved yet" : "needs a connection";
+    pinList?.replaceChildren(...pinRows.map((r) => row(r, missing)));
+    recentList?.replaceChildren(...recentRows.map((r) => row(r, missing)));
+    const pinGroup = $<HTMLElement>('[data-off-group="pinned"]');
+    const recentGroup = $<HTMLElement>('[data-off-group="recent"]');
+    if (pinGroup) pinGroup.hidden = pinRows.length === 0;
+    if (recentGroup) recentGroup.hidden = recentRows.length === 0;
+
+    const more = $<HTMLButtonElement>("[data-off-more]");
+    if (recentList && more && recentRows.length > SHOW) {
+      const rest = Array.from(recentList.children).slice(SHOW) as HTMLElement[];
+      rest.forEach((li) => (li.hidden = true));
+      more.textContent = `Show all ${recentRows.length}`;
+      more.hidden = false;
+      more.addEventListener(
+        "click",
+        () => {
+          rest.forEach((li) => (li.hidden = false));
+          more.hidden = true;
+          rest[0]?.querySelector<HTMLElement>("a")?.focus();
+        },
+        { once: true }
+      );
+    }
+
+    const none = $<HTMLElement>("[data-off-none]");
+    if (none) none.hidden = pinRows.length + recentRows.length > 0;
+    const card = $<HTMLElement>("[data-off-saved]");
+    if (card) card.hidden = false;
+  }
+
+  /** One saved page: a link, or for a pinned page this device hasn't kept yet, its name and why it won't open. */
+  function row(r: Row, missing: string): HTMLLIElement {
+    const li = document.createElement("li");
+    const name = document.createElement(r.ok ? "a" : "span");
+    if (name instanceof HTMLAnchorElement) name.href = siteHref(r.href);
+    else name.className = "missing";
+    name.textContent = r.title;
+    li.append(name);
+    const kind = r.ok ? r.kind : missing;
+    if (kind) {
+      const k = document.createElement("span");
+      k.className = "kind";
+      k.textContent = kind;
+      li.append(k);
+    }
+    return li;
+  }
+
+  /** Saved pages, most recently opened first, as path → name. */
+  async function savedPages(names: Names): Promise<Map<string, string>> {
+    const out = new Map<string, string>();
+    if (!("caches" in window)) return out;
+    try {
+      // Build ids are timestamps, so the newest build's copies come first.
+      const caches_ = (await caches.keys()).filter((n) => n.startsWith(PAGES_CACHE_PREFIX)).sort().reverse();
+      for (const name of caches_) {
+        const cache = await caches.open(name);
+        for (const req of [...(await cache.keys())].reverse()) {
+          const path = new URL(req.url).pathname;
+          if (!out.has(path)) out.set(path, names[path]?.[0] ?? (await titleOf(cache, req)));
+        }
+      }
+    } catch {
+      /* no cache storage */
+    }
+    return out;
+  }
+
+  /** The name in a saved page's <title>, for a page that isn't in the library list. */
+  async function titleOf(cache: Cache, req: Request): Promise<string> {
+    const path = new URL(req.url).pathname;
+    try {
+      const html = (await (await cache.match(req))?.text()) ?? "";
+      const raw = /<title>([^<]*)<\/title>/i.exec(html)?.[1] ?? "";
+      const decode = document.createElement("textarea");
+      decode.innerHTML = raw;
+      return decode.value.replace(/\s*\|\s*PeopleCraft\s*$/, "").trim() || path;
+    } catch {
+      return path;
+    }
+  }
+</script>

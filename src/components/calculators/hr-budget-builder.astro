@@ -1,0 +1,337 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+---
+
+<CalcShell id="hr-budget-builder" resultLabel="Annual HR budget" inputsLabel="Your numbers for the year">
+  <Fragment slot="inputs">
+    <p class="hint">Every amount is yours to set. The starting figures are an example, not benchmarks; replace them with quotes and last year's actuals.</p>
+    <div class="sep"><fieldset class="block">
+      <legend>Your organisation</legend>
+      <Num name="hc" label="Headcount" value="150" suffix="people" />
+      <div class="two">
+        <Num name="revenue" label="Annual revenue (optional)" prefix="₹" value="25" suffix="crore" />
+        <Num name="payroll" label="Annual payroll (optional)" prefix="₹" value="12" suffix="crore" />
+      </div>
+    </fieldset></div>
+    <div class="sep"><fieldset class="block">
+      <legend>HR team</legend>
+      <div class="two">
+        <Num name="hrPeople" label="People in HR" value="2" help="Use fractions for shared roles, e.g. 0.5." />
+        <Num name="hrCost" label="Average CTC per HR person" prefix="₹" value="9,00,000" />
+      </div>
+    </fieldset></div>
+    <div class="sep"><fieldset class="block">
+      <legend>Hiring</legend>
+      <div class="two">
+        <Num name="newRoles" label="New roles this year" value="30" />
+        <Num name="attrition" label="Expected attrition" value="20" suffix="%" help="Leavers you will replace." />
+      </div>
+      <Num name="cph" label="Cost per hire" prefix="₹" value="40,000" help="From the cost per hire calculator, or your last year's figure." />
+    </fieldset></div>
+    <div class="sep"><fieldset class="block">
+      <legend>Per employee</legend>
+      <div class="two">
+        <Num name="learning" label="Learning and development" prefix="₹" value="3,500" suffix="a year" />
+        <Num name="tech" label="HR software" prefix="₹" value="70" suffix="a month" help="HRMS, payroll, attendance." />
+      </div>
+      <div class="two">
+        <Num name="engagement" label="Engagement and recognition" prefix="₹" value="3,000" suffix="a year" />
+        <Num name="wellbeing" label="Wellbeing programmes" prefix="₹" value="1,500" suffix="a year" />
+      </div>
+    </fieldset></div>
+    <div class="sep"><fieldset class="block">
+      <legend>Fixed amounts for the year</legend>
+      <div class="two">
+        <Num name="compliance" label="Compliance and legal" prefix="₹" value="2,00,000" help="Audits, retainers, registrations." />
+        <Num name="other" label="Other HR costs" prefix="₹" value="1,00,000" help="Surveys, consultants, branding." />
+      </div>
+      <Num name="contingency" label="Contingency" value="5" suffix="% of subtotal" />
+    </fieldset></div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="total">₹0</span>
+    <span class="sub" data-out="ratios"></span>
+  </Fragment>
+  <div slot="visual" class="seg" data-seg>
+    <p class="seg-title">Where the budget goes</p>
+    <div class="seg-bar" role="img"></div>
+    <ul class="seg-legend"></ul>
+    <div class="tip" role="tooltip" hidden></div>
+  </div>
+</CalcShell>
+
+<script>
+  import { bindCalculator, inr, num, type CalcLine, type CalcStep } from "../../scripts/calc-kit";
+  import { buildBudget } from "../../lib/calc/hr-budget-builder";
+
+  /** Fixed groups, so each kind of cost keeps its colour whatever the amounts. */
+  const GROUPS: { label: string; ids: string[] }[] = [
+    { label: "Hiring", ids: ["hiring"] },
+    { label: "HR team", ids: ["team"] },
+    { label: "Learning and development", ids: ["learning"] },
+    { label: "Engagement and wellbeing", ids: ["engagement", "wellbeing"] },
+    { label: "HR software", ids: ["tech"] },
+    { label: "Compliance, other, contingency", ids: ["compliance", "other", "contingency"] }
+  ];
+
+  const INK = ["#fff", "#151a3b", "#151a3b", "#fff", "#fff", "#151a3b"];
+  const root = document.querySelector<HTMLElement>('[data-calc="hr-budget-builder"]');
+  const seg = root?.querySelector<HTMLElement>("[data-seg]");
+
+  function drawSeg(host: HTMLElement, parts: { label: string; amount: number; color: number }[], total: number) {
+    const bar = host.querySelector<HTMLElement>(".seg-bar")!;
+    const legend = host.querySelector<HTMLElement>(".seg-legend")!;
+    const pctOf = (n: number) => `${Math.round((n / total) * 100)}%`;
+    bar.replaceChildren(
+      ...parts.map((p) => {
+        const b = document.createElement("span");
+        b.className = "seg-part";
+        b.style.flexGrow = String(p.amount);
+        b.style.background = `var(--c${p.color + 1})`;
+        b.style.color = INK[p.color];
+        b.tabIndex = 0;
+        b.dataset.tip = `${p.label}: ${inr(p.amount)}, ${pctOf(p.amount)}`;
+        const t = document.createElement("span");
+        t.className = "seg-label";
+        // White on the red slot is 4.3:1; a darker chip behind the label keeps it readable (WCAG 1.4.3).
+        if (p.color === 3) t.classList.add("on-red");
+        t.textContent = pctOf(p.amount);
+        b.append(t);
+        return b;
+      })
+    );
+    bar.setAttribute("aria-label", `Split of the HR budget: ${parts.map((p) => `${p.label} ${pctOf(p.amount)}`).join(", ")}`);
+    legend.replaceChildren(
+      ...parts.map((p) => {
+        const li = document.createElement("li");
+        const sw = document.createElement("span");
+        sw.className = "sw";
+        sw.style.background = `var(--c${p.color + 1})`;
+        li.append(sw, document.createTextNode(p.label));
+        return li;
+      })
+    );
+    requestAnimationFrame(() =>
+      bar.querySelectorAll<HTMLElement>(".seg-part").forEach((b) => {
+        const t = b.firstElementChild as HTMLElement;
+        t.hidden = false;
+        t.hidden = t.offsetWidth + 10 > b.clientWidth;
+      })
+    );
+  }
+
+  function wireTips(host: HTMLElement) {
+    const tip = host.querySelector<HTMLElement>(".tip")!;
+    const show = (el: HTMLElement, x?: number) => {
+      tip.textContent = el.dataset.tip ?? "";
+      tip.hidden = false;
+      const hb = host.getBoundingClientRect();
+      const eb = el.getBoundingClientRect();
+      const cx = (x ?? eb.left + eb.width / 2) - hb.left;
+      tip.style.left = `${Math.max(0, Math.min(hb.width - tip.offsetWidth, cx - tip.offsetWidth / 2))}px`;
+      tip.style.top = `${eb.top - hb.top - tip.offsetHeight - 8}px`;
+    };
+    const hide = () => (tip.hidden = true);
+    host.addEventListener("pointermove", (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+      if (el && host.contains(el)) show(el, e.clientX);
+      else hide();
+    });
+    host.addEventListener("pointerleave", hide);
+    host.addEventListener("focusin", (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+      if (el) show(el);
+    });
+    host.addEventListener("focusout", hide);
+  }
+  if (seg) wireTips(seg);
+
+  bindCalculator("hr-budget-builder", (v) => {
+    const r = buildBudget({
+      headcount: v.num("hc"),
+      revenue: v.num("revenue") * 1e7,
+      payroll: v.num("payroll") * 1e7,
+      hrPeople: v.num("hrPeople"),
+      hrCostPerPerson: v.num("hrCost"),
+      newRoles: v.num("newRoles"),
+      attritionPct: v.num("attrition"),
+      costPerHire: v.num("cph"),
+      learningPerEmployee: v.num("learning"),
+      techPerEmployeeMonth: v.num("tech"),
+      engagementPerEmployee: v.num("engagement"),
+      wellbeingPerEmployee: v.num("wellbeing"),
+      compliance: v.num("compliance"),
+      other: v.num("other"),
+      contingencyPct: v.num("contingency")
+    });
+    if (!r.ok) {
+      if (seg) seg.hidden = true;
+      return { outputs: { total: "₹0", ratios: "" }, message: r.message };
+    }
+    if (seg) {
+      seg.hidden = false;
+      const amounts: Record<string, number> = { ...Object.fromEntries(r.lines.map((l) => [l.id, l.amount])), contingency: r.contingency };
+      const parts = GROUPS.map((g, color) => ({ label: g.label, amount: g.ids.reduce((a, id) => a + (amounts[id] ?? 0), 0), color })).filter((p) => p.amount > 0);
+      drawSeg(seg, parts, r.total);
+    }
+    const ratios = [`${inr(r.perEmployee)} per employee`];
+    if (r.pctRevenue !== null) ratios.push(`${num(r.pctRevenue, 1)}% of revenue`);
+    if (r.pctPayroll !== null) ratios.push(`${num(r.pctPayroll, 1)}% of payroll`);
+    const lines: CalcLine[] = [
+      ...r.lines.filter((l) => l.amount > 0).map((l) => ({ label: l.label, value: inr(l.amount), note: l.detail })),
+      { label: "Subtotal", value: inr(r.subtotal) },
+      ...(r.contingency > 0 ? [{ label: "Contingency", value: inr(r.contingency), note: `${num(v.num("contingency"), 1)}% of the subtotal` }] : []),
+      { label: "Total HR budget", value: inr(r.total), strong: true },
+      { label: "Per employee", value: inr(r.perEmployee) },
+      ...(r.pctRevenue !== null ? [{ label: "Share of revenue", value: `${num(r.pctRevenue, 1)}%` }] : []),
+      ...(r.pctPayroll !== null ? [{ label: "Share of payroll", value: `${num(r.pctPayroll, 1)}%` }] : [])
+    ];
+    // How this was worked out, line by line, with the amounts entered.
+    const hc = Math.floor(v.num("hc"));
+    const pos = (n: number) => (Number.isFinite(n) && n > 0 ? n : 0);
+    const by = Object.fromEntries(r.lines.map((l) => [l.id, l.amount]));
+    const replacements = r.hires - Math.max(0, Math.round(pos(v.num("newRoles"))));
+    const working: CalcStep[] = [
+      { label: "Replacements", formula: `${num(hc, 0)} × ${num(v.num("attrition"), 1)}% attrition, to the nearest person`, result: num(replacements, 0) },
+      { label: "HR team", formula: `${num(pos(v.num("hrPeople")), 1)} × ${inr(pos(v.num("hrCost")))}`, result: inr(by.team) },
+      { label: "Hiring", formula: `${num(r.hires, 0)} hires × ${inr(pos(v.num("cph")))}`, result: inr(by.hiring) },
+      { label: "Learning and development", formula: `${num(hc, 0)} × ${inr(pos(v.num("learning")))}`, result: inr(by.learning) },
+      { label: "HR technology", formula: `${num(hc, 0)} × ${inr(pos(v.num("tech")))} × 12 months`, result: inr(by.tech) },
+      { label: "Engagement and recognition", formula: `${num(hc, 0)} × ${inr(pos(v.num("engagement")))}`, result: inr(by.engagement) },
+      { label: "Wellbeing programmes", formula: `${num(hc, 0)} × ${inr(pos(v.num("wellbeing")))}`, result: inr(by.wellbeing) },
+      { label: "Subtotal", formula: r.lines.filter((l) => l.amount > 0).map((l) => inr(l.amount)).join(" + "), result: inr(r.subtotal) },
+      ...(r.contingency > 0 ? [{ label: "Contingency", formula: `${num(v.num("contingency"), 1)}% × ${inr(r.subtotal)}`, result: inr(r.contingency) }] : []),
+      { label: "Total HR budget", formula: r.contingency > 0 ? `${inr(r.subtotal)} + ${inr(r.contingency)}` : "", result: inr(r.total) },
+      { label: "Per employee", formula: `${inr(r.total)} ÷ ${num(hc, 0)}`, result: inr(r.perEmployee) }
+    ].filter((s) => s.result !== "₹0" || s.label === "Total HR budget");
+    return {
+      working,
+      outputs: { total: inr(r.total), ratios: ratios.join(" · ") },
+      lines,
+      notes: [
+        "Employer PF, ESI and gratuity are usually part of employee cost (CTC), so they are not counted here.",
+        "Track per-employee cost and share of revenue against your own past years; they show whether HR spending is keeping pace with the business."
+      ]
+    };
+  });
+</script>
+
+<style>
+  .hint {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+  .block {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    display: grid;
+    gap: 0.85rem;
+  }
+  .sep + .sep {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .block legend {
+    padding: 0;
+    margin-bottom: 0.6rem;
+    font-weight: 650;
+    font-size: var(--fs-sm);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  @media (max-width: 480px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+  .seg {
+    position: relative;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .seg-title {
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .seg-bar {
+    display: flex;
+    gap: 2px;
+    height: 28px;
+  }
+  .seg :global(.seg-part) {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 0.4rem;
+    border-radius: 4px;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: default;
+    transition: filter 150ms;
+  }
+  .seg :global(.seg-label.on-red) {
+    padding: 0 0.2rem;
+    border-radius: 3px;
+    background: rgb(17 20 58 / 0.3);
+  }
+  .seg :global(.seg-part:hover),
+  .seg :global(.seg-part:focus-visible) {
+    filter: brightness(1.08);
+  }
+  .seg :global(.seg-part:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .seg-legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.9rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .seg-legend :global(li) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .seg-legend :global(.sw) {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+  }
+  .tip {
+    position: absolute;
+    z-index: 5;
+    max-width: 18rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--r-sm);
+    background: var(--ink);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    line-height: 1.35;
+    pointer-events: none;
+    box-shadow: var(--shadow-float);
+  }
+  @media print {
+    .tip {
+      display: none;
+    }
+  }
+</style>

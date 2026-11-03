@@ -1,0 +1,319 @@
+---
+/**
+ * Preview of the paper-cut art (docs/ART-DIRECTION.md): every spot icon at
+ * every size on both page papers, the icons in the places the site uses them,
+ * and every scene at two widths. For designers and developers; not indexed.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SpotIcon from "../../components/art/SpotIcon.astro";
+import Scene from "../../components/art/Scene.astro";
+import Figure from "../../components/art/Figure.astro";
+import { POSES } from "../../components/art/lib/figure.ts";
+import ItemCard from "../../components/ui/ItemCard.astro";
+import BookCover from "../../components/ui/BookCover.astro";
+import { ICON_NAMES } from "../../components/art/lib/icons.ts";
+import { SCENE_NAMES } from "../../components/art/lib/scenes.ts";
+import { BOOK_IDS } from "../../data/books";
+
+const groups = [
+  { title: "Stages", names: ["recruit", "onboard", "grow", "pay", "exit", "lead"] },
+  { title: "Kinds of tool", names: ["calculator", "letter", "form", "policy", "checklist", "survey", "plan", "app"] },
+  { title: "Who it's for", names: ["hr", "founders", "employees", "students"] },
+  { title: "Handbooks", names: ["labour-law", "tds", "recruitment", "hr-professional"] },
+  { title: "Library items", names: ["jd", "glossary"] }
+];
+const listed = groups.flatMap((g) => g.names);
+const missing = ICON_NAMES.filter((n) => !listed.includes(n));
+if (missing.length) throw new Error(`Icons missing from the preview: ${missing.join(", ")}`);
+
+const papers = [
+  { id: "white", label: "On white", bg: "#ffffff" },
+  { id: "grey", label: "On #f5f6fa", bg: "#f5f6fa" }
+];
+const sizes = [48, 64, 96];
+
+const poseNames = Object.keys(POSES) as (keyof typeof POSES)[];
+const figurePapers = ["ink", "mid", "white"] as const;
+
+const moments: Record<string, string> = {
+  recruit: "Two people across the interview table; the interviewer reads the turmeric CV.",
+  onboard: "Day one: a new joiner steps through the door and is handed a turmeric badge.",
+  grow: "A person climbs the steps towards a turmeric flag.",
+  pay: "Payday: a turmeric payslip is handed over, with a rupee on top.",
+  exit: "A person leaves with a box, waving goodbye; the turmeric relieving letter rides in the box.",
+  lead: "A leader points at the org chart, at the turmeric node it all hangs from, while a colleague listens.",
+  hr: "An HR person with a turmeric clipboard listens to one colleague while another waits.",
+  founders: "A founder waters a turmeric plant outside their tiny shop.",
+  employees: "An employee sits down to read a turmeric payslip.",
+  students: "A graduate in a mortarboard holds up a turmeric CV beside a signpost.",
+  "not-found": "A person holds a turmeric magnifier over a blank sheet: nothing here.",
+  "no-results": "A person looks into an empty turmeric box.",
+  about: "A weaver at a loom weaves a turmeric thread into the cloth."
+};
+---
+
+<BaseLayout title="Paper-cut art" description="PeopleCraft spot icons and scenes, cut from paper." noindex>
+  <div class="wrap section art">
+    <h1 class="display">Paper-cut art</h1>
+    <p class="lede">
+      Working life in India, cut from paper: 24 spot icons and 13 scenes, from the seven papers in the art direction. One light from the top left; depth
+      is real cast shadow between layers, never a gradient.
+    </p>
+
+    <section aria-labelledby="h-icons">
+      <h2 id="h-icons">Spot icons</h2>
+      <p class="muted">
+        <code>&lt;SpotIcon name="letter" size=&#123;64&#125; /&gt;</code>, decorative unless given a <code>label</code>. Shown at 48, 64 and 96px.
+      </p>
+      {
+        papers.map((p) => (
+          <div class="paper" style={`background:${p.bg}`}>
+            <h3>{p.label}</h3>
+            {sizes.map((s) => (
+              <div class="size">
+                <p class="tiny muted size-label">{s}px</p>
+                <ul class="icons" style={`--cell:${Math.max(s + 36, 96)}px`}>
+                  {listed.map((name) => (
+                    <li>
+                      <SpotIcon name={name} size={s} />
+                      <span class="tiny">{name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        ))
+      }
+    </section>
+
+    <section aria-labelledby="h-groups">
+      <h2 id="h-groups">The set by family</h2>
+      <div class="families">
+        {
+          groups.map((g) => (
+            <div class="family">
+              <h3 class="small">{g.title}</h3>
+              <ul class="icons" style="--cell:104px">
+                {g.names.map((name) => (
+                  <li>
+                    <SpotIcon name={name} size={64} label={name} />
+                    <span class="tiny" aria-hidden="true">
+                      {name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section aria-labelledby="h-place">
+      <h2 id="h-place">In place</h2>
+      <p class="muted">On the paper tile a card pins over its own top edge, as a stage marker, and pinned to a handbook's cloth.</p>
+      <ul class="cards">
+        <li><ItemCard href="#h-place" art="letter" kind="Letter" code="PC-F-07" title="Offer letter" description="A clear, conditional job offer with the role, start date and pay." meta="32 details to fill, then Word or PDF" /></li>
+        <li><ItemCard href="#h-place" art="calculator" kind="Calculator" title="Gratuity calculator" description="What is due when someone leaves after five years or more." meta="Works as you type" /></li>
+        <li><ItemCard href="#h-place" art="jd" kind="Job description" title="HR executive" description="Day-to-day HR operations for a team of 50 to 200." meta="Junior, 1–3 years" /></li>
+        <li><ItemCard href="#h-place" art="glossary" kind="Glossary" title="Earned leave" description="Paid leave an employee builds up by working." /></li>
+      </ul>
+      <ul class="stage-tiles">
+        {
+          ["recruit", "onboard", "grow", "pay", "exit", "lead"].map((s) => (
+            <li>
+              <span class="st-tile">
+                <SpotIcon name={s} size={52} />
+              </span>
+              <span class="small">{s}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <ul class="covers">
+        {
+          BOOK_IDS.map((id) => (
+            <li>
+              <BookCover id={id} size="md" />
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section aria-labelledby="h-people">
+      <h2 id="h-people">People</h2>
+      <p class="muted">
+        One primitive draws everyone, so the people in every picture are one family: 1u limbs, a 2.4u head, a 1.3u torso, arms of two 2.6u segments and
+        legs of two 3u segments, posed by joint angles that are checked against real joint limits. <code>&lt;Figure&gt;</code> puts one inside any SVG.
+      </p>
+      <ul class="people">
+        {
+          poseNames.map((pose) => (
+            <li>
+              {figurePapers.map((paper) => (
+                <svg viewBox="0 0 44 92" width="44" height="92" aria-hidden="true">
+                  <Figure x={22} ground={88} u={5.2} pose={pose} paper={paper} layer="p2" />
+                </svg>
+              ))}
+              <span class="tiny">{pose}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section aria-labelledby="h-scenes">
+      <h2 id="h-scenes">Scenes</h2>
+      <p class="muted">
+        <code>&lt;Scene name="recruit" /&gt;</code> fills its container's width at 16:9. Shown at 320 and 640px wide.
+      </p>
+      {
+        SCENE_NAMES.map((name) => (
+          <figure class="scene-row">
+            <figcaption>
+              <strong>{name}</strong> <span class="muted small">{moments[name]}</span>
+            </figcaption>
+            <div class="scene-pair">
+              <div style="width:320px">
+                <Scene name={name} />
+              </div>
+              <div style="width:640px">
+                <Scene name={name} label={moments[name]} />
+              </div>
+            </div>
+          </figure>
+        ))
+      }
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .art h2 {
+    margin: 3rem 0 0.5rem;
+  }
+  .art h3 {
+    margin: 0 0 0.75rem;
+  }
+  .paper {
+    margin-top: 1.25rem;
+    padding: 1.5rem 1.5rem 0.5rem;
+    border-radius: 12px;
+    box-shadow: 0 0 0 1px rgb(17 20 58 / 0.08);
+  }
+  .size {
+    margin-bottom: 1.25rem;
+  }
+  .size-label {
+    margin: 0 0 0.25rem;
+  }
+  .icons {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--cell), 1fr));
+    gap: 1rem 0.5rem;
+  }
+  .icons li {
+    display: grid;
+    justify-items: center;
+    align-content: end;
+    gap: 0.5rem;
+    text-align: center;
+    color: var(--ink-2);
+  }
+  .families {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .family h3 {
+    color: var(--ink-2);
+  }
+  .cards {
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1.25rem;
+  }
+  .stage-tiles {
+    list-style: none;
+    margin: 2.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  .stage-tiles li {
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    color: var(--ink-2);
+  }
+  .st-tile {
+    width: 4rem;
+    height: 4rem;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.07),
+      1.5px 2.5px 0 rgb(17 20 58 / 0.1),
+      3px 6px 10px -3px rgb(17 20 58 / 0.16);
+  }
+  .covers {
+    list-style: none;
+    margin: 2.5rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 1.5rem;
+    max-width: 52rem;
+  }
+  .people {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 2.25rem;
+    border-radius: 12px;
+    background: var(--neel-100);
+  }
+  .people li {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-items: center;
+    gap: 0.4rem 0.25rem;
+    color: var(--ink-2);
+  }
+  .people .tiny {
+    grid-column: 1 / -1;
+  }
+  .people svg {
+    overflow: visible;
+  }
+  .people :global(.p2) {
+    filter: var(--paper-2);
+  }
+  .scene-row {
+    margin: 2rem 0 0;
+  }
+  .scene-row figcaption {
+    margin-bottom: 0.75rem;
+  }
+  .scene-pair {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  .scene-pair > div {
+    max-width: 100%;
+  }
+</style>

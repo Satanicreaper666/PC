@@ -1,0 +1,146 @@
+---
+/**
+ * The right half of a tool page's header: a picture of the tool built from
+ * its own data. Where it fits (the six stages), then a figure for its kind:
+ * - letter, form, policy: a sheet listing its sections (DocSheet)
+ * - checklist: its sections as knots sized by step count (StepThread)
+ * - survey: questions, scale and result bands (ScoreBands)
+ * - plan: its sections as a timeline (PlanLine)
+ * - calculator, app: inputs into a result, from frontmatter `glance` (InOut)
+ * Phones get the stage thread and a one-line summary; print gets nothing.
+ */
+import StageThread from "./StageThread.astro";
+import DocSheet from "./DocSheet.astro";
+import StepThread from "./StepThread.astro";
+import ScoreBands from "./ScoreBands.astro";
+import PlanLine from "./PlanLine.astro";
+import InOut from "./InOut.astro";
+import { TOOL_KIND_INFO } from "../../data/taxonomy";
+import { checklistOutline, docOutline, planOutline } from "./glance";
+import type { Tool } from "../../lib/library";
+
+interface Props {
+  entry: Tool;
+}
+const { entry } = Astro.props;
+const d = entry.data;
+const body = entry.body ?? "";
+const isDoc = d.kind === "letter" || d.kind === "form" || d.kind === "policy";
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
+const doc = isDoc ? docOutline(body, d.fields) : null;
+const checklist = d.kind === "checklist" ? checklistOutline(body) : null;
+const plan = d.kind === "plan" ? planOutline(body) : null;
+const scale = d.scale ?? { min: 1, max: 5, labels: ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"] };
+const glance = d.kind === "calculator" || d.kind === "app" ? d.glance : undefined;
+
+/**
+ * The one line phones get, in parts: "14 details · Word or PDF".
+ * `get` marks what the tool gives you; it wears the green highlighter.
+ */
+type Part = { text: string; get?: boolean };
+let summary: Part[] = [];
+let hasFigure = false;
+if (doc) {
+  hasFigure = doc.items.length > 0;
+  summary = [{ text: plural(d.fields.length, "detail") }, { text: "Word or PDF", get: true }];
+} else if (checklist) {
+  hasFigure = checklist.sections.length > 0;
+  summary = [{ text: plural(checklist.total, "step") }, { text: "ticks saved as you go" }];
+} else if (d.kind === "survey") {
+  hasFigure = d.questions.length > 0;
+  summary = [{ text: plural(d.questions.length, "question") }, { text: `scored ${scale.min}–${scale.max}` }];
+} else if (plan) {
+  hasFigure = plan.length > 0;
+  summary = [{ text: `${plural(plan.length, "part")} to read and adapt` }];
+} else if (glance) {
+  hasFigure = true;
+  summary = [{ text: glance.output, get: true }, { text: d.kind === "app" ? "from your CSV or Excel file" : "worked out as you type" }];
+}
+const areas = new Set(d.questions.map((q) => q.dimension ?? "Overall")).size;
+---
+
+<aside class="glance" aria-label="About this tool" data-print="hide">
+  <StageThread stage={d.stage} />
+  {
+    hasFigure && (
+      <div class="fig">
+        {doc && (
+          <DocSheet
+            outline={doc}
+            fields={d.fields.length}
+            required={d.fields.filter((f) => f.required).length}
+            kind={TOOL_KIND_INFO[d.kind].label.toLowerCase()}
+          />
+        )}
+        {checklist && <StepThread sections={checklist.sections} total={checklist.total} />}
+        {d.kind === "survey" && <ScoreBands questions={d.questions.length} areas={areas} scale={scale} bands={d.bands} />}
+        {plan && <PlanLine parts={plan} />}
+        {glance && <InOut inputs={glance.inputs} output={glance.output} formula={glance.formula} />}
+      </div>
+    )
+  }
+  {
+    summary.length > 0 && (
+      <p class:list={["sum", { "has-fig": hasFigure }]}>
+        {summary.map((part, i) => (
+          <>
+            {i > 0 && <span aria-hidden="true"> · </span>}
+            {i > 0 && <span class="visually-hidden">, </span>}
+            {part.get ? (
+              <span class="hl hl-green" data-mark>
+                {part.text}
+              </span>
+            ) : (
+              <span>{part.text}</span>
+            )}
+          </>
+        ))}
+      </p>
+    )
+  }
+</aside>
+
+<style>
+  .glance {
+    display: grid;
+    gap: 1.75rem;
+    align-content: center;
+    min-width: 0;
+  }
+  .sum {
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+  .sum > span:first-child,
+  .sum .hl {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  @media (max-width: 63.99rem) {
+    .glance {
+      gap: 0.9rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+    }
+    /* On a tablet the thread keeps a phone's proportions instead of stretching across. */
+    .glance > :global(*) {
+      max-width: 30rem;
+    }
+    .fig {
+      display: none;
+    }
+  }
+  @media (min-width: 64rem) {
+    .sum.has-fig {
+      display: none;
+    }
+  }
+  @media print {
+    .glance {
+      display: none !important;
+    }
+  }
+</style>

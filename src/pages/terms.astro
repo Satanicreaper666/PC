@@ -1,0 +1,74 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/site/PageHero.astro";
+import { breadcrumbLd } from "../lib/library";
+
+const updated = "2 November 2026";
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Terms of use", href: "/terms/" }
+];
+---
+
+<BaseLayout title="Terms of use" description="PeopleCraft is free to use. You may adapt the templates for your own organisation. The library is general information, provided as is." jsonLd={breadcrumbLd(Astro.site, trail)}>
+  <PageHero title="Terms of use" lede="PeopleCraft is free. These terms explain what you can do with it and what we can and can't promise." trail={trail}>
+    <p class="small updated">Last updated {updated}</p>
+  </PageHero>
+
+  <div class="wrap-narrow prose section">
+    <h2>Using the library</h2>
+    <p>You can read, search and use every page, tool and template without paying or signing up. By using the site you agree to these terms.</p>
+
+    <h2>Templates and forms</h2>
+    <p>
+      You may copy, adapt and use any letter, form, policy, checklist or survey for yourself or for your organisation, including in commercial work, without asking us and without crediting us. Adapt every
+      template to your facts, your contracts and your state's rules before you use it.
+    </p>
+
+    <h2>Guides, diagrams and the glossary</h2>
+    <p>
+      You're welcome to quote short passages and share links. Please don't republish whole chapters, diagrams or the glossary elsewhere, or sell them, without our written permission. The PeopleCraft name and
+      logo belong to PeopleCraft.
+    </p>
+
+    <h2>Not advice</h2>
+    <p>
+      The library is general information about Indian employment law and HR practice. It is not legal, tax or financial advice, and using it doesn't create a professional relationship with us. Read the <a
+        href="/disclaimer/">disclaimer</a
+      > for what that means in practice.
+    </p>
+
+    <h2>Accuracy and availability</h2>
+    <p>
+      We check facts carefully and date every page, but laws and rules change and mistakes can happen. The library and its tools are provided "as is", without any warranty that they are complete, current,
+      error-free or fit for a particular purpose. We may change, move or remove pages at any time.
+    </p>
+
+    <h2>Limitation of liability</h2>
+    <p>
+      To the extent the law allows, PeopleCraft and its authors are not liable for any loss arising from using or relying on the library, its calculators or its templates. Check important decisions with a
+      qualified professional.
+    </p>
+
+    <h2>Fair use of the site</h2>
+    <p>Please don't try to disrupt the site, overload it, or copy it in bulk with automated tools.</p>
+
+    <h2>Other websites</h2>
+    <p>We link to official sources and other sites so you can check our work. We don't control them and aren't responsible for their content.</p>
+
+    <h2>Governing law</h2>
+    <p>These terms are governed by the laws of India.</p>
+
+    <h2>Changes</h2>
+    <p>We may update these terms. The date at the top shows when they last changed. Questions? Use the contact links on the <a href="/about/">About page</a>.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .updated {
+    color: var(--ink-2);
+  }
+  .section {
+    padding-bottom: var(--section);
+  }
+</style>

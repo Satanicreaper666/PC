@@ -1,0 +1,13 @@
+---
+/** A hand-drawn cross in red pen: wrong, or avoid. Decorative unless `label` is given. */
+interface Props {
+  label?: string;
+  class?: string;
+}
+const { label, class: cls } = Astro.props;
+---
+
+<svg class:list={["pen", "pen-cross", "pen-red", cls]} viewBox="0 0 24 24" data-mark role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : "true"}>
+  <path class="pen-stroke" pathLength="1" d="M5.2 4.8c3.9 4.2 8.6 9.6 13.9 14.6" />
+  <path class="pen-stroke" pathLength="1" d="M18.6 4.4c-4.6 4-9.3 9.4-13.2 15.1" />
+</svg>

@@ -1,0 +1,68 @@
+---
+title: Manager effectiveness survey
+description: Twelve clear statements that let a team rate their manager on clarity, feedback and growth, trust and fairness, and support, with scores by area and next steps.
+kind: survey
+stage: grow
+audiences: [hr, founders, employees]
+order: 40
+checked: 2026-11-02
+useWhen: You want honest, structured feedback on how a manager leads their team, to help the manager grow rather than to decide pay or ratings.
+tips:
+  - "Tell the team why you are asking, who will see the results and that the survey has nothing to do with their own ratings or pay."
+  - "Report a manager's results only when at least five people have answered, so that no one can be identified."
+  - "Managers can also answer the statements about themselves, then compare their view with the team's."
+scale: { min: 1, max: 5, labels: [Strongly disagree, Disagree, Neutral, Agree, Strongly agree] }
+questions:
+  - { id: clarity_1, text: My manager makes clear what is expected of me., dimension: Clarity and direction }
+  - { id: clarity_2, text: "My manager explains the reasons behind the team's priorities.", dimension: Clarity and direction }
+  - { id: clarity_3, text: My manager helps me decide what to do first when everything seems urgent., dimension: Clarity and direction }
+  - { id: growth_1, text: My manager gives me feedback that helps me improve., dimension: Feedback and growth }
+  - { id: growth_2, text: My manager supports my career growth., dimension: Feedback and growth }
+  - { id: growth_3, text: My manager recognises my good work., dimension: Feedback and growth }
+  - { id: trust_1, text: My manager treats people in the team fairly., dimension: Trust and fairness }
+  - { id: trust_2, text: My manager does what they say they will do., dimension: Trust and fairness }
+  - { id: trust_3, text: I worry about what will happen if I disagree with my manager., dimension: Trust and fairness, reverse: true }
+  - { id: support_1, text: My manager removes obstacles that slow the team down., dimension: Support }
+  - { id: support_2, text: My manager cares about my well-being., dimension: Support }
+  - { id: support_3, text: My manager is hard to reach when I need help., dimension: Support, reverse: true }
+bands:
+  - { min: 1, max: 2.49, label: Needs urgent support, advice: "The team is signalling a serious problem. HR or a coach should meet the manager privately within two weeks, share the themes rather than anyone's answers, and agree one or two specific changes with support. Run the survey again in three months." }
+  - { min: 2.5, max: 3.49, label: Mixed, advice: "Some things work and some don't. Start with the lowest-scoring area, ask the team what one change would help most, and agree it with the manager. Check again in three to six months." }
+  - { min: 3.5, max: 4.24, label: Effective, advice: "Most of the team gets what they need from this manager. Keep the habits that work and pick the lowest area to improve over the next quarter." }
+  - { min: 4.25, max: 5, label: Strong, advice: "The team rates this manager highly. Ask the manager to share what they do with other managers, and keep listening, as scores can change quickly after a reorganisation or a change in workload." }
+related: [toolkit/engagement-pulse-survey, toolkit/stay-interview-guide, handbooks/hr-professional/09-performance-and-learning, handbooks/hr-professional/08-employee-experience]
+faq:
+  - q: How do you measure a manager's effectiveness?
+    a: Ask the people they manage, anonymously, about a few specific behaviours such as setting clear expectations, giving useful feedback, treating people fairly and removing obstacles. Look at the scores by area, and at how they change over time.
+  - q: Should manager feedback surveys be anonymous?
+    a: Yes. People answer more honestly when they can't be identified. Report results only for groups of five or more, and never show a manager individual answers or comments that could identify someone.
+  - q: Should the results affect the manager's appraisal?
+    a: It is better not to tie them directly to pay or ratings. When the stakes are high, managers may pressure their teams and people answer less honestly. Use the results for coaching and development.
+keywords: [manager effectiveness survey, upward feedback survey questions, manager feedback questionnaire, leadership effectiveness survey]
+draft: false
+---
+
+## How to run it with a team
+
+<Figure title="Running the survey in five steps" caption="Follow the steps in order. The anonymity rule in step 2 matters most.">
+  <Steps
+    items={[
+      { title: "Explain the purpose", body: "Tell the team the survey is for the manager's development, and say who will see the results." },
+      { title: "Collect answers anonymously", body: "Copy the twelve statements into an anonymous form tool. Report results only when at least five people have answered." },
+      { title: "Score the team's answers", body: "Work out the team's average for each statement, round it to the nearest whole number and enter it above to see the area scores and band." },
+      { title: "Share themes, not answers", body: "HR or a coach goes through the results with the manager in private. The manager then shares the main themes with the team." },
+      { title: "Agree one or two changes", body: "Start with the lowest area, agree specific actions with the team and run the survey again in three to six months." }
+    ]}
+  />
+</Figure>
+
+<Callout type="warning" title="Protect anonymity">
+Never show a manager individual answers, or comments that could identify someone. If fewer than five people answer, combine the results with another team or wait for the next round.
+</Callout>
+
+## Reading the scores
+
+- Each area score is the average of its three statements, on a scale of 1 to 5.
+- Start with any area below 3. That is where the team most needs something to change.
+- Two statements are worded the other way round, about worrying over disagreeing and the manager being hard to reach. The score flips them, so a higher score is always better.
+- Compare a manager's scores with their own earlier results, not with other managers' teams, which differ in work and size.

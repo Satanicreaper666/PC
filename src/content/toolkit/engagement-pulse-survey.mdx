@@ -1,0 +1,81 @@
+---
+title: Engagement pulse survey
+description: Twelve original questions on clarity and workload, growth, manager support and voice, and team commitment, scored by area with advice on what to do next.
+kind: survey
+stage: grow
+audiences: [hr, founders, employees]
+order: 50
+checked: 2026-11-02
+useWhen: You want a quick, regular read on how engaged a team is, and a clear place to start improving.
+tips:
+  - "Run it every quarter with the same twelve questions, so you can see change over time."
+  - "Share the results with the team within two weeks, even when they're uncomfortable. People stop answering surveys that lead nowhere."
+  - "Report results only for groups of five or more people, so that no one can be identified."
+scale: { min: 1, max: 5, labels: [Strongly disagree, Disagree, Neutral, Agree, Strongly agree] }
+questions:
+  - { id: clarity_1, text: I know what is expected of me in my role., dimension: Clarity and workload }
+  - { id: clarity_2, text: I have the resources I need to do my work well., dimension: Clarity and workload }
+  - { id: clarity_3, text: My workload is manageable in a normal week., dimension: Clarity and workload }
+  - { id: growth_1, text: I am learning skills that will help my career., dimension: Growth and recognition }
+  - { id: growth_2, text: My good work gets recognised., dimension: Growth and recognition }
+  - { id: growth_3, text: I can see a future for myself in this organisation., dimension: Growth and recognition }
+  - { id: voice_1, text: My manager supports me when I need help., dimension: Manager and voice }
+  - { id: voice_2, text: I hesitate to speak up about problems at work., dimension: Manager and voice, reverse: true }
+  - { id: voice_3, text: "When I share an idea, it is taken seriously.", dimension: Manager and voice }
+  - { id: team_1, text: People in my team help each other when work gets busy., dimension: Team and commitment }
+  - { id: team_2, text: I would recommend this organisation as a place to work., dimension: Team and commitment }
+  - { id: team_3, text: I often think about leaving this organisation., dimension: Team and commitment, reverse: true }
+bands:
+  - { min: 1, max: 2.49, label: Needs urgent attention, advice: "Many people are struggling. Share the results honestly within two weeks, hold small listening sessions on the lowest area, and make one visible change within a month. Check whether key people are at risk of leaving soon." }
+  - { min: 2.5, max: 3.49, label: Mixed, advice: "Some things work and some don't. Pick the lowest-scoring area, ask the team what one change would help most, and make it this quarter." }
+  - { min: 3.5, max: 4.24, label: Healthy, advice: "Most people are engaged. Keep what works, fix the lowest area, and look for teams whose scores differ from the rest." }
+  - { min: 4.25, max: 5, label: Highly engaged, advice: "People feel clear, supported and committed. Find out what drives this so you can protect it, and keep asking: high scores can drop quickly after a reorganisation or a change of manager." }
+related: [toolkit/manager-effectiveness-survey, toolkit/stay-interview-guide, toolkit/exit-interview-form, handbooks/hr-professional/08-employee-experience]
+faq:
+  - q: How often should you run a pulse survey?
+    a: Every quarter suits most organisations. More often tires people out unless you visibly act on each round; less often makes it hard to see the effect of changes.
+  - q: What is a good engagement score?
+    a: Compare your own scores over time rather than with other companies, whose questions and scales differ. On this survey, an average of 3.5 or more out of 5 means most people are engaged; below 2.5 needs urgent attention.
+  - q: How do you calculate eNPS?
+    a: Ask "On a scale of 0 to 10, how likely are you to recommend this organisation as a place to work?" Subtract the percentage of people who answer 0 to 6 from the percentage who answer 9 or 10. The result runs from -100 to +100.
+keywords: [employee engagement survey questions, pulse survey template, engagement survey india, enps calculation]
+draft: false
+---
+
+## How to use it
+
+If you are answering for yourself, there are no right answers, and your answers stay in this browser. To run it with a team, copy the twelve statements into an anonymous form tool, then enter each statement's team average, rounded to the nearest whole number, above to see the area scores.
+
+<Figure title="The quarterly pulse cycle" caption="Read it clockwise from the top. The cycle only works if people see action between rounds.">
+  <Cycle
+    center="Every quarter"
+    items={[
+      { title: "Ask", note: "Twelve questions, anonymous, five minutes" },
+      { title: "Share", note: "Results to the team within two weeks" },
+      { title: "Act", note: "One or two changes agreed with the team" },
+      { title: "Check", note: "Did the change happen? Then ask again" }
+    ]}
+  />
+</Figure>
+
+## Reading the results
+
+- Start with the lowest area, not the overall score. One fix that people notice does more than a long action plan.
+- Two statements are worded the other way round, about hesitating to speak up and thinking about leaving. The score flips them, so a higher score is always better.
+- Watch the trend. A drop of half a point in an area between quarters is worth a conversation, even if the score still looks healthy.
+
+<Callout type="warning" title="Protect anonymity">
+Report results only for groups of five or more, and never try to work out who said what. Once people suspect their answers can be traced, the scores stop meaning anything.
+</Callout>
+
+## Adding an eNPS question
+
+Many organisations add one more question in their own survey tool: "On a scale of 0 to 10, how likely are you to recommend this organisation as a place to work?" Keep it separate from the twelve statements, because it uses a different scale.
+
+<Figure title="How eNPS is worked out" caption="Promoters answer 9 or 10, detractors answer 0 to 6. Those answering 7 or 8 count only in the total.">
+  <Formula
+    parts={[{ value: "% of promoters", label: "answered 9 or 10" }, { op: "−" }, { value: "% of detractors", label: "answered 0 to 6" }]}
+    result={{ value: "eNPS", label: "from −100 to +100" }}
+    example="Example: 40% promoters − 25% detractors = eNPS of +15"
+  />
+</Figure>

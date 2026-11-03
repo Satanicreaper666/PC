@@ -1,0 +1,103 @@
+---
+title: HR budget builder
+description: "Build next year's HR budget from your own costs: HR team, hiring, learning, software, engagement and compliance. See it per employee and as a share of revenue."
+kind: calculator
+calculator: hr-budget-builder
+glance:
+  inputs: ["Headcount", "People in HR", "New roles", "Expected attrition", "Cost per hire"]
+  output: "Annual HR budget"
+  formula: "HR budget = HR team + hiring + programmes + fixed costs + contingency"
+stage: pay
+audiences: [hr, founders]
+order: 70
+checked: 2026-11-02
+useWhen: You are drafting next year's HR budget, or need to show finance what the people plan will cost and why.
+tips:
+  - "Start each line from <strong>last year's actuals</strong>, then add what changes: more hires, a new HR system, a bigger learning plan."
+  - "Take new roles and attrition from your headcount plan so the two documents can't disagree."
+  - "Show finance the per-employee figure next to last year's. A change per head is easier to discuss than a total."
+sources: []
+related:
+  - toolkit/headcount-planning-model
+  - toolkit/cost-per-hire-calculator
+  - toolkit/attrition-cost-calculator
+  - toolkit/hr-metrics-calculator
+  - toolkit/annual-hr-calendar
+  - handbooks/hr-professional/03-business-acumen
+faq:
+  - q: What should an HR budget include?
+    a: The HR team's own cost, hiring, learning and development, HR software, engagement and recognition, wellbeing programmes, compliance and legal costs, and a contingency. Other employees' salaries and statutory contributions usually sit in the payroll budget instead.
+  - q: What percentage of revenue should HR spend?
+    a: There is no reliable single figure for India. It varies with industry, size and how much HR work is outsourced. Track your own figure year on year and explain changes by what the business needs.
+  - q: How do I estimate the hiring budget?
+    a: Add new roles to expected replacements (headcount × attrition rate), then multiply by your cost per hire. The cost per hire calculator helps you find that figure.
+  - q: Is employer PF part of the HR budget?
+    a: Usually not. Employer PF, ESI and gratuity are part of each employee's CTC and sit in the payroll budget. Keeping them out of the HR budget avoids counting them twice.
+keywords: [hr budget template, hr budget calculator, how to prepare an hr budget, hr cost per employee, hr budget as a percentage of revenue]
+draft: false
+---
+
+## How the budget adds up
+
+<Figure title="The HR budget" caption="Five building blocks. Per-employee programmes are amounts per head multiplied by headcount; fixed costs are amounts for the year.">
+  <Formula
+    result={{ value: "HR budget", label: "for the year" }}
+    parts={[
+      { value: "HR team", label: "people × average CTC" },
+      { op: "+" },
+      { value: "Hiring", label: "hires × cost per hire" },
+      { op: "+" },
+      { value: "Programmes", label: "per employee × headcount" },
+      { op: "+" },
+      { value: "Fixed costs", label: "compliance, other" },
+      { op: "+" },
+      { value: "Contingency", label: "% of the subtotal" }
+    ]}
+    example="Example: ₹18,00,000 + ₹24,00,000 + ₹13,26,000 + ₹3,00,000 + ₹2,91,300 = ₹61,17,300 for 150 people, or ₹40,782 per employee."
+  />
+</Figure>
+
+Hiring is usually the line that moves most. It counts new roles and the people you expect to replace:
+
+<Figure title="The hiring line" caption="Replacements come from your expected attrition, rounded to whole people.">
+  <Formula
+    result={{ value: "Hiring cost" }}
+    parts={[{ value: "Hires", label: "new roles + headcount × attrition %" }, { op: "×" }, { value: "Cost per hire", label: "your own figure" }]}
+    example="Example: (30 new roles + 150 × 20% = 30 replacements) × ₹40,000 = ₹24,00,000."
+  />
+</Figure>
+
+<Figure title="Example: where ₹61,17,300 goes" caption="The calculator's starting figures for a 150-person company. These are an example, not benchmarks." wide>
+  <Breakdown
+    total="₹61,17,300 for the year (example)"
+    parts={[
+      { label: "Hiring", value: 2400000, display: "₹24,00,000", note: "60 hires × ₹40,000" },
+      { label: "HR team", value: 1800000, display: "₹18,00,000", note: "2 people" },
+      { label: "Learning and development", value: 525000, display: "₹5,25,000" },
+      { label: "Engagement and wellbeing", value: 675000, display: "₹6,75,000" },
+      { label: "HR software", value: 126000, display: "₹1,26,000" },
+      { label: "Compliance, other, contingency", value: 591300, display: "₹5,91,300" }
+    ]}
+  />
+</Figure>
+
+## What belongs in the HR budget
+
+| Line | Include | Usually not here |
+| --- | --- | --- |
+| HR team | CTC of HR staff, shared roles as fractions | Payroll of other teams |
+| Hiring | Job boards, agencies, assessments, checks, recruiters' time | Joining salaries |
+| Learning and development | Programmes, trainers, platforms, certifications | Pay of people while they attend |
+| HR software | HR system, payroll and attendance software | Laptops and IT for everyone |
+| Engagement and wellbeing | Recognition, surveys, events, wellbeing programmes | Group health insurance premiums, which are often part of CTC |
+| Compliance and legal | Audits, legal retainers, registrations and renewals | Statutory contributions such as PF and ESI |
+
+## Presenting it to finance
+
+1. Lead with the total, the per-employee figure and the change from last year.
+2. Tie each line to a business outcome: hiring to the [headcount plan](/toolkit/headcount-planning-model/), learning to skills the business needs, engagement to [what attrition costs](/toolkit/attrition-cost-calculator/).
+3. Say what you would cut first if the budget is reduced, and what that would cost the business.
+
+<Callout type="tip">
+  Agree the contingency rule with finance in advance, such as "released only with CFO approval". It keeps the budget honest without hiding money in every line.
+</Callout>

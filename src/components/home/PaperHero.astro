@@ -1,0 +1,83 @@
+---
+/**
+ * The home hero's paper diorama (docs/ART-DIRECTION.md, "Home hero").
+ *
+ * Contract: <PaperHero /> or <PaperHero class="..." />
+ * - Fills the width of its container at a fixed 560:460 ratio (no layout shift).
+ * - Renders the pre-rendered poster first: /art/hero-poster.webp, PNG fallback.
+ * - A small script upgrades it to the live three.js scene only when the hero is in
+ *   view, WebGL 2 works, prefers-reduced-motion is no-preference, the viewport is at
+ *   least 600px wide and Save-Data is off. three.js is imported only then.
+ * - Poster files come from `node scripts/render-hero-poster.mjs`.
+ */
+interface Props {
+  /** What the scene shows, for screen readers. */
+  label?: string;
+  class?: string;
+  /** The poster is above the fold on desktop: load it eagerly at high priority. Default true. */
+  priority?: boolean;
+}
+
+const {
+  label = "Paper diorama of working life: hiring, onboarding, growing, pay, leaving and leading, along a woven road.",
+  class: cls,
+  priority = true
+} = Astro.props;
+---
+
+<figure class:list={["paper-hero", cls]} role="img" aria-label={label} data-paper-hero>
+  <picture>
+    <source srcset="/art/hero-poster.webp" type="image/webp" />
+    <img
+      class="paper-hero-poster"
+      src="/art/hero-poster.png"
+      alt=""
+      width="560"
+      height="460"
+      decoding="async"
+      loading={priority ? "eager" : "lazy"}
+      fetchpriority={priority ? "high" : "auto"}
+      draggable="false"
+    />
+  </picture>
+</figure>
+
+<script>
+  import { initPaperHero } from "../../scripts/paper-hero/gate";
+  initPaperHero();
+</script>
+
+<style>
+  .paper-hero {
+    position: relative;
+    width: 100%;
+    margin: 0;
+    aspect-ratio: 560 / 460;
+  }
+  .paper-hero picture,
+  .paper-hero-poster {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .paper-hero-poster {
+    object-fit: contain;
+    user-select: none;
+  }
+  /* The live canvas fades in over the poster after its first frame. */
+  .paper-hero :global(.paper-hero-canvas) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 450ms var(--ease-out, ease-out);
+    pointer-events: none;
+  }
+  .paper-hero.is-live :global(.paper-hero-canvas) {
+    opacity: 1;
+  }
+  .paper-hero.is-in .paper-hero-poster {
+    visibility: hidden;
+  }
+</style>

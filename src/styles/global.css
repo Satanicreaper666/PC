@@ -1,0 +1,888 @@
+/*
+  PeopleCraft — "the weave".
+  Neel (indigo dye) carries trust. Haldi (turmeric) marks the one thing that
+  needs your attention. Everything else stays quiet: white paper, hairlines,
+  tinted bands, one deep ink band per page at most.
+*/
+
+:root {
+  color-scheme: light;
+
+  /* Brand ramps */
+  --neel-50: #eef0fb;
+  --neel-100: #dde1f7;
+  --neel-200: #bcc3ee;
+  --neel-300: #949ee2;
+  --neel-400: #6b76d2;
+  --neel-500: #4c56be;
+  --neel-600: #3b44a6;
+  --neel-700: #2f3786;
+  --neel-800: #252b68;
+  --neel-900: #1b1f4c;
+  --neel-950: #11143a;
+  --haldi-50: #fff8e6;
+  --haldi-100: #feedc2;
+  --haldi-200: #fcd98a;
+  --haldi-300: #f7c24d;
+  --haldi-400: #efab22;
+  --haldi-500: #d99211;
+  --haldi-600: #b5740b;
+  --haldi-700: #8c580d;
+
+  /* Roles */
+  --paper: #ffffff;
+  --canvas: #f5f6fa;
+  --sunken: #eef0f7;
+  --line: #e1e4ef;
+  --line-strong: #c9cee0;
+  --ink: #151a3b;
+  --ink-2: #4a5070;
+  --ink-3: #5f6584;
+  --primary: var(--neel-600);
+  --primary-hover: var(--neel-700);
+  --on-primary: #ffffff;
+  --accent: var(--haldi-400);
+  --accent-soft: var(--haldi-50);
+  --accent-ink: #80500c;
+  --focus: var(--neel-600);
+
+  --good: #23704a;
+  --good-soft: #ebf7f0;
+  --warn: #80500c;
+  --warn-soft: #fff6e0;
+  --bad: #a9341f;
+  --bad-soft: #fdf0ee;
+  --info: #2f68b0;
+  --info-soft: #ecf3fc;
+
+  /* Diagram categorical slots (validated for colour-blind separation, this order) */
+  --c1: #4567d8;
+  --c2: #e3a21a;
+  --c3: #12a3b8;
+  --c4: #d8473b;
+  --c5: #8a5cd0;
+  --c6: #2e9a5e;
+
+  /* Type */
+  --font: "Anek Latin Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.9375rem;
+  --fs-base: clamp(1.0625rem, 1.02rem + 0.18vw, 1.125rem);
+  --fs-md: clamp(1.125rem, 1.08rem + 0.25vw, 1.25rem);
+  --fs-lg: clamp(1.3125rem, 1.18rem + 0.55vw, 1.625rem);
+  --fs-xl: clamp(1.75rem, 1.42rem + 1.35vw, 2.375rem);
+  --fs-2xl: clamp(2.25rem, 1.6rem + 2.6vw, 3.5rem);
+  --fs-3xl: clamp(2.6rem, 1.7rem + 3.9vw, 4.6rem);
+  --lh-body: 1.62;
+  --lh-tight: 1.08;
+
+  /* Space (4/8 rhythm) */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --section: clamp(3.5rem, 2.5rem + 4vw, 7rem);
+  --gutter: max(1.25rem, env(safe-area-inset-left));
+  --wrap: 76rem;
+  --prose: 42rem;
+
+  /* Shape */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r: 10px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --shadow-float: 0 1px 2px rgb(17 20 58 / 0.06), 0 12px 32px -10px rgb(17 20 58 / 0.22);
+  --shadow-lift: 0 1px 0 rgb(17 20 58 / 0.04), 0 4px 14px -6px rgb(17 20 58 / 0.16);
+  /* Paper-cut depth: one light from the top left (docs/ART-DIRECTION.md). Use as filter: var(--paper-2). */
+  --paper-1: drop-shadow(0.8px 1.2px 0 rgb(17 20 58 / 0.18));
+  --paper-2: drop-shadow(1.5px 2.5px 0 rgb(17 20 58 / 0.14)) drop-shadow(3px 6px 6px rgb(17 20 58 / 0.14));
+  --paper-3: drop-shadow(2px 3px 0 rgb(17 20 58 / 0.12)) drop-shadow(6px 12px 14px rgb(17 20 58 / 0.18));
+
+  /* Motion (from the Aralya and Saicorp builds) */
+  --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-draw: cubic-bezier(0.6, 0.05, 0.2, 1);
+
+  --header-h: 4.25rem;
+}
+
+/* ---------- Reset & base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 1rem);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis-weight: none;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  font-weight: 430;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 620;
+  font-stretch: 104%;
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+a {
+  color: inherit;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+::selection {
+  background: rgb(239 171 34 / 0.35);
+  color: var(--ink);
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+[hidden] {
+  display: none !important;
+}
+hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: var(--s-6) 0;
+}
+
+/* ---------- Layout helpers ---------- */
+.wrap {
+  width: min(100% - 2 * var(--gutter), var(--wrap));
+  margin-inline: auto;
+}
+.wrap-narrow {
+  width: min(100% - 2 * var(--gutter), 52rem);
+  margin-inline: auto;
+}
+.section {
+  padding-block: var(--section);
+}
+/* Content that sits directly under a page hero needs less air above it. */
+.page-hero + .section,
+.page-hero + * > .section:first-child,
+.after-hero {
+  padding-top: clamp(2rem, 1.4rem + 2.2vw, 3.25rem);
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+.band {
+  background: var(--canvas);
+}
+.band-ink {
+  background: var(--neel-950);
+  color: #e9ebf7;
+}
+.band-ink :is(h1, h2, h3, h4) {
+  color: #fff;
+}
+.stack > * + * {
+  margin-top: var(--stack, var(--s-4));
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-link {
+  position: absolute;
+  left: var(--s-4);
+  top: -3rem;
+  z-index: 100;
+  background: var(--ink);
+  color: #fff;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r);
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: var(--s-3);
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Type helpers ---------- */
+.display {
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  font-weight: 640;
+  font-stretch: 106%;
+  letter-spacing: -0.022em;
+}
+.lede {
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+.muted {
+  color: var(--ink-3);
+}
+.small {
+  font-size: var(--fs-sm);
+}
+.tiny {
+  font-size: var(--fs-xs);
+}
+
+/* ---------- Links ---------- */
+.link {
+  color: var(--primary);
+  font-weight: 560;
+  text-decoration: underline;
+  text-decoration-color: rgb(59 68 166 / 0.35);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  transition: text-decoration-color 150ms;
+}
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  --btn-bg: var(--primary);
+  --btn-fg: var(--on-primary);
+  --btn-bd: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.875rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--r);
+  border: 1.5px solid var(--btn-bd);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--fs-sm);
+  font-weight: 620;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), transform 150ms var(--ease);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.btn:hover {
+  --btn-bg: var(--primary-hover);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-secondary {
+  --btn-bg: var(--paper);
+  --btn-fg: var(--ink);
+  --btn-bd: var(--line-strong);
+}
+.btn-secondary:hover {
+  --btn-bg: var(--canvas);
+  --btn-bd: var(--ink-3);
+}
+.btn-ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--ink-2);
+}
+.btn-ghost:hover {
+  --btn-bg: var(--sunken);
+  --btn-fg: var(--ink);
+}
+.btn-accent {
+  --btn-bg: var(--accent);
+  --btn-fg: var(--neel-950);
+}
+.btn-accent:hover {
+  --btn-bg: var(--haldi-300);
+}
+.btn-sm {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.8rem;
+  font-size: var(--fs-xs);
+}
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.band-ink .btn-secondary {
+  --btn-bg: transparent;
+  --btn-fg: #fff;
+  --btn-bd: rgb(255 255 255 / 0.35);
+}
+.band-ink .btn-secondary:hover {
+  --btn-bg: rgb(255 255 255 / 0.08);
+  --btn-bd: #fff;
+}
+
+/* ---------- Chips ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--sunken);
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  font-weight: 560;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.chip-accent {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.chip-good {
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+/* ---------- Forms ---------- */
+.field {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+.field-label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+.field-help {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+.field-error {
+  font-size: var(--fs-xs);
+  color: var(--bad);
+  font-weight: 560;
+}
+.control {
+  width: 100%;
+  min-height: 2.875rem;
+  padding: 0.55rem 0.8rem;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r);
+  background: var(--paper);
+  font-size: var(--fs-base);
+  line-height: 1.4;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.control:hover {
+  border-color: var(--ink-3);
+}
+.control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgb(59 68 166 / 0.18);
+}
+.control[aria-invalid="true"] {
+  border-color: var(--bad);
+}
+textarea.control {
+  min-height: 6rem;
+  resize: vertical;
+}
+select.control {
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235f6584' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+}
+.control::placeholder {
+  color: var(--ink-3);
+  opacity: 0.85;
+}
+
+/* ---------- Long-form reading ---------- */
+.prose {
+  max-width: var(--prose);
+  font-size: var(--fs-base);
+  line-height: 1.7;
+  color: var(--ink);
+}
+.prose > * + * {
+  margin-top: 1.1em;
+}
+.prose h2 {
+  font-size: var(--fs-xl);
+  margin-top: 2.2em;
+  scroll-margin-top: calc(var(--header-h) + 1rem);
+}
+.prose h3 {
+  font-size: var(--fs-lg);
+  margin-top: 1.8em;
+  scroll-margin-top: calc(var(--header-h) + 1rem);
+}
+.prose h2 + *,
+.prose h3 + * {
+  margin-top: 0.6em;
+}
+.prose a:not(.btn):not(.card-link) {
+  color: var(--primary);
+  font-weight: 560;
+  text-decoration: underline;
+  text-decoration-color: rgb(59 68 166 / 0.35);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+.prose a:not(.btn):not(.card-link):hover {
+  text-decoration-color: currentColor;
+}
+.prose strong {
+  font-weight: 650;
+}
+/* Only lists written in Markdown (no class); component lists such as diagram steps style themselves. */
+.prose :where(ul, ol):not([class]) {
+  padding-left: 1.4em;
+}
+.prose :where(ul, ol):not([class]) > li + li {
+  margin-top: 0.4em;
+}
+.prose :where(ul):not([class]) > li::marker {
+  color: var(--neel-400);
+}
+.prose :where(ol):not([class]) > li::marker {
+  color: var(--neel-600);
+  font-weight: 650;
+}
+/* GFM task lists ("- [ ] item") in chapters: TermLinks swaps each disabled checkbox for an empty
+   box drawn in pen, to tick on a printout. Decorative, so screen readers hear a plain list. */
+.prose ul.contains-task-list {
+  list-style: none;
+  padding-left: 0;
+}
+.prose ul.contains-task-list > li + li {
+  margin-top: 0.4em;
+}
+.prose .task-list-item {
+  position: relative;
+  padding-left: 1.85em;
+}
+.task-box {
+  position: absolute;
+  left: 0.15em;
+  top: 0.32em;
+  width: 1.05em;
+  height: 1.05em;
+  border: 1.75px solid var(--pen-ink);
+  border-radius: 3px 2px 4px 2px;
+  transform: rotate(-2deg);
+}
+.task-box.is-done::after {
+  content: "";
+  position: absolute;
+  left: 0.2em;
+  top: -0.05em;
+  width: 0.4em;
+  height: 0.75em;
+  border: solid var(--pen-ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(40deg);
+}
+@media print {
+  .task-box {
+    border-color: #000;
+  }
+}
+.prose blockquote {
+  margin-inline: 0;
+  padding-left: 1.1em;
+  border-left: 3px solid var(--accent);
+  color: var(--ink-2);
+}
+.prose blockquote > * + * {
+  margin-top: 0.75em;
+}
+.prose code {
+  font-size: 0.9em;
+  background: var(--sunken);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+.prose :where(table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.prose :where(.table-wrap),
+.table-wrap {
+  position: relative; /* keeps visually-hidden text inside the scroll box */
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.prose :where(th) {
+  text-align: left;
+  font-weight: 620;
+  color: var(--ink-2);
+  background: var(--canvas);
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--line-strong);
+  vertical-align: bottom;
+}
+.prose :where(td) {
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.prose :where(tr:last-child td) {
+  border-bottom: 0;
+}
+
+/* ---------- Motion gate (content is always visible without JS) ---------- */
+html.js-anim [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 0.9s var(--ease-out), transform 1s var(--ease-out);
+  transition-delay: var(--rd, 0s);
+}
+html.js-anim [data-reveal].shown {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .btn,
+  .chip,
+  .control {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ---------- Print: the content, not the chrome ---------- */
+@media print {
+  :root {
+    --section: 1.5rem;
+  }
+  body {
+    font-size: 11pt;
+    color: #000;
+  }
+  [data-print="hide"],
+  .site-header,
+  .site-footer,
+  .skip-link {
+    display: none !important;
+  }
+  .band,
+  .band-ink {
+    background: none !important;
+    color: #000 !important;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #444;
+    word-break: break-all;
+  }
+  html.js-anim [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Page headers: words on the left, a picture of the page on the right. */
+.hero-split {
+  display: grid;
+  gap: var(--s-6);
+  align-items: center;
+}
+@media (min-width: 64rem) {
+  .hero-split {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 27rem);
+    gap: var(--s-7);
+  }
+}
+.hero-split > * {
+  min-width: 0;
+}
+.glance-label {
+  font-size: var(--fs-xs);
+  font-weight: 650;
+  color: var(--ink-2);
+  line-height: 1.3;
+}
+
+/* ---------- Marks: the page as a careful reader left it (docs/ART-DIRECTION.md, "Marks") ----------
+   Highlighter colours carry one meaning each, everywhere:
+   yellow = the number or fact to remember   pink = a deadline or a risk
+   green  = what to do, or what you get       blue = a defined term
+   orange = new under the 2025–26 rules
+   Pen marks: tick = right or done, cross = wrong or avoid, strike = out of date, circle = don't miss this. */
+@font-face {
+  font-family: "Caveat";
+  src: url("/fonts/caveat-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2122, U+2191, U+2193, U+2212;
+}
+:root {
+  --hl-yellow: #ffe36e;
+  --hl-pink: #ffbfdc;
+  --hl-green: #b6f0c6;
+  --hl-blue: #bfe0ff;
+  --hl-orange: #ffd29e;
+  --pen-ink: #2f3fb0;
+  --pen-red: #c8323c;
+  --hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+}
+.hl {
+  --hl: var(--hl-yellow);
+  color: inherit;
+  background-color: transparent;
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--hl) 55%, transparent) 0,
+    var(--hl) 0.35em,
+    color-mix(in srgb, var(--hl) 86%, transparent) 55%,
+    var(--hl) calc(100% - 0.4em),
+    color-mix(in srgb, var(--hl) 50%, transparent) 100%
+  );
+  background-size: var(--hl-w, 100%) 0.78em;
+  background-position: 0 92%;
+  background-repeat: no-repeat;
+  border-radius: 0.3em 0.12em 0.36em 0.1em;
+  padding: 0 0.2em;
+  margin-inline: -0.08em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.hl-pink {
+  --hl: var(--hl-pink);
+}
+.hl-green {
+  --hl: var(--hl-green);
+}
+.hl-blue {
+  --hl: var(--hl-blue);
+}
+.hl-orange {
+  --hl: var(--hl-orange);
+}
+/* A full swipe for short labels and headings. */
+.hl-full {
+  background-size: var(--hl-w, 100%) 100%;
+  background-position: 0 0;
+}
+/* Drawn in once, when it scrolls into view (site.ts adds .drawn). */
+html.js-anim .hl[data-mark]:not(.drawn) {
+  --hl-w: 0%;
+}
+html.js-anim .hl[data-mark] {
+  transition: background-size 700ms var(--ease-draw);
+}
+.pen {
+  display: inline-block;
+  width: 1.05em;
+  height: 1.05em;
+  vertical-align: -0.16em;
+  flex-shrink: 0;
+  overflow: visible;
+  fill: none;
+  stroke: var(--pen-ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pen-red {
+  stroke: var(--pen-red);
+}
+html.js-anim [data-mark] .pen-stroke,
+html.js-anim .pen[data-mark] .pen-stroke {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 520ms var(--ease-draw);
+}
+html.js-anim .drawn .pen-stroke,
+html.js-anim .pen.drawn .pen-stroke {
+  stroke-dashoffset: 0;
+}
+html.js-anim .drawn .pen-stroke + .pen-stroke {
+  transition-delay: 220ms;
+}
+.hand {
+  font-family: var(--hand);
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--pen-ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js-anim .hl[data-mark]:not(.drawn) {
+    --hl-w: 100%;
+  }
+  html.js-anim [data-mark] .pen-stroke {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+}
+@media print {
+  .hl {
+    background-image: none;
+    text-decoration: underline 2px;
+    text-decoration-color: #999;
+  }
+}
+/* Pencil: provisional. Examples, sample figures and assumptions. */
+.pencil {
+  font-family: var(--hand);
+  font-weight: 600;
+  font-size: 1.15em;
+  color: #5b5f6e;
+  letter-spacing: 0.01em;
+}
+/* Ruled notepaper with a red margin line. Text sits on the rules when its line-height is --rule. */
+.notepaper {
+  --rule: 1.75rem;
+  --margin-x: 2.4rem;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, transparent var(--margin-x), rgb(214 69 80 / 0.42) var(--margin-x), rgb(214 69 80 / 0.42) calc(var(--margin-x) + 1px), transparent calc(var(--margin-x) + 1px)),
+    repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), rgb(76 86 190 / 0.17) calc(var(--rule) - 1px) var(--rule));
+  background-position: 0 0, 0 var(--rule-start, 0);
+}
+/* Washi tape, for attaching a note or a photo. */
+.tape {
+  background: rgb(255 255 255 / 0.55);
+}
+@media print {
+  [data-mark] .pen-stroke,
+  .pen[data-mark] .pen-stroke {
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* Defined terms in running text (rehype-glossary): a blue highlighter, and a catalogue-card tip on hover or focus. */
+a.term-link,
+.prose a.term-link:not(.btn):not(.card-link) {
+  --hl: color-mix(in srgb, var(--hl-blue) 75%, transparent);
+  color: inherit;
+  text-decoration: none;
+  cursor: help;
+}
+a.term-link:hover,
+a.term-link:focus-visible,
+.prose a.term-link:not(.btn):not(.card-link):hover {
+  --hl: #9fd0ff;
+  color: inherit;
+}
+.term-tip {
+  position: absolute;
+  z-index: 60;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.7rem 0.9rem 0.75rem;
+  border-radius: 3px;
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--haldi-500), var(--haldi-500));
+  background-size: 100% 2px;
+  background-position: 0 2.15rem;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 0 0 1px rgb(17 20 58 / 0.1),
+    2px 3px 0 rgb(17 20 58 / 0.06),
+    6px 16px 30px -12px rgb(17 20 58 / 0.4);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  color: var(--ink-2);
+  pointer-events: auto;
+}
+.term-tip[hidden] {
+  display: none;
+}
+.term-tip strong {
+  font-size: var(--fs-md);
+  color: var(--ink);
+  padding-bottom: 0.35rem;
+}
+.term-tip .more {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--ink-3);
+}
+@media print {
+  a.term-link {
+    background: none;
+  }
+}
+
+/* Marks drawn with non-scaling strokes (circle, strike, underline) fade in instead of drawing:
+   a dash animation measured in user units comes out partial on high-density screens. */
+html.js-anim :is(.pen-circle, .pen-strike, .pen-under) .pen-stroke {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  transition: opacity 450ms var(--ease);
+}
+html.js-anim :is(.pen-circle, .pen-strike, .pen-under).drawn .pen-stroke {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce), print {
+  html.js-anim :is(.pen-circle, .pen-strike, .pen-under) .pen-stroke {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,306 @@
+---
+import PenCircle from "../marks/PenCircle.astro";
+/**
+ * A sequence of moments on one thread, with optional spans underneath.
+ * <Timeline
+ *   items={[{ when: "Day 0", label: "You resign in writing" }, { when: "Day 30", label: "Last working day", accent: true }]}
+ *   spans={[{ from: 0, to: 1, label: "Notice period" }]}
+ * />
+ * Horizontal on wide screens, vertical on phones. Draws itself in when scrolled to.
+ *
+ * On the desk: the knots stay, and the yellow knot is still the moment that matters most.
+ * Its date is circled in pen; when several moments are marked, each date is highlighted
+ * instead (one pen circle per section at most). A deadline, one whose own words say "by",
+ * "within" or "due", is highlighted pink.
+ */
+interface Item {
+  label: string;
+  when?: string;
+  note?: string;
+  accent?: boolean;
+}
+interface Span {
+  from: number;
+  to: number;
+  label: string;
+}
+interface Props {
+  items: Item[];
+  spans?: Span[];
+  label?: string;
+}
+const { items, spans = [], label } = Astro.props;
+const n = items.length;
+const accents = items.filter((it) => it.accent).length;
+const isDeadline = (it: Item) => !it.accent && (/^(?:by|within|no later than)\b/i.test(it.when ?? "") || /\bdues?\b|^latest date\b/i.test(it.label));
+---
+
+<div class="tl" style={`--n:${n}`} data-draw role="group" aria-label={label}>
+  <ol class="tl-items">
+    {
+      items.map((it, i) => {
+        const circled = it.accent && accents === 1;
+        const lit = it.accent && accents > 1;
+        return (
+          <li class:list={["tl-item", { accent: it.accent }]} style={`--i:${i}`}>
+            {it.when && (
+              <span class="when">
+                {circled ? (
+                  <PenCircle>{it.when}</PenCircle>
+                ) : lit ? (
+                  <span class="hl" data-mark>{it.when}</span>
+                ) : (
+                  it.when
+                )}
+              </span>
+            )}
+            <span class="dot" aria-hidden="true" />
+            <span class="lbl">
+              {circled && !it.when ? <PenCircle>{it.label}</PenCircle> : isDeadline(it) ? <span class="hl hl-pink" data-mark>{it.label}</span> : it.label}
+              {it.accent && <span class="visually-hidden"> (key milestone)</span>}
+            </span>
+            {it.note && <span class="note" set:html={it.note} />}
+          </li>
+        );
+      })
+    }
+  </ol>
+  {
+    spans.length > 0 && (
+      <ul class="tl-spans">
+        {spans.map((s) => (
+          <li style={`--from:${s.from};--to:${s.to}`}>
+            <span class="bracket" aria-hidden="true" />
+            <span class="span-lbl">
+              {s.label}
+              <span class="visually-hidden">
+                , from “{items[s.from]?.label}” to “{items[s.to]?.label}”
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</div>
+
+<style>
+  .tl {
+    --col: calc(100% / var(--n));
+    position: relative;
+  }
+  .tl-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    position: relative;
+  }
+  /* the thread */
+  .tl-items::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--col) / 2);
+    right: calc(var(--col) / 2);
+    top: 2.45rem;
+    height: 2px;
+    background: var(--neel-300);
+    transform-origin: left;
+  }
+  .tl-item {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 0.35rem;
+    padding: 0 0.4rem;
+    grid-template-rows: 1.85rem 1.2rem auto auto;
+  }
+  .when {
+    grid-row: 1;
+    align-self: end;
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  /* The date that matters most, circled in pen. */
+  .when :global(.pen-circle) {
+    padding: 0 0.5em;
+    color: var(--ink);
+    font-weight: 680;
+  }
+  /* Two fixes to PenCircle, here only. The global "svg { max-width: 100% }" clamps its
+     ellipse to the words, shifting it left onto the last letter; and its non-scaling stroke
+     stops the draw-in short on high-density screens, so here the stroke scales normally. */
+  .tl :global(.pen-circle .pen) {
+    max-width: none;
+  }
+  .tl :global(.pen-circle .pen path) {
+    vector-effect: none;
+    stroke-width: 3.2;
+  }
+  .when .hl {
+    color: var(--ink);
+  }
+  .dot {
+    grid-row: 2;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 3px solid var(--neel-600);
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 3px var(--paper);
+  }
+  .accent .dot {
+    background: var(--accent);
+    border-color: var(--haldi-600);
+  }
+  .lbl {
+    grid-row: 3;
+    font-weight: 620;
+    font-size: var(--fs-sm);
+    line-height: 1.3;
+  }
+  .note {
+    grid-row: 4;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+  .tl-spans {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  }
+  .tl-spans li {
+    grid-column: calc(var(--from) + 1) / calc(var(--to) + 2);
+    display: grid;
+    gap: 0.25rem;
+    padding-inline: 0;
+    text-align: center;
+  }
+  .bracket {
+    height: 0.6rem;
+    margin-inline: calc(50% / (var(--to) - var(--from) + 1));
+    border: 2px solid var(--haldi-500);
+    border-top: 0;
+    border-radius: 0 0 6px 6px;
+  }
+  .span-lbl {
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--accent-ink);
+  }
+
+  /* self-drawing */
+  :global(html.js-anim) .tl:not(.draw):not(.drawn) .tl-items::before {
+    transform: scaleX(0);
+  }
+  :global(html.js-anim) .tl:not(.draw):not(.drawn) .dot {
+    transform: scale(0);
+  }
+  .tl:global(.draw) .tl-items::before {
+    animation: tl-line 1.4s var(--ease-draw) both;
+  }
+  .tl:global(.draw) .dot {
+    animation: tl-dot 0.45s var(--ease-out) both;
+    animation-delay: calc(0.15s + var(--i) * (1.2s / var(--n)));
+  }
+  @keyframes tl-line {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes tl-dot {
+    from {
+      transform: scale(0);
+    }
+  }
+
+  /* phones: vertical thread */
+  @media (max-width: 640px) {
+    .tl-items {
+      grid-template-columns: 1fr;
+      gap: 1.1rem;
+    }
+    .tl-items::before {
+      left: 0.55rem;
+      right: auto;
+      top: 0.6rem;
+      bottom: 0.6rem;
+      width: 2px;
+      height: auto;
+      transform-origin: top;
+    }
+    .tl-item {
+      grid-template-columns: 1.1rem 1fr;
+      grid-template-rows: auto;
+      justify-items: start;
+      text-align: left;
+      column-gap: 0.9rem;
+      row-gap: 0.15rem;
+      padding: 0;
+    }
+    .dot {
+      grid-row: 1 / span 3;
+      grid-column: 1;
+      margin-top: 0.15rem;
+    }
+    .when,
+    .lbl,
+    .note {
+      grid-column: 2;
+      grid-row: auto;
+    }
+    .when :global(.pen-circle) {
+      margin: 0.15rem 0 0.2rem -0.3em;
+    }
+    :global(html.js-anim) .tl:not(.draw):not(.drawn) .tl-items::before {
+      transform: scaleY(0);
+    }
+    .tl-spans {
+      grid-template-columns: 1fr;
+    }
+    .tl-spans li {
+      grid-column: 1;
+      text-align: left;
+    }
+    .bracket {
+      display: none;
+    }
+    .span-lbl::before {
+      content: "";
+      display: inline-block;
+      width: 0.8rem;
+      height: 2px;
+      margin-right: 0.4rem;
+      vertical-align: middle;
+      background: var(--haldi-500);
+    }
+  }
+  /* Printed: the thread and every knot are on the page, whether or not it was scrolled to.
+     Backgrounds don't print, so the thread is drawn as a border. */
+  @media print {
+    .tl .tl-items::before,
+    .tl .dot {
+      transform: none !important;
+      animation: none !important;
+    }
+    .tl .tl-items::before {
+      background: none;
+      border-top: 2px solid #8a8fa6;
+    }
+  }
+  @media print and (max-width: 640px) {
+    .tl .tl-items::before {
+      border-top: 0;
+      border-left: 2px solid #8a8fa6;
+    }
+  }
+</style>

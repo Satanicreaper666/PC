@@ -1,0 +1,17 @@
+---
+/** Native date input (best on phones and with screen readers). value: "YYYY-MM-DD" */
+interface Props {
+  name: string;
+  label: string;
+  value?: string;
+  help?: string;
+}
+const { name, label, value = "", help } = Astro.props;
+const id = `f-${name}`;
+---
+
+<div class="field">
+  <label class="field-label" for={id}>{label}</label>
+  <input class="control" id={id} name={name} type="date" value={value} aria-describedby={help ? `${id}-help` : undefined} />
+  {help && <span class="field-help" id={`${id}-help`} set:html={help} />}
+</div>

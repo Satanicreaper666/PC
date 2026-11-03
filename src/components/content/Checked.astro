@@ -1,0 +1,53 @@
+---
+import Icon from "../ui/Icon.astro";
+/** The trust stamp: when this page's facts were last checked against its sources. */
+interface Props {
+  date: Date;
+  sources?: number;
+}
+const { date, sources } = Astro.props;
+const text = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(date);
+---
+
+<a class="stamp" href="/about/how-we-check/" title="How PeopleCraft checks facts">
+  <Icon name="stamp" size={18} />
+  <span>
+    <span class="line1">Facts checked {text}</span>
+    {sources ? <span class="line2">against {sources} {sources === 1 ? "source" : "sources"}</span> : null}
+  </span>
+</a>
+
+<style>
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0.75rem 0.45rem 0.6rem;
+    border: 1.5px solid var(--neel-600);
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px rgb(59 68 166 / 0.35);
+    color: var(--neel-700);
+    text-decoration: none;
+    line-height: 1.15;
+    transform: rotate(-1.2deg);
+    transition: transform 200ms var(--ease);
+  }
+  .stamp:hover {
+    transform: rotate(0deg);
+  }
+  .line1 {
+    display: block;
+    font-weight: 650;
+    font-size: var(--fs-xs);
+  }
+  .line2 {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+  @media print {
+    .stamp {
+      transform: none;
+    }
+  }
+</style>

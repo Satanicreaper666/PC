@@ -1,0 +1,73 @@
+---
+/** Numeric input with an optional prefix (₹) or suffix (days, %, years). Commas are allowed. */
+interface Props {
+  name: string;
+  label: string;
+  value?: number | string;
+  prefix?: string;
+  suffix?: string;
+  help?: string;
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  step?: number | "any";
+}
+const { name, label, value = "", prefix, suffix, help, placeholder, min, max, step } = Astro.props;
+const id = `f-${name}`;
+---
+
+<div class="field">
+  <label class="field-label" for={id}>{label}</label>
+  <div class:list={["wrap-in", { "has-prefix": prefix, "has-suffix": suffix }]}>
+    {prefix && <span class="affix pre" aria-hidden="true">{prefix}</span>}
+    <input
+      class="control"
+      id={id}
+      name={name}
+      type="text"
+      inputmode="decimal"
+      value={value}
+      placeholder={placeholder}
+      data-min={min}
+      data-max={max}
+      data-step={step}
+      data-prefix={prefix}
+      data-suffix={suffix}
+      aria-describedby={help ? `${id}-help` : undefined}
+      autocomplete="off"
+    />
+    {suffix && <span class="affix suf" aria-hidden="true">{suffix}</span>}
+  </div>
+  {help && <span class="field-help" id={`${id}-help`} set:html={help} />}
+</div>
+
+<style>
+  .wrap-in {
+    position: relative;
+  }
+  .affix {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-3);
+    font-weight: 560;
+    pointer-events: none;
+  }
+  .pre {
+    left: 0.85rem;
+  }
+  .suf {
+    right: 0.85rem;
+    font-size: var(--fs-sm);
+  }
+  .has-prefix .control {
+    padding-left: 1.9rem;
+  }
+  .has-suffix .control {
+    padding-right: 4.5rem;
+  }
+  .control {
+    font-variant-numeric: tabular-nums;
+    font-weight: 560;
+  }
+</style>

@@ -1,0 +1,1165 @@
+---
+/**
+ * Org chart builder: load an employee list (CSV or Excel), check the columns,
+ * then see the chart, a tree view of the same reporting lines, the structure
+ * figures and the data checks. Everything runs in the browser.
+ * Behaviour: src/components/orgchart/app.ts. Logic and tests: src/lib/orgchart/.
+ */
+import Icon from "../ui/Icon.astro";
+import { DEFAULT_SETTINGS } from "../../lib/orgchart/analysis.ts";
+---
+
+<div class="oc" data-oc>
+  <p class="visually-hidden" aria-live="polite" data-announce></p>
+  <template data-icon="alert"><Icon name="alert" size={16} /></template>
+  <template data-icon="x-circle"><Icon name="x-circle" size={16} /></template>
+  <template data-icon="info"><Icon name="info" size={16} /></template>
+  <template data-icon="check-circle"><Icon name="check-circle" size={16} /></template>
+  <template data-icon="chevron-down"><Icon name="chevron-down" size={16} /></template>
+
+  <!-- Step 1: load -->
+  <section class="oc-step oc-load" data-step="load" aria-labelledby="oc-load-title">
+    <div class="oc-load-main">
+      <div>
+        <p class="oc-stepno">Step 1 of 3</p>
+        <h2 class="oc-h" id="oc-load-title" tabindex="-1">Load your employee list</h2>
+      </div>
+      <div class="oc-saved" data-saved hidden>
+        <Icon name="history" size={20} />
+        <p class="oc-saved-text"><strong>Kept in this browser:</strong> <span data-saved-text></span></p>
+        <div class="oc-saved-actions">
+          <button class="btn btn-sm" type="button" data-saved-open>Open it</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-saved-delete>Delete it</button>
+        </div>
+      </div>
+      <div class="oc-drop" data-drop>
+        <span class="oc-drop-icon"><Icon name="upload" size={26} /></span>
+        <p class="oc-drop-title">Drop a CSV or Excel file here</p>
+        <p class="oc-drop-sub">One row per person, with a column that says who each person reports to.</p>
+        <div class="oc-drop-actions">
+          <button class="btn" type="button" data-pick><Icon name="file-text" size={18} /> Choose a file</button>
+          <button class="btn btn-secondary" type="button" data-sample><Icon name="sparkle" size={18} /> Try with sample data</button>
+        </div>
+        <input type="file" accept=".csv,.txt,.xlsx,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" data-file hidden />
+        <p class="oc-busy" data-busy hidden>Reading the file…</p>
+        <p class="oc-error" role="alert" data-load-error hidden></p>
+      </div>
+    </div>
+    <aside class="oc-privacy" aria-labelledby="oc-privacy-title">
+      <p class="oc-privacy-title" id="oc-privacy-title"><Icon name="lock" size={18} /> Your data stays on this device</p>
+      <ul>
+        <li>Your browser reads the file and draws the chart. Nothing is uploaded to PeopleCraft or anyone else.</li>
+        <li>Nothing is saved unless you tick <em>Keep this list in this browser</em>.</li>
+        <li>The SVG, PNG and PowerPoint files are made on your device too.</li>
+      </ul>
+      <p class="oc-privacy-links">
+        <button class="oc-linkbtn" type="button" data-template><Icon name="download" size={16} /> Download a blank template (CSV)</button>
+        <a class="oc-linkbtn" href="#how-to-prepare-your-file"><Icon name="checklist" size={16} /> How to prepare your file</a>
+      </p>
+    </aside>
+  </section>
+
+  <!-- Step 2: columns -->
+  <section class="oc-step oc-map" data-step="map" aria-labelledby="oc-map-title" hidden>
+    <div>
+      <p class="oc-stepno">Step 2 of 3</p>
+      <h2 class="oc-h" id="oc-map-title" tabindex="-1">Check the columns</h2>
+      <p class="oc-lede" data-map-summary></p>
+    </div>
+    <div class="field oc-sheet" data-sheet-wrap hidden>
+      <label class="field-label" for="oc-sheet">Sheet with the employee list</label>
+      <select class="control" id="oc-sheet" data-sheet></select>
+    </div>
+    <div class="oc-map-table">
+      <div class="oc-map-row oc-map-head" aria-hidden="true">
+        <span>What the chart needs</span><span>Column in your file</span><span>First values in that column</span>
+      </div>
+      <div data-map-rows></div>
+    </div>
+    <p class="oc-error" role="alert" data-map-error hidden></p>
+    <div class="oc-row-actions">
+      <button class="btn" type="button" data-show>Draw the chart <Icon name="arrow-right" size={18} /></button>
+      <button class="btn btn-ghost" type="button" data-restart>Choose a different file</button>
+    </div>
+  </section>
+
+  <!-- Step 3: chart and structure -->
+  <section class="oc-step oc-result" data-step="chart" aria-labelledby="oc-chart-title" hidden>
+    <div class="oc-head">
+      <div>
+        <p class="oc-stepno">Step 3 of 3</p>
+        <h2 class="oc-h" id="oc-chart-title" tabindex="-1">Your org chart</h2>
+        <p class="oc-source" data-source></p>
+      </div>
+      <div class="oc-row-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-remap><Icon name="sliders" size={16} /> Check columns</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-new><Icon name="upload" size={16} /> Load another file</button>
+      </div>
+    </div>
+    <div class="oc-sample-note" data-sample-note hidden>
+      <span class="chip chip-accent">Sample data</span>
+      <p>A made-up company of 62 people. The names are invented. Two deliberate mistakes show what the data checks do.</p>
+    </div>
+    <label class="oc-keep" data-keep-wrap hidden>
+      <input type="checkbox" data-keep />
+      <span>Keep this list in this browser <span class="oc-keep-note" data-keep-note>(on this device only, until you untick this)</span></span>
+    </label>
+    <p class="oc-alert" data-quality-alert hidden></p>
+
+    <dl class="oc-kpis" data-kpis></dl>
+
+    <div class="oc-card oc-chart-card">
+      <div class="oc-toolbar">
+        <div class="oc-find">
+          <label class="field-label" for="oc-search">Find a person</label>
+          <input class="control" id="oc-search" type="search" autocomplete="off" spellcheck="false" placeholder="Name, job title, ID or department" aria-describedby="oc-search-status" data-search />
+          <p class="visually-hidden" id="oc-search-status" data-search-status></p>
+          <ul class="oc-results" data-results aria-label="Matching people" hidden></ul>
+        </div>
+        <div class="oc-tools">
+          <div class="oc-zoom" role="group" aria-label="Zoom">
+            <button class="btn btn-secondary btn-sm oc-iconbtn" type="button" data-zoom="out" aria-label="Zoom out"><Icon name="minus" size={16} /></button>
+            <span class="oc-zoom-level" data-zoom-level>100%</span>
+            <button class="btn btn-secondary btn-sm oc-iconbtn" type="button" data-zoom="in" aria-label="Zoom in"><Icon name="plus" size={16} /></button>
+            <button class="btn btn-secondary btn-sm" type="button" data-zoom="fit">Fit</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" data-expand-all>Expand all</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-collapse-all>Top two levels</button>
+        </div>
+      </div>
+      <div class="oc-focusbar" data-focusbar hidden></div>
+      <div
+        class="oc-viewport"
+        data-viewport
+        tabindex="0"
+        role="region"
+        aria-label="Org chart"
+        aria-describedby="oc-chart-help"
+      >
+        <div class="oc-canvas" data-canvas></div>
+      </div>
+      <p class="oc-help" id="oc-chart-help">
+        Drag the chart, or use the arrow keys when it is selected, to move around; + and − zoom and 0 fits it to the space. Select a box to see the person, and the + or − on it to show or hide their team. The list under the chart has the same people as text.
+      </p>
+      <ul class="oc-legend" data-legend aria-label="Departments and their colours"></ul>
+      <div class="oc-person" data-person hidden></div>
+      <div class="oc-export">
+        <p class="oc-export-label">Download the chart as shown</p>
+        <div class="oc-row-actions">
+          <button class="btn btn-secondary btn-sm" type="button" data-export="pptx"><Icon name="download" size={16} /><span data-label>PowerPoint</span></button>
+          <button class="btn btn-secondary btn-sm" type="button" data-export="png"><Icon name="download" size={16} /><span data-label>PNG image</span></button>
+          <button class="btn btn-secondary btn-sm" type="button" data-export="svg"><Icon name="download" size={16} /><span data-label>SVG image</span></button>
+        </div>
+        <p class="field-help" data-export-note>The PowerPoint file has the chart, a slide for each team, the structure figures and the department breakdown.</p>
+      </div>
+    </div>
+
+    <section class="oc-card" aria-labelledby="oc-tree-title">
+      <div class="oc-card-head">
+        <h3 class="oc-card-title" id="oc-tree-title">Reporting lines as a list</h3>
+        <p class="oc-card-sub">
+          The same people as the chart. Use the up and down arrow keys to move, right to open a team, left to close it, and Enter to select a person in the chart.
+        </p>
+      </div>
+      <ul class="oc-tree" role="tree" aria-labelledby="oc-tree-title" data-tree></ul>
+    </section>
+
+    <section class="oc-card oc-structure" aria-labelledby="oc-span-title">
+      <div class="oc-card-head">
+        <h3 class="oc-card-title" id="oc-span-title">Span of control</h3>
+        <p class="oc-card-sub" data-span-sub></p>
+      </div>
+      <form class="oc-settings" data-settings aria-describedby="oc-settings-help">
+        <div class="field">
+          <label class="field-label" for="oc-narrow">Flag managers with fewer than</label>
+          <div class="oc-num"><input class="control" id="oc-narrow" name="narrowBelow" type="number" min="1" max="50" step="1" inputmode="numeric" value={DEFAULT_SETTINGS.narrowBelow} /><span>direct reports</span></div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="oc-wide">Flag managers with more than</label>
+          <div class="oc-num"><input class="control" id="oc-wide" name="wideAbove" type="number" min="1" max="500" step="1" inputmode="numeric" value={DEFAULT_SETTINGS.wideAbove} /><span>direct reports</span></div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="oc-spof">Single point of failure: at least</label>
+          <div class="oc-num"><input class="control" id="oc-spof" name="spofMin" type="number" min="1" max="10000" step="1" inputmode="numeric" value={DEFAULT_SETTINGS.spofMin} /><span>people of the department in their line</span></div>
+        </div>
+        <p class="field-help oc-settings-help" id="oc-settings-help">
+          <span>These are starting values for you to change, not standards. There is no single right span of control: it depends on how alike the work is, how experienced the team is and how much else the manager does.</span>{" "}
+          <button class="oc-linkbtn" type="button" data-settings-reset>Reset to the starting values</button>
+        </p>
+      </form>
+      <div data-span></div>
+      <h4 class="oc-sub-title">Managers with one direct report</h4>
+      <p class="oc-card-sub">A manager with one report often means a level that could be merged, or a team still being built. Check before changing anything.</p>
+      <div data-one></div>
+      <h4 class="oc-sub-title">Single points of failure</h4>
+      <p class="oc-card-sub" data-spof-def></p>
+      <div data-spof-list></div>
+    </section>
+
+    <section class="oc-card" aria-labelledby="oc-groups-title">
+      <div class="oc-card-head">
+        <h3 class="oc-card-title" id="oc-groups-title">Departments and locations</h3>
+        <p class="oc-card-sub">Managers are people with at least one direct report; everyone else is an individual contributor.</p>
+      </div>
+      <div data-depts></div>
+      <div data-locations></div>
+    </section>
+
+    <section class="oc-card oc-quality" id="oc-quality" aria-labelledby="oc-quality-title">
+      <div class="oc-card-head">
+        <h3 class="oc-card-title" id="oc-quality-title">Data checks</h3>
+        <p class="oc-card-sub" data-quality-summary></p>
+      </div>
+      <div data-quality-list></div>
+    </section>
+  </section>
+</div>
+
+<script>
+  import { mountOrgChart } from "../orgchart/app";
+  const root = document.querySelector<HTMLElement>("[data-oc]");
+  if (root) mountOrgChart(root);
+</script>
+
+<style is:global>
+  .oc,
+  .oc-map,
+  .oc-result,
+  .oc-load-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .oc {
+    gap: 1.5rem;
+  }
+  .oc-step {
+    min-width: 0;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .oc-stepno {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .oc-h {
+    font-size: var(--fs-xl);
+    margin-top: 0.15rem;
+  }
+  .oc-h:focus {
+    outline: none;
+  }
+  .oc-lede {
+    margin-top: 0.4rem;
+    color: var(--ink-2);
+    max-width: 70ch;
+  }
+  .oc-error,
+  .oc-alert {
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--r);
+    font-size: var(--fs-sm);
+    font-weight: 540;
+  }
+  .oc-error {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .oc-alert {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .oc-alert a {
+    color: inherit;
+    font-weight: 650;
+  }
+  .oc-busy {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .oc-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .oc-linkbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    color: var(--primary);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .oc-linkbtn:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* Step 1 */
+  .oc-load {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: end;
+  }
+  .oc-load-main {
+    gap: 1rem;
+  }
+  .oc-drop {
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+    padding: 2.25rem 1.25rem 2rem;
+    text-align: center;
+    border: 2px dashed var(--line-strong);
+    border-radius: var(--r-xl);
+    background: var(--canvas);
+    transition: border-color 150ms, background-color 150ms;
+  }
+  .oc-drop.is-over {
+    border-color: var(--primary);
+    background: var(--neel-50);
+  }
+  .oc-drop-icon {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--primary);
+  }
+  .oc-drop-title {
+    font-weight: 650;
+    font-size: var(--fs-md);
+  }
+  .oc-drop-sub {
+    max-width: 46ch;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .oc-drop-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .oc-saved {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.9rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    color: var(--ink-2);
+  }
+  .oc-saved-text {
+    flex: 1 1 16rem;
+    font-size: var(--fs-sm);
+    color: var(--ink);
+  }
+  .oc-saved-actions {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .oc-privacy {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.25rem 1.25rem 1.1rem;
+    border-radius: var(--r-xl);
+    background: var(--good-soft);
+    border: 1px solid color-mix(in srgb, var(--good) 25%, transparent);
+  }
+  .oc-privacy-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 650;
+    color: var(--good);
+  }
+  .oc-privacy ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.35rem;
+    font-size: var(--fs-sm);
+  }
+  .oc-privacy-links {
+    display: grid;
+    gap: 0.35rem;
+    justify-items: start;
+    padding-top: 0.6rem;
+    border-top: 1px solid color-mix(in srgb, var(--good) 20%, transparent);
+  }
+
+  /* Step 2 */
+  .oc-map {
+    gap: 1.25rem;
+  }
+  .oc-sheet {
+    max-width: 24rem;
+  }
+  .oc-map-table {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .oc-map-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 0.5rem 1.25rem;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  [data-map-rows] > .oc-map-row:last-child {
+    border-bottom: 0;
+  }
+  .oc-map-head {
+    padding-block: 0.55rem;
+    background: var(--canvas);
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .oc-map-field {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .oc-map-field label {
+    font-weight: 620;
+    font-size: var(--fs-sm);
+  }
+  .oc-map-use {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+  .oc-req {
+    margin-left: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 620;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    vertical-align: 1px;
+  }
+  .oc-map-row .control {
+    min-width: 0;
+    min-height: 2.5rem;
+    padding-block: 0.4rem;
+    font-size: var(--fs-sm);
+  }
+  .oc-map-ex {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .oc-map-ex.is-quiet {
+    color: var(--ink-3);
+  }
+
+  /* Step 3 */
+  .oc-result {
+    gap: 1.25rem;
+  }
+  .oc-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+  }
+  .oc-source {
+    margin-top: 0.25rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .oc-sample-note {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    align-items: baseline;
+    padding: 0.75rem 1rem;
+    border-radius: var(--r-lg);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    font-size: var(--fs-sm);
+  }
+  .oc-sample-note p {
+    flex: 1 1 18rem;
+  }
+  .oc-keep {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    cursor: pointer;
+    justify-self: start;
+  }
+  .oc-keep input {
+    width: 1.15rem;
+    height: 1.15rem;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+  }
+  .oc-keep-note {
+    font-weight: 430;
+    color: var(--ink-3);
+  }
+  .oc-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+  .oc-kpi {
+    display: grid;
+    gap: 0.3rem;
+    align-content: start;
+    padding: 1rem 1.2rem 1.1rem;
+    background: var(--paper);
+    min-width: 0;
+  }
+  .oc-kpi dt {
+    font-size: var(--fs-sm);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .oc-kpi dd {
+    margin: 0;
+  }
+  .oc-kpi-v {
+    font-size: clamp(1.75rem, 1.45rem + 1vw, 2.3rem);
+    font-weight: 660;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--neel-800);
+    font-variant-numeric: tabular-nums;
+  }
+  .oc-kpi-s {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    line-height: 1.45;
+  }
+  .oc-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.85rem;
+    min-width: 0;
+    padding: 1.1rem 1.15rem 1.15rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .oc-card-head {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .oc-card-title {
+    font-size: var(--fs-md);
+    font-weight: 650;
+  }
+  .oc-sub-title {
+    margin-top: 0.75rem;
+    font-size: var(--fs-base);
+    font-weight: 650;
+  }
+  .oc-card-sub {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    max-width: 75ch;
+  }
+
+  /* Chart */
+  .oc-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+  }
+  .oc-find {
+    position: relative;
+    display: grid;
+    gap: 0.35rem;
+    flex: 1 1 18rem;
+    max-width: 26rem;
+  }
+  .oc-find .control {
+    min-height: 2.5rem;
+    padding-block: 0.4rem;
+    font-size: var(--fs-sm);
+  }
+  .oc-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    margin: 0.25rem 0 0;
+    padding: 0.3rem;
+    list-style: none;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r);
+    background: var(--paper);
+    box-shadow: var(--shadow-float);
+    max-height: 18rem;
+    overflow-y: auto;
+  }
+  .oc-results button {
+    display: grid;
+    width: 100%;
+    gap: 0.05rem;
+    padding: 0.45rem 0.6rem;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: var(--fs-sm);
+  }
+  .oc-results button:hover,
+  .oc-results button:focus-visible {
+    background: var(--neel-50);
+  }
+  .oc-results .oc-r-sub {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .oc-results .oc-r-none {
+    padding: 0.45rem 0.6rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .oc-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .oc-zoom {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .oc-iconbtn {
+    padding-inline: 0.55rem;
+  }
+  .oc-zoom-level {
+    min-width: 3.2rem;
+    text-align: center;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .oc-focusbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.6rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: var(--r);
+    background: var(--info-soft);
+    color: var(--ink);
+    font-size: var(--fs-sm);
+  }
+  .oc-focusbar .oc-crumbs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.4rem;
+    align-items: center;
+    color: var(--ink-2);
+  }
+  .oc-viewport {
+    position: relative;
+    height: clamp(22rem, 62vh, 40rem);
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background-color: var(--canvas);
+    background-image: radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0);
+    background-size: 20px 20px;
+    cursor: grab;
+    overscroll-behavior: contain;
+  }
+  .oc-viewport.is-dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+  .oc-viewport:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .oc-canvas {
+    width: max-content;
+    min-width: 100%;
+  }
+  .oc-svg {
+    display: block;
+    max-width: none;
+  }
+  .oc-svg text {
+    font-family: var(--font);
+  }
+  .oc-links {
+    fill: none;
+    stroke: var(--line-strong);
+    stroke-width: 1.5;
+  }
+  .oc-box {
+    cursor: pointer;
+  }
+  .oc-box-bg {
+    fill: var(--paper);
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+  .oc-box:hover .oc-box-bg {
+    stroke: var(--neel-400);
+  }
+  .oc-box.is-match .oc-box-bg {
+    fill: var(--haldi-50);
+    stroke: var(--haldi-500);
+    stroke-width: 2;
+  }
+  .oc-box.is-selected .oc-box-bg {
+    fill: var(--neel-50);
+    stroke: var(--primary);
+    stroke-width: 2.5;
+  }
+  .oc-box-name {
+    font-size: 14px;
+    font-weight: 620;
+    fill: var(--ink);
+  }
+  .oc-box-title {
+    font-size: 12px;
+    fill: var(--ink-2);
+  }
+  .oc-box-meta {
+    font-size: 11px;
+    fill: var(--ink-3);
+  }
+  .oc-toggle {
+    cursor: pointer;
+  }
+  .oc-toggle rect {
+    fill: var(--neel-50);
+    stroke: var(--neel-300);
+  }
+  .oc-toggle:hover rect {
+    fill: var(--neel-100);
+  }
+  .oc-toggle text {
+    font-size: 11px;
+    font-weight: 650;
+    fill: var(--neel-700);
+  }
+  .oc-toggle.is-wide rect {
+    fill: var(--warn-soft);
+    stroke: var(--haldi-400);
+  }
+  .oc-toggle.is-wide text {
+    fill: var(--warn);
+  }
+  .oc-help {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    max-width: 90ch;
+  }
+  .oc-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .oc-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .oc-legend b {
+    color: var(--ink);
+    font-weight: 650;
+  }
+  .oc-sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--k);
+    flex-shrink: 0;
+  }
+  .oc-person {
+    display: grid;
+    gap: 0.4rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--neel-200);
+    border-radius: var(--r-lg);
+    background: var(--neel-50);
+    font-size: var(--fs-sm);
+  }
+  .oc-person-name {
+    font-size: var(--fs-md);
+    font-weight: 650;
+  }
+  .oc-person-meta {
+    color: var(--ink-2);
+  }
+  .oc-export {
+    display: grid;
+    gap: 0.5rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+  }
+  .oc-export-label {
+    font-size: var(--fs-sm);
+    font-weight: 620;
+  }
+
+  /* Flags shown as text, never by colour alone */
+  .oc-flag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 620;
+    white-space: nowrap;
+    background: var(--sunken);
+    color: var(--ink-2);
+  }
+  .oc-flag-warn {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .oc-flag-bad {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .oc-flag-info {
+    background: var(--info-soft);
+    color: var(--info);
+  }
+
+  /* Tree view */
+  .oc-tree,
+  .oc-tree ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .oc-tree {
+    max-height: 32rem;
+    overflow: auto;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .oc-tree ul {
+    margin-left: 0.85rem;
+    padding-left: 0.85rem;
+    border-left: 1px solid var(--line);
+  }
+  .oc-tree li[role="treeitem"] {
+    outline: none;
+  }
+  .oc-ti-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.4rem;
+    padding: 0.3rem 0.5rem 0.3rem 0.35rem;
+    border-radius: var(--r-sm);
+    font-size: var(--fs-sm);
+    cursor: pointer;
+  }
+  .oc-ti-row:hover {
+    background: var(--canvas);
+  }
+  .oc-tree li[role="treeitem"]:focus-visible > .oc-ti-row {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+  .oc-tree li[aria-selected="true"] > .oc-ti-row {
+    background: var(--neel-50);
+    box-shadow: inset 3px 0 0 var(--primary);
+  }
+  .oc-ti-chev {
+    flex-shrink: 0;
+    width: 1rem;
+    align-self: center;
+    text-align: center;
+    color: var(--ink-3);
+    transition: transform 150ms;
+  }
+  .oc-ti-chev::before {
+    content: "▸";
+  }
+  .oc-tree li[aria-expanded="true"] > .oc-ti-row > .oc-ti-chev {
+    transform: rotate(90deg);
+  }
+  .oc-ti-leaf {
+    flex-shrink: 0;
+    width: 1rem;
+  }
+  .oc-ti-name {
+    font-weight: 620;
+  }
+  .oc-ti-title {
+    color: var(--ink-2);
+  }
+  .oc-ti-meta {
+    color: var(--ink-3);
+    font-size: var(--fs-xs);
+  }
+
+  /* Structure */
+  .oc-settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 0.9rem 1.25rem;
+    padding: 1rem;
+    border-radius: var(--r-lg);
+    background: var(--canvas);
+  }
+  .oc-num {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .oc-num .control {
+    width: 5.5rem;
+    min-height: 2.5rem;
+    padding-block: 0.35rem;
+    font-size: var(--fs-sm);
+  }
+  .oc-settings-help {
+    grid-column: 1 / -1;
+  }
+  .oc-table {
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .oc-check-body .oc-table,
+  .oc-span-all .oc-table {
+    max-height: 24rem;
+  }
+  .oc-table table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+  }
+  .oc-table caption {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .oc-table th,
+  .oc-table td {
+    padding: 0.45rem 0.75rem;
+    text-align: left;
+    border-top: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .oc-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-weight: 620;
+    font-size: var(--fs-xs);
+  }
+  .oc-table .num {
+    text-align: right;
+    white-space: nowrap;
+  }
+  .oc-table tbody th {
+    font-weight: 560;
+  }
+  .oc-table .oc-linkbtn {
+    font-size: inherit;
+    font-weight: 600;
+  }
+  .oc-empty {
+    padding: 0.85rem 1rem;
+    border-radius: var(--r);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  [data-depts] + [data-locations] {
+    margin-top: 0.5rem;
+  }
+
+  /* Data checks */
+  .oc-check {
+    border-top: 1px solid var(--line);
+  }
+  .oc-check summary {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr) auto auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.65rem 0.25rem;
+    cursor: pointer;
+    list-style: none;
+    border-radius: var(--r-sm);
+  }
+  .oc-check summary::-webkit-details-marker {
+    display: none;
+  }
+  .oc-check summary:hover {
+    background: var(--canvas);
+  }
+  .oc-check-title {
+    font-size: var(--fs-sm);
+    font-weight: 560;
+  }
+  .oc-check-count {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .oc-check-chev {
+    color: var(--ink-3);
+    transition: transform 150ms;
+  }
+  .oc-check[open] .oc-check-chev {
+    transform: rotate(180deg);
+  }
+  .oc-st {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    justify-self: start;
+    padding: 0.1rem 0.5rem 0.1rem 0.35rem;
+    border-radius: 999px;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .oc-st-fix {
+    color: var(--bad);
+    background: var(--bad-soft);
+  }
+  .oc-st-review {
+    color: var(--warn);
+    background: var(--warn-soft);
+  }
+  .oc-st-note {
+    color: var(--info);
+    background: var(--info-soft);
+  }
+  .oc-st-ok {
+    color: var(--good);
+    background: var(--good-soft);
+  }
+  .oc-check-body {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0 0.25rem 1rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .oc-passed {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.3rem;
+  }
+  .oc-passed b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .oc-load {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .oc-kpis {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 760px) {
+    .oc-map-head {
+      display: none;
+    }
+    .oc-map-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.4rem;
+    }
+    .oc-check summary {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+    .oc-check-count {
+      grid-column: 2;
+      grid-row: 2;
+    }
+    .oc-check-chev {
+      grid-row: 1 / span 2;
+      grid-column: 3;
+    }
+    .oc-find {
+      max-width: none;
+    }
+  }
+  @media (max-width: 480px) {
+    .oc-drop {
+      padding: 1.75rem 1rem 1.5rem;
+    }
+    .oc-drop-actions .btn {
+      width: 100%;
+    }
+    .oc-kpi {
+      padding: 0.9rem 0.95rem 1rem;
+    }
+    .oc-card {
+      padding: 1rem 0.85rem;
+    }
+    .oc-viewport {
+      height: 26rem;
+    }
+  }
+  @media (forced-colors: active) {
+    .oc-sw {
+      forced-color-adjust: none;
+      border: 1px solid CanvasText;
+    }
+  }
+</style>

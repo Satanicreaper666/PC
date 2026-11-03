@@ -1,0 +1,234 @@
+---
+title: "Hiring metrics, common mistakes and checklists"
+description: >-
+  Track six hiring metrics with clear formulas, check your hiring funnel for fairness, avoid ten common mistakes and run every hire from a five-phase checklist.
+book: recruitment
+chapter: 9
+stage: recruit
+audiences: [hr, founders]
+checked: 2026-11-02
+summary:
+  - "Track a few metrics well: time to fill, cost per hire, offer acceptance, joining rate, quality of hire and source effectiveness."
+  - "Compare against your own past quarters. Published averages mix roles, cities and definitions too much to be a fair benchmark."
+  - "Check pass-through rates at each stage for different groups of candidates to find steps that treat people unequally."
+  - "Run every hire from the same five-phase checklist so nothing depends on memory."
+sources:
+  - title: "The Code on Wages, 2019 (section 3: no discrimination on the ground of sex while recruiting)"
+    url: "https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf"
+    publisher: "India Code, Legislative Department"
+  - title: "Information Technology (Reasonable security practices and procedures and sensitive personal data or information) Rules, 2011"
+    url: "https://prsindia.org/files/bills_acts/bills_parliament/2011/IT_Rules_2011.pdf"
+    publisher: "PRS Legislative Research"
+  - title: "The Occupational Safety, Health and Working Conditions Code, 2020 (section 6(1)(f): letter of appointment)"
+    url: "https://www.indiacode.nic.in/bitstream/123456789/22041/1/2020-37.pdf"
+    publisher: "India Code, Legislative Department"
+related:
+  - toolkit/cost-per-hire-calculator
+  - toolkit/hr-metrics-calculator
+  - toolkit/onboarding-checklist
+  - toolkit/interview-evaluation-form
+  - toolkit/people-analytics
+  - handbooks/hr-professional/04-people-analytics-and-data-literacy
+  - handbooks/recruitment/01-do-you-need-this-role
+  - handbooks/recruitment/05-structured-interviews
+faq:
+  - q: How do you calculate cost per hire?
+    a: Add external costs (job ads, agency fees, referral bonuses, assessments, travel) and internal costs (recruiter and interviewer time, tools) for a period, then divide by the number of people hired in that period.
+  - q: What is the difference between time to fill and time to hire?
+    a: In this handbook, time to fill runs from the day the position is approved to offer acceptance, and time to hire runs from the day the chosen candidate applied or was contacted to offer acceptance. Pick one definition and use it consistently.
+  - q: What is a good offer acceptance rate?
+    a: There is no reliable universal benchmark. Track your own rate by role and quarter; a falling rate usually points to pay, speed or how candidates were treated.
+  - q: How do you measure quality of hire?
+    a: Combine a few signals you already have, such as the probation review rating, whether the person is still with you after a year and the hiring manager's assessment, then compare by source and by interviewer.
+keywords:
+  - recruitment metrics formulas
+  - cost per hire formula india
+  - time to fill vs time to hire
+  - offer acceptance rate formula
+  - quality of hire measurement
+  - recruitment process checklist
+draft: false
+---
+
+<Snapshot
+  who="HR leads, founders and anyone who owns hiring results"
+  level="Intermediate"
+  risks={[
+    "Counting applications and calling it success",
+    "Repeating the same hiring mistakes every quarter",
+    "No record of why candidates were rejected"
+  ]}
+  mistakes={[
+    "Comparing your numbers with unsourced “industry averages”",
+    "Never checking whether hires turned out well",
+    "Measuring speed and cost but not fairness"
+  ]}
+  roles={[
+    { role: "HR lead", focus: "Keep the six metrics and review them each quarter." },
+    { role: "Hiring manager", focus: "Rate each new hire at the probation review." },
+    { role: "Founder", focus: "Ask for one improvement per quarter, not a dashboard." }
+  ]}
+/>
+
+Most teams count applications, which is easy and says little. A few well-defined numbers, tracked the same way every quarter, show where hiring is slow, expensive or unfair, and whether the people you hire turn out well.
+
+## Six metrics that matter
+
+| Metric | How to work it out | What it tells you |
+| --- | --- | --- |
+| Time to fill and time to hire | Days from position approval to offer acceptance (fill); days from the chosen candidate's application or first contact to offer acceptance (hire) | How long the team waits, and how fast your process moves good people |
+| Cost per hire | Total hiring costs for a period ÷ hires in that period | Where your hiring money goes; track it by channel |
+| Offer acceptance rate | Offers accepted ÷ offers made × 100 | Whether your pay, speed and candidate experience are working |
+| Joining rate | People who joined ÷ offers accepted × 100 | How many accepted offers survive the notice period |
+| Quality of hire | A combination such as: rated “meets the bar” or better at probation, still employed after a year, and the hiring manager's rating | Whether hiring worked, which is the point of all the others |
+| Source effectiveness | Hires, cost per hire and one-year retention for each channel | Where to spend next quarter's budget |
+
+<Figure title="Cost per hire" caption="Count costs and hires over the same period. Include your own team's time, not just money paid to others.">
+  <Formula
+    result={{ value: "Cost per hire" }}
+    parts={[
+      { value: "Total hiring costs", label: "external + internal, for the period" },
+      { op: "÷" },
+      { value: "Hires", label: "who joined in the same period" }
+    ]}
+    example="Example: ₹1,50,000 external + ₹50,000 internal = ₹2,00,000 ÷ 5 hires = ₹40,000 per hire"
+  />
+</Figure>
+
+External costs include job ads and portal plans, agency fees, referral bonuses, assessment tools and candidate travel. Internal costs include the share of recruiters' pay spent on hiring, interviewers' time and your applicant tracking system. The [cost per hire calculator](/toolkit/cost-per-hire-calculator/) does the arithmetic.
+
+<Figure title="Offer acceptance rate" caption="Work it out by role and by quarter. A falling rate is an early warning.">
+  <Formula
+    result={{ value: "Offer acceptance rate" }}
+    parts={[
+      { value: "Offers accepted" },
+      { op: "÷" },
+      { value: "Offers made" },
+      { op: "×" },
+      { value: "100" }
+    ]}
+    example="Example: 8 offers accepted ÷ 10 offers made × 100 = 80%"
+  />
+</Figure>
+
+<Callout type="note" title="Why this chapter gives no benchmarks">
+Published hiring averages mix entry and senior roles, different cities and different definitions of the same metric, and many can't be traced to a source. Compare yourself with your own last four quarters, role by role. If you do use an outside survey, check how it defined the metric and which roles it covered.
+</Callout>
+
+Targets this handbook recommends for your own process:
+
+<KeyNumbers
+  items={[
+    { value: "2", label: "working days from the final interview to a decision" },
+    { value: "5", label: "working days from the decision to the written offer" },
+    { value: "7 to 10", label: "days for the candidate to consider the offer" },
+    { value: "90", label: "days to the first check on quality of hire" }
+  ]}
+/>
+
+## Check your funnel for fairness
+
+Speed and cost tell you how efficient hiring is. Pass-through rates tell you whether it is fair.
+
+<Figure title="A hiring funnel, with example numbers" caption="Read left to right. Divide each number by the one before it to get the pass-through rate for that stage. Example numbers only." wide>
+  <Flow
+    steps={[
+      { title: "Applied", detail: "Example: 200" },
+      { title: "Shortlisted", detail: "Example: 40 (20%)" },
+      { title: "Interviewed", detail: "Example: 12 (30%)" },
+      { title: "Offered", detail: "Example: 4 (33%)" },
+      { title: "Joined", detail: "Example: 3 (75%)" }
+    ]}
+  />
+</Figure>
+
+Work out the pass-through rate at each stage separately for women and men, and for other groups where candidates have shared that information voluntarily. If one group passes a stage much less often than another, look closely at that stage: the knockout criteria, the questions, the interviewers or the work sample. With small numbers, one or two people can swing a rate, so look at several quarters together before drawing conclusions.
+
+<Callout type="warning" title="Handle diversity data carefully">
+Ask for diversity information only on a voluntary basis, separately from the application, and keep it away from the people making decisions. Use it only in totals to check the process. It is personal data, and some of it, such as health information, is sensitive personal data under the Information Technology (IT) Act's rules, which require written consent before collection.
+</Callout>
+
+## Ten hiring mistakes to avoid
+
+1. **Hiring without a written case or job description (JD).** Vague expectations guarantee a mismatch. Start with the [headcount test](/handbooks/recruitment/do-you-need-this-role/).
+2. **Deciding on gut feel.** “I liked them” is not evidence. Use [structured interviews](/handbooks/recruitment/structured-interviews/) and scorecards.
+3. **Hiding the pay range or anchoring on last salary.** It wastes everyone's time and carries old pay gaps into your company.
+4. **Taking weeks to decide.** Good candidates have other options. Decide within two working days of the final round.
+5. **Filtering or questioning on personal characteristics.** Gender, age, marital status, religion and caste have no place in a JD or an interview, and discrimination on the ground of sex in recruitment breaks the Code on Wages.
+6. **Hiring for “culture fit” that means “like us”.** Define the behaviours you value and assess them like any skill.
+7. **Over-valuing pedigree.** A famous college or employer says less than evidence of the work itself.
+8. **Skipping reference checks, or checking without consent.** A short call with a referee can surface what an interview misses. Ask the candidate first, and run background checks only with written consent.
+9. **Ghosting candidates.** Everyone who applied deserves an answer, and those who interviewed deserve a reason.
+10. **No onboarding plan.** “Figure it out” is not a plan. Share a [30-60-90 day plan](/handbooks/recruitment/onboarding-day-1-to-90/) on day 1.
+
+## The five-phase hiring checklist
+
+<Figure title="Every hire, in five phases" caption="Read left to right. Each phase has its own checklist below." wide>
+  <Flow
+    steps={[
+      { who: "Phase 1", title: "Prepare", detail: "Case, band, JD, interview plan" },
+      { who: "Phase 2", title: "Source and screen", detail: "Channels, knockouts, phone screens" },
+      { who: "Phase 3", title: "Interview and decide", detail: "Structured rounds, scores, references" },
+      { who: "Phase 4", title: "Offer and close", detail: "Offer, consent, checks, acceptance" },
+      { who: "Phase 5", title: "Onboard", detail: "Day 1, compliance, 30-60-90 plan" }
+    ]}
+  />
+</Figure>
+
+### Phase 1: prepare
+
+- The one-sentence case is written and the position is approved with a 12-month budget.
+- The type of engagement is chosen: permanent, fixed-term, contractor, agency or intern.
+- The pay band is set and checked against people already doing similar work.
+- The JD lists outcomes, three to five must-haves, the pay range and an equal opportunity line.
+- Competencies, interview questions, scoring anchors and the panel are agreed.
+- Channels are chosen, and the privacy notice for applicants is published.
+
+### Phase 2: source and screen
+
+- The JD is posted on the chosen channels and shared with the team for referrals.
+- Two to four knockout criteria are agreed in writing before screening starts.
+- Screening is done in three passes, with a one-line reason recorded for each rejection.
+- Shortlisted candidates have a 15-minute phone screen using the same questions.
+- Candidates who aren't shortlisted are told within a week.
+
+### Phase 3: interview and decide
+
+- Every candidate gets the same structured questions and is offered any adjustments they need.
+- Each interviewer submits scores and notes before the debrief.
+- At least two references are checked, with the candidate's permission.
+- The decision is made within two working days of the final round, and the reason is recorded.
+
+### Phase 4: offer and close
+
+- The verbal offer is made by the hiring manager, and the written offer follows within days.
+- The offer shows the cost to company (CTC) breakdown, the conditions and a validity date, and the wage structure respects the 50% rule.
+- The candidate receives a notice of the background checks and gives written consent.
+- Unsuccessful candidates are told, with a short reason if they interviewed.
+- Candidates' data is kept only as long as the privacy notice says.
+
+### Phase 5: onboard
+
+- The manager makes a welcome call and stays in touch through the notice period.
+- Laptop, email and access are ready before day 1, and a buddy is assigned.
+- The appointment letter is issued on joining in the prescribed format, and Employees' Provident Fund (EPF) and Employees' State Insurance (ESI) are set up where they apply.
+- The 30-60-90 day plan is shared on day 1, with weekly then fortnightly 1:1s.
+- The probation review is held on time, with written feedback.
+
+The [onboarding checklist](/toolkit/onboarding-checklist/) turns phase 5 into a list you can tick off for each new joiner.
+
+## Review the process every quarter
+
+<Figure title="The quarterly hiring review" caption="Go round once a quarter and change one thing at a time, so you can see what made the difference.">
+  <Cycle
+    center="Every quarter"
+    items={[
+      { title: "Measure", note: "The six metrics, by role and channel" },
+      { title: "Find the leak", note: "The slowest or least fair stage" },
+      { title: "Change one thing", note: "A criterion, a channel, a round, a template" },
+      { title: "Check the result", note: "Did the metric move? Did fairness hold?" }
+    ]}
+  />
+</Figure>
+
+For a wider view of HR numbers, use the [HR metrics calculator](/toolkit/hr-metrics-calculator/) and the [people analytics](/toolkit/people-analytics/) tool.

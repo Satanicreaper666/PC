@@ -1,0 +1,163 @@
+---
+/**
+ * Side-by-side comparison of 2–3 options across the same rows.
+ * <Compare columns={["Before the Labour Codes", "Under the Labour Codes"]} highlight={1}
+ *   rows={[{ label: "Gratuity for fixed-term staff", values: ["After 5 years", "After 1 year"] }]} />
+ *
+ * On the desk: the highlighted column's heading is gone over with a highlighter. When an
+ * earlier column is plainly the rule that column replaced ("Old Acts", "Up to 16 Sep 2026",
+ * "Income-tax Act, 1961" against "…, 2025"), its values are struck through in red pen as
+ * superseded and the new heading is highlighted orange (new under the 2025–26 rules).
+ * Otherwise the heading is yellow and nothing is struck.
+ */
+interface Props {
+  columns: string[];
+  rows: { label: string; values: string[] }[];
+  highlight?: number;
+  caption?: string;
+}
+const { columns, rows, highlight, caption } = Astro.props;
+const regionLabel = caption ?? `Comparison: ${columns.join(", ")}`;
+// Is an earlier column clearly the rule the highlighted one replaced? Only plain signals count.
+const LAW = /^(.*\b(?:Act|Acts|Rules|Code|Codes))\b,?\s*((?:19|20)\d{2})$/;
+const now = highlight === undefined ? "" : (columns[highlight] ?? "").trim();
+const old =
+  highlight === undefined
+    ? -1
+    : columns.findIndex((c, i) => {
+        if (i >= highlight) return false;
+        const was = c.trim();
+        if (/^old (?:acts?|laws?|rules?|codes?)\b/i.test(was)) return true;
+        if (/^(?:up to|until|till)\b.*\b(?:19|20)\d{2}\b/i.test(was) && /^(?:from|after)\b/i.test(now)) return true;
+        if (/^before$/i.test(was) && /\b(?:codes?|acts?|rules)\b/i.test(now)) return true;
+        const a = was.match(LAW);
+        const b = now.match(LAW);
+        return !!(a && b && a[1] === b[1] && +a[2] < +b[2]);
+      });
+const plain = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+const superseded = (r: { values: string[] }, i: number) => i === old && plain(r.values[i] ?? "") !== plain(r.values[highlight!] ?? "");
+---
+
+<div class:list={["cmp-wrap", { "has-old": old >= 0 }]} role="region" tabindex="0" aria-label={regionLabel}>
+  <table class="cmp">
+    {caption && <caption class="visually-hidden">{caption}</caption>}
+    <thead>
+      <tr>
+        <td></td>
+        {
+          columns.map((c, i) => (
+            <th scope="col" class:list={{ pick: i === highlight, was: i === old }}>
+              {i === highlight ? (
+                <span class:list={["hl", { "hl-orange": old >= 0 }]} data-mark>{c}</span>
+              ) : (
+                c
+              )}
+              {i === old && <span class="visually-hidden"> (no longer applies)</span>}
+            </th>
+          ))
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((r) => (
+          <tr>
+            <th scope="row">{r.label}</th>
+            {r.values.map((v, i) => (
+              <td class:list={{ pick: i === highlight, was: i === old }}>{superseded(r, i) ? <span class="struck" data-mark set:html={v} /> : <Fragment set:html={v} />}</td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .cmp-wrap {
+    --pick: var(--hl-yellow);
+    overflow-x: auto;
+  }
+  .cmp-wrap.has-old {
+    --pick: var(--hl-orange);
+  }
+  .cmp {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+  }
+  thead th {
+    background: none;
+    text-align: left;
+    padding: 0.6rem 0.9rem;
+    font-weight: 650;
+    color: var(--ink);
+    border-bottom: 2px solid var(--line-strong);
+  }
+  /* The heading of the column to use, gone over with a highlighter. */
+  thead th .hl {
+    padding: 0.05em 0.3em;
+    margin-inline: -0.3em;
+  }
+  tbody th {
+    background: none;
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink-2);
+    padding: 0.7rem 0.9rem 0.7rem 0;
+    border-bottom: 1px solid var(--line);
+    min-width: 10rem;
+    vertical-align: top;
+  }
+  @media (max-width: 560px) {
+    tbody th {
+      min-width: 0;
+      width: 34%;
+      font-size: var(--fs-sm);
+    }
+    thead th,
+    tbody td {
+      padding-inline: 0.6rem;
+    }
+  }
+  tbody td {
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  td.pick,
+  th.pick {
+    background: color-mix(in srgb, var(--pick) 16%, var(--paper));
+  }
+  td.was {
+    color: var(--ink-2);
+  }
+  /* Superseded: struck through in red pen, line by line, still readable underneath. */
+  .struck {
+    --st-w: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6.4C19 4.7 43 6.9 61 5.3S88 4.5 99 5.6' fill='none' stroke='%23c8323c' stroke-width='1.6' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 58%;
+    background-size: var(--st-w) 0.6em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  :global(html.js-anim) .struck[data-mark]:not(:global(.drawn)) {
+    --st-w: 0%;
+  }
+  :global(html.js-anim) .struck[data-mark] {
+    transition: background-size 600ms var(--ease-draw);
+  }
+  tbody tr:last-child :is(th, td) {
+    border-bottom: 0;
+  }
+  @media print {
+    .struck {
+      background: none;
+      text-decoration: line-through;
+      text-decoration-color: #555;
+    }
+  }
+</style>

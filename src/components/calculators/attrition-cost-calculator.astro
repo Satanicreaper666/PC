@@ -1,0 +1,320 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+---
+
+<CalcShell id="attrition-cost-calculator" resultLabel="Cost of replacing one person" inputsLabel="The role and your assumptions">
+  <Fragment slot="inputs">
+    <p class="hint">Each figure below is an assumption you can change. The starting values are an example, not a benchmark.</p>
+    <div class="sep">
+      <fieldset class="block">
+        <legend>The role</legend>
+        <div class="two">
+          <Num name="ctc" label="Annual CTC of the role" prefix="₹" value="12,00,000" />
+          <Num name="leavers" label="Leavers a year (optional)" value="10" help="People who leave roles like this each year." />
+        </div>
+      </fieldset>
+    </div>
+    <div class="sep">
+      <fieldset class="block">
+        <legend>While the seat is empty</legend>
+        <div class="two">
+          <Num name="vacancy" label="Working days the seat is empty" value="30" suffix="days" help="From the last day of the leaver to the first day of the new joiner." />
+          <Num name="loss" label="Work not covered by others" value="50" suffix="%" help="Share of the role's output that is lost, not picked up by the team." />
+        </div>
+        <Num name="days" label="Working days in a year" value="250" suffix="days" help="About 250 for a five-day week, about 300 for a six-day week. Used to turn CTC into a day's value." />
+      </fieldset>
+    </div>
+    <div class="sep">
+      <fieldset class="block">
+        <legend>Hiring the replacement</legend>
+        <div class="two">
+          <Num name="fee" label="Agency fee" value="8.33" suffix="% of CTC" help="0 if you hire directly." />
+          <Num name="otherHire" label="Other hiring costs" prefix="₹" value="15,000" help="Job posts, assessments, background checks." />
+        </div>
+        <div class="two">
+          <Num name="hours" label="Interview and handover time" value="30" suffix="hours" help="Managers, interviewers and HR together." />
+          <Num name="hourly" label="Hourly cost of that time" prefix="₹" value="1,000" help="Their annual CTC ÷ about 2,000 hours." />
+        </div>
+      </fieldset>
+    </div>
+    <div class="sep">
+      <fieldset class="block">
+        <legend>Getting the new person up to speed</legend>
+        <Num name="onboard" label="Onboarding and training" prefix="₹" value="50,000" help="Induction, training, laptop and set-up." />
+        <div class="two">
+          <Num name="ramp" label="Months to full productivity" value="3" suffix="months" />
+          <Num name="prod" label="Average output while learning" value="60" suffix="%" help="Compared with someone fully productive." />
+        </div>
+      </fieldset>
+    </div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="total">₹0</span>
+    <span class="sub" data-out="multiple"></span>
+  </Fragment>
+  <div slot="visual" class="seg" data-seg>
+    <p class="seg-title">What makes up the cost</p>
+    <div class="seg-bar" role="img"></div>
+    <ul class="seg-legend"></ul>
+    <div class="tip" role="tooltip" hidden></div>
+  </div>
+</CalcShell>
+
+<script>
+  import { bindCalculator, inr, num, type CalcLine, type CalcStep } from "../../scripts/calc-kit";
+  import { attritionCost } from "../../lib/calc/attrition-cost-calculator";
+
+  const INK = ["#fff", "#151a3b", "#151a3b", "#fff", "#fff", "#151a3b"];
+  const root = document.querySelector<HTMLElement>('[data-calc="attrition-cost-calculator"]');
+  const seg = root?.querySelector<HTMLElement>("[data-seg]");
+
+  function drawSeg(host: HTMLElement, parts: { label: string; amount: number; color: number }[], total: number) {
+    const bar = host.querySelector<HTMLElement>(".seg-bar")!;
+    const legend = host.querySelector<HTMLElement>(".seg-legend")!;
+    const pctOf = (n: number) => `${Math.round((n / total) * 100)}%`;
+    bar.replaceChildren(
+      ...parts.map((p) => {
+        const b = document.createElement("span");
+        b.className = "seg-part";
+        b.style.flexGrow = String(p.amount);
+        b.style.background = `var(--c${p.color + 1})`;
+        b.style.color = INK[p.color];
+        b.tabIndex = 0;
+        b.dataset.tip = `${p.label}: ${inr(p.amount)}, ${pctOf(p.amount)}`;
+        const t = document.createElement("span");
+        t.className = "seg-label";
+        // White on the red slot is 4.3:1; a darker chip behind the label keeps it readable (WCAG 1.4.3).
+        if (p.color === 3) t.classList.add("on-red");
+        t.textContent = pctOf(p.amount);
+        b.append(t);
+        return b;
+      })
+    );
+    bar.setAttribute("aria-label", `Split of the replacement cost: ${parts.map((p) => `${p.label} ${pctOf(p.amount)}`).join(", ")}`);
+    legend.replaceChildren(
+      ...parts.map((p) => {
+        const li = document.createElement("li");
+        const sw = document.createElement("span");
+        sw.className = "sw";
+        sw.style.background = `var(--c${p.color + 1})`;
+        li.append(sw, document.createTextNode(p.label));
+        return li;
+      })
+    );
+    requestAnimationFrame(() =>
+      bar.querySelectorAll<HTMLElement>(".seg-part").forEach((b) => {
+        const t = b.firstElementChild as HTMLElement;
+        t.hidden = false;
+        t.hidden = t.offsetWidth + 10 > b.clientWidth;
+      })
+    );
+  }
+
+  function wireTips(host: HTMLElement) {
+    const tip = host.querySelector<HTMLElement>(".tip")!;
+    const show = (el: HTMLElement, x?: number) => {
+      tip.textContent = el.dataset.tip ?? "";
+      tip.hidden = false;
+      const hb = host.getBoundingClientRect();
+      const eb = el.getBoundingClientRect();
+      const cx = (x ?? eb.left + eb.width / 2) - hb.left;
+      tip.style.left = `${Math.max(0, Math.min(hb.width - tip.offsetWidth, cx - tip.offsetWidth / 2))}px`;
+      tip.style.top = `${eb.top - hb.top - tip.offsetHeight - 8}px`;
+    };
+    const hide = () => (tip.hidden = true);
+    host.addEventListener("pointermove", (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+      if (el && host.contains(el)) show(el, e.clientX);
+      else hide();
+    });
+    host.addEventListener("pointerleave", hide);
+    host.addEventListener("focusin", (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+      if (el) show(el);
+    });
+    host.addEventListener("focusout", hide);
+  }
+  if (seg) wireTips(seg);
+
+  bindCalculator("attrition-cost-calculator", (v) => {
+    const ctc = v.num("ctc");
+    const r = attritionCost({
+      annualCtc: ctc,
+      workingDays: v.num("days"),
+      vacancyDays: v.num("vacancy"),
+      vacancyLossPct: v.num("loss"),
+      agencyFeePct: v.num("fee"),
+      otherHiringCost: v.num("otherHire"),
+      hours: v.num("hours"),
+      hourlyCost: v.num("hourly"),
+      onboardingCost: v.num("onboard"),
+      rampMonths: v.num("ramp"),
+      rampProductivityPct: v.num("prod"),
+      leaversPerYear: v.num("leavers")
+    });
+    if (!r.ok) {
+      if (seg) seg.hidden = true;
+      return { outputs: { total: "₹0", multiple: "" }, message: r.message };
+    }
+    // Colour follows the cost type, not its rank, so a part keeps its colour when values change.
+    const parts = r.parts.map((p, i) => ({ label: p.label, amount: p.amount, color: i })).filter((p) => p.amount > 0);
+    if (seg) {
+      seg.hidden = parts.length === 0;
+      if (parts.length) drawSeg(seg, parts, r.total);
+    }
+    const by = Object.fromEntries(r.parts.map((p) => [p.id, p.amount]));
+    const monthly = ctc / 12;
+    const lines: CalcLine[] = [
+      { label: "Empty seat", value: inr(by.vacancy), note: `${num(v.num("vacancy"), 1)} days × ${inr(r.dailyValue)} a day × ${num(v.num("loss"), 1)}% not covered` },
+      { label: "Hiring fees and costs", value: inr(by.hiring), note: `${num(v.num("fee"), 2)}% of CTC + ${inr(Math.max(0, v.num("otherHire")))} other costs` },
+      { label: "Interview and handover time", value: inr(by.time), note: `${num(v.num("hours"), 1)} hours × ${inr(Math.max(0, v.num("hourly")))}` },
+      { label: "Onboarding and training", value: inr(by.onboarding) },
+      { label: "Ramp-up to full output", value: inr(by.ramp), note: `${num(v.num("ramp"), 1)} months × ${inr(monthly)} × ${num(100 - v.num("prod"), 1)}% below full output` },
+      { label: "Cost per leaver", value: inr(r.total), strong: true },
+      ...(r.yearly !== null ? [{ label: `For ${num(v.num("leavers"), 1)} leavers a year`, value: inr(r.yearly), note: "Cost per leaver × leavers" }] : [])
+    ];
+    const pos = (n: number) => Math.max(0, n);
+    const working: CalcStep[] = [
+      { label: "A day's value", formula: `${inr(ctc)} ÷ ${num(v.num("days"), 0)} working days`, result: inr(r.dailyValue) },
+      { label: "Empty seat", formula: `${num(pos(v.num("vacancy")), 1)} days × ${inr(r.dailyValue)} × ${num(v.num("loss"), 1)}% not covered`, result: inr(by.vacancy) },
+      { label: "Hiring fees and costs", formula: `${inr(ctc)} × ${num(v.num("fee"), 2)}% + ${inr(pos(v.num("otherHire")))}`, result: inr(by.hiring) },
+      { label: "Interview and handover time", formula: `${num(pos(v.num("hours")), 1)} hours × ${inr(pos(v.num("hourly")))}`, result: inr(by.time) },
+      { label: "Onboarding and training", formula: "", result: inr(by.onboarding), note: "The amount you entered" },
+      { label: "Ramp-up to full output", formula: `${inr(monthly)} × ${num(pos(v.num("ramp")), 1)} months × ${num(100 - v.num("prod"), 1)}% below full output`, result: inr(by.ramp) },
+      { label: "Cost per leaver", formula: r.parts.map((p) => inr(p.amount)).join(" + "), result: inr(r.total) },
+      ...(r.yearly !== null ? [{ label: `For ${num(v.num("leavers"), 1)} leavers a year`, formula: `${inr(r.total)} × ${num(v.num("leavers"), 1)}`, result: inr(r.yearly) }] : [])
+    ];
+    return {
+      working,
+      outputs: {
+        total: inr(r.total),
+        multiple: `About ${num(r.multipleOfCtc, 2)} × the annual CTC, or ${num(r.monthsOfCtc, 1)} months of CTC, each time someone in this role leaves.`
+      },
+      lines,
+      notes: [
+        "This counts costs you can estimate. Lost clients, delayed projects and pressure on the team are real too; add them only where you can put a number on them.",
+        "Use the result to compare with what keeping people would cost: a retention bonus, a pay correction or a better manager."
+      ]
+    };
+  });
+</script>
+
+<style>
+  .hint {
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+  .sep + .sep {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .block {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    display: grid;
+    gap: 0.85rem;
+  }
+  .block legend {
+    padding: 0;
+    margin-bottom: 0.6rem;
+    font-weight: 650;
+    font-size: var(--fs-sm);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  @media (max-width: 480px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+  .seg {
+    position: relative;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .seg-title {
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .seg-bar {
+    display: flex;
+    gap: 2px;
+    height: 28px;
+  }
+  .seg :global(.seg-part) {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 0.4rem;
+    border-radius: 4px;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: default;
+    transition: filter 150ms;
+  }
+  .seg :global(.seg-label.on-red) {
+    padding: 0 0.2rem;
+    border-radius: 3px;
+    background: rgb(17 20 58 / 0.3);
+  }
+  .seg :global(.seg-part:hover),
+  .seg :global(.seg-part:focus-visible) {
+    filter: brightness(1.08);
+  }
+  .seg :global(.seg-part:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .seg-legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.9rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .seg-legend :global(li) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .seg-legend :global(.sw) {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+  }
+  .tip {
+    position: absolute;
+    z-index: 5;
+    max-width: 18rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--r-sm);
+    background: var(--ink);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    line-height: 1.35;
+    pointer-events: none;
+    box-shadow: var(--shadow-float);
+  }
+  @media print {
+    .tip {
+      display: none;
+    }
+  }
+</style>

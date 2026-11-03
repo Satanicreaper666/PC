@@ -1,0 +1,731 @@
+---
+import Icon from "../ui/Icon.astro";
+import PenTick from "../marks/PenTick.astro";
+import { renderTemplate } from "../../lib/template";
+import type { Tool } from "../../lib/library";
+import { PROFILE_FIELDS, profileKeyFor } from "../../scripts/profile";
+import { nameFieldOf, personSlots } from "../../scripts/people";
+
+/** Anything with a body and fields can be a template: a toolkit entry, or a JD built by src/components/jds. */
+export interface TemplateSource {
+  id: string;
+  body?: string;
+  data: Pick<Tool["data"], "title" | "kind" | "fields">;
+}
+interface Props {
+  entry: TemplateSource;
+}
+const { entry } = Astro.props;
+const fields = entry.data.fields;
+const html = renderTemplate(entry.body ?? "", fields);
+const groups = Array.from(new Set(fields.map((f) => f.group ?? "Details")));
+const ids = new Set(fields.map((f) => f.id));
+// Letters an employee writes in their own name (a resignation, a leave request) never go on the company's letterhead.
+const voice = ids.has("your_name") && !ids.has("signatory_name") ? "employee" : "company";
+const hasProfile = fields.some((f) => profileKeyFor(f.id));
+// Which fields hold a person's details (name, role, joining date, CTC…), so a recent person can fill them.
+const slots = personSlots(fields);
+const nameField = nameFieldOf(slots);
+const personGroup = nameField ? (fields.find((f) => f.id === nameField)?.group ?? "Details") : null;
+const autocomplete: Record<string, string> = { company: "organization", company_address: "street-address" };
+---
+
+<div class="tpl" data-template={entry.id} data-title={entry.data.title} data-kind={entry.data.kind} data-voice={voice} data-people={JSON.stringify(slots)} data-name-field={nameField}>
+  <div class="drafts" role="group" aria-label="Drafts of this document" data-drafts data-print="hide">
+    <div class="drafts-row">
+      <label class="drafts-label" for="tpl-draft-select"><Icon name="file-text" size={16} /> Draft</label>
+      <select class="control drafts-select" id="tpl-draft-select" data-draft-select>
+        <option value="">Draft 1</option>
+      </select>
+      <div class="drafts-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-draft-act="saveas"><Icon name="copy" size={16} /> Save as new draft</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-draft-act="blank"><Icon name="plus" size={16} /> Start a blank draft</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-draft-act="rename"><Icon name="edit" size={16} /> Rename</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-draft-act="delete"><Icon name="x" size={16} /> Delete</button>
+      </div>
+      <p class="drafts-saved" data-draft-saved></p>
+    </div>
+    <form class="panel" data-draft-form hidden>
+      <div class="field">
+        <label class="field-label" for="tpl-draft-name" data-draft-form-label>Name of the new draft</label>
+        <input class="control" id="tpl-draft-name" data-draft-name maxlength="80" autocomplete="off" aria-describedby="tpl-draft-name-help" />
+        <span class="field-help" id="tpl-draft-name-help" data-draft-form-help>For example the candidate's name. Leave it empty to call the draft after the person in it.</span>
+      </div>
+      <div class="panel-actions">
+        <button class="btn btn-sm" type="submit" data-draft-form-ok>Save draft</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-draft-cancel>Cancel</button>
+      </div>
+    </form>
+    <div class="panel" data-draft-confirm hidden>
+      <p data-draft-confirm-text></p>
+      <div class="panel-actions">
+        <button class="btn btn-sm" type="button" data-draft-delete>Delete draft</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-draft-cancel>Keep it</button>
+      </div>
+    </div>
+    <p class="drafts-status" role="status" aria-live="polite" data-draft-status></p>
+  </div>
+
+  <div class="fields" data-print="hide">
+    <div class="fields-head">
+      <p class="h">Fill in the details</p>
+      <p class="tiny muted">Your text stays in this browser. Nothing is sent anywhere.</p>
+    </div>
+
+    {
+      hasProfile && voice === "company" && (
+        <div class="co" role="group" aria-labelledby="co-kicker" data-co>
+          <p class="co-kicker" id="co-kicker">
+            <Icon name="building" size={15} /> Your company details
+          </p>
+          <div class="co-view" data-co-view>
+            <figure class="lh-swatch" data-lh-swatch hidden>
+              <img data-lh-thumb alt="Your letterhead logo" />
+              <figcaption class="visually-hidden">Letterhead preview</figcaption>
+            </figure>
+            <p class="co-name" data-co-name>
+              Not saved yet
+            </p>
+            <div class="co-ruled">
+              <ul class="co-lines" data-co-lines />
+              <p class="co-empty" data-co-empty>
+                Save the company name, address, signatory and HR contact once. Every letter and form then fills them in.
+              </p>
+            </div>
+            <p class="co-filled" data-co-filled hidden>
+              <PenTick />
+              <span data-co-filled-text />
+            </p>
+            <p class="co-diff" data-co-diff hidden />
+            <div class="co-actions">
+              <button class="btn btn-secondary btn-sm" type="button" data-co-act="save">
+                <Icon name="check" size={16} /> Save as my company details
+              </button>
+              <button class="btn btn-secondary btn-sm" type="button" data-co-act="use" hidden>
+                <Icon name="refresh" size={16} /> Use saved details here
+              </button>
+              <button class="btn btn-ghost btn-sm" type="button" data-co-act="edit" hidden>
+                <Icon name="edit" size={16} /> Edit details
+              </button>
+              <label class="btn btn-ghost btn-sm file-btn">
+                <Icon name="upload" size={16} /> <span data-lh-label>Add a logo</span>
+                <input class="file-input" type="file" accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml" data-lh-file aria-describedby="co-logo-help" />
+              </label>
+            </div>
+            <p class="field-help co-foot">
+              <span id="co-logo-help">Letterhead logo: PNG, JPG or SVG, up to 200 KB. Kept on this device only.</span>
+              <button class="text-btn" type="button" data-co-act="remove-logo" hidden>
+                Remove logo
+              </button>
+              <button class="text-btn" type="button" data-co-act="forget" hidden>
+                Forget company details
+              </button>
+            </p>
+          </div>
+
+          <form class="co-edit" data-co-form hidden aria-label="Edit your company details">
+            {PROFILE_FIELDS.map((f) => (
+              <div class="field">
+                <label class="field-label" for={`co-in-${f.key}`}>
+                  {f.label}
+                  {f.key === "company" ? <span class="req" aria-hidden="true">*</span> : <span class="opt-tag">optional</span>}
+                </label>
+                {f.key === "company_address" ? (
+                  <textarea class="control" id={`co-in-${f.key}`} rows="3" data-co-in={f.key} autocomplete={autocomplete[f.key]} />
+                ) : (
+                  <input class="control" id={`co-in-${f.key}`} data-co-in={f.key} required={f.key === "company"} autocomplete={autocomplete[f.key] ?? "off"} placeholder={f.key === "hr_contact" ? "Name, role and email" : undefined} />
+                )}
+              </div>
+            ))}
+            <div class="panel-actions">
+              <button class="btn btn-sm" type="submit">
+                <Icon name="check" size={16} /> Save company details
+              </button>
+              <button class="btn btn-secondary btn-sm" type="button" data-co-cancel>
+                Cancel
+              </button>
+            </div>
+          </form>
+
+          <div class="panel co-confirm" data-co-confirm hidden>
+            <p>Forget your company details and logo on this device? Letters you have already filled in keep their text.</p>
+            <div class="panel-actions">
+              <button class="btn btn-sm" type="button" data-co-forget>
+                Forget them
+              </button>
+              <button class="btn btn-secondary btn-sm" type="button" data-co-cancel>
+                Keep them
+              </button>
+            </div>
+          </div>
+          <p class="co-status" role="status" aria-live="polite" data-co-status />
+        </div>
+      )
+    }
+    {hasProfile && voice === "employee" && <p class="co-note" role="status" aria-live="polite" data-co-note />}
+
+    <form class="tpl-form" data-tpl-form aria-label="Fill in the template">
+      {
+        groups.map((g) => (
+          <fieldset>
+            <legend>{g}</legend>
+            {g === personGroup && (
+              <div class="pick" data-pick hidden>
+                <label class="field-label" for="tpl-pick-select">
+                  <Icon name="people" size={16} /> Fill from a recent person
+                </label>
+                <div class="pick-row">
+                  <select class="control" id="tpl-pick-select" data-pick-select aria-describedby="tpl-pick-help">
+                    <option value="">Choose a person</option>
+                  </select>
+                  <button class="btn btn-secondary btn-sm" type="button" data-pick-fill>
+                    <Icon name="user-plus" size={16} /> Fill in
+                  </button>
+                </div>
+                <p class="field-help" id="tpl-pick-help">
+                  People from your other letters and forms, kept on this device only.{" "}
+                  <button class="text-btn" type="button" data-pick-forget>
+                    Forget them
+                  </button>
+                </p>
+                <p class="pick-status" role="status" aria-live="polite" data-pick-status />
+              </div>
+            )}
+            {fields
+              .filter((f) => (f.group ?? "Details") === g)
+              .map((f) => (
+                <label class="field">
+                  <span class="field-label">
+                    {f.label}
+                    {f.required ? <span class="req" aria-hidden="true">*</span> : <span class="opt-tag">optional</span>}
+                  </span>
+                  {f.type === "textarea" ? (
+                    <textarea class="control" name={f.id} data-f data-profile={profileKeyFor(f.id)} rows="4" placeholder={f.placeholder} required={f.required}>{f.default ?? ""}</textarea>
+                  ) : f.type === "select" ? (
+                    <select class="control" name={f.id} data-f required={f.required}>
+                      <option value="">Choose…</option>
+                      {(f.options ?? []).map((o) => (
+                        <option value={o} selected={o === f.default}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      class="control"
+                      name={f.id}
+                      data-f
+                      data-profile={profileKeyFor(f.id)}
+                      type={f.type === "money" || f.type === "number" ? "text" : f.type}
+                      inputmode={f.type === "money" || f.type === "number" ? "decimal" : undefined}
+                      placeholder={f.placeholder}
+                      value={f.default}
+                      required={f.required}
+                      autocomplete="off"
+                    />
+                  )}
+                  {f.help && <span class="field-help">{f.help}</span>}
+                </label>
+              ))}
+          </fieldset>
+        ))
+      }
+      <p class="tiny muted" data-tpl-status role="status" aria-live="polite"></p>
+      <button class="btn btn-ghost btn-sm" type="button" data-tpl-reset><Icon name="refresh" size={16} /> Clear all fields</button>
+    </form>
+  </div>
+
+  <div class="doc-col">
+    <div class="actions" data-print="hide">
+      <button class="btn btn-sm" type="button" data-tpl-docx><Icon name="word" size={16} /><span data-label>Download Word</span></button>
+      <button class="btn btn-secondary btn-sm" type="button" data-tpl-print><Icon name="printer" size={16} /><span data-label>Print or save PDF</span></button>
+      <button class="btn btn-secondary btn-sm" type="button" data-tpl-copy><Icon name="copy" size={16} /><span data-label>Copy text</span></button>
+      <p class="export-status" role="status" aria-live="polite" data-tpl-export-status></p>
+    </div>
+    <div class="sheet" role="region" aria-label="Document preview">
+      <div class="letterhead" data-letterhead hidden>
+        <img data-letterhead-img alt="Company logo" />
+      </div>
+      <div class="doc" data-tpl-doc set:html={html} />
+    </div>
+    <p class="tiny muted legend" data-print="hide"><span class="ph-demo">Highlighted</span> text is waiting for your details.</p>
+  </div>
+</div>
+
+<script>
+  import "../../scripts/template-engine";
+</script>
+
+<style>
+  .tpl {
+    display: grid;
+    grid-template-columns: minmax(18rem, 25rem) minmax(0, 1fr);
+    gap: 1.25rem 2rem;
+    align-items: start;
+  }
+
+  /* ---------- Drafts: a document bar across both columns ---------- */
+  .drafts {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.6rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .drafts-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+  .drafts-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .drafts-label :global(svg) {
+    color: var(--neel-600);
+  }
+  .drafts-select {
+    width: auto;
+    min-width: 13rem;
+    max-width: 22rem;
+    min-height: 2.25rem;
+    padding-block: 0.3rem;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+  .drafts-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem;
+  }
+  .drafts-saved {
+    margin-left: auto;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .drafts-saved.bad,
+  .co-status.bad,
+  .pick-status.bad,
+  .export-status.bad {
+    color: var(--bad);
+    font-weight: 560;
+  }
+  .drafts-status:empty,
+  .co-status:empty,
+  .pick-status:empty,
+  .export-status:empty,
+  .co-note:empty {
+    display: none;
+  }
+  .drafts-status,
+  .export-status {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .panel {
+    display: grid;
+    gap: 0.7rem;
+    max-width: 34rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+  }
+  .panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* ---------- The fields panel ---------- */
+  .fields {
+    position: sticky;
+    top: calc(var(--header-h) + 1rem);
+    max-height: calc(100vh - var(--header-h) - 2rem);
+    overflow-y: auto;
+    display: grid;
+    gap: 1.1rem;
+    padding: 1.1rem 1.1rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--canvas);
+  }
+  .tpl-form {
+    display: grid;
+    gap: 1rem;
+  }
+  .h {
+    font-weight: 650;
+  }
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    display: grid;
+    gap: 0.85rem;
+  }
+  legend {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+    margin-bottom: 0.5rem;
+    padding: 0;
+  }
+  .control {
+    background-color: var(--paper);
+  }
+  .req {
+    color: var(--bad);
+    margin-left: 0.15rem;
+  }
+  .opt-tag {
+    margin-left: 0.4rem;
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  /* ---------- Company details: an index card, ruled, with a turmeric rule under the headword ---------- */
+  .co {
+    --rule: 1.45rem;
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.8rem 1rem 0.95rem;
+    border-radius: 3px;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1.5px 2px 0 rgb(17 20 58 / 0.07),
+      4px 10px 18px -10px rgb(17 20 58 / 0.22);
+  }
+  .co-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .co {
+    position: relative;
+  }
+  .co-view {
+    display: grid;
+    gap: 0.55rem;
+  }
+  .co-name {
+    padding-bottom: 0.3rem;
+    border-bottom: 2px solid var(--haldi-500);
+    font-weight: 760;
+    font-size: var(--fs-md);
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+    overflow-wrap: anywhere;
+  }
+  /* Room for the letterhead swatch, pinned in the card's top corner. */
+  .co-view:has(.lh-swatch:not([hidden])) .co-name {
+    padding-right: 7.25rem;
+  }
+  .co-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.9rem;
+  }
+  .co-foot > span {
+    flex-basis: 100%;
+  }
+  .co-foot .text-btn {
+    font-size: var(--fs-xs);
+  }
+  .co-name.empty {
+    color: var(--ink-3);
+    font-weight: 620;
+  }
+  .co-ruled {
+    background-image: repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), rgb(76 86 190 / 0.14) calc(var(--rule) - 1px) var(--rule));
+    font-size: var(--fs-sm);
+    line-height: var(--rule);
+    color: var(--ink-2);
+  }
+  .co-lines {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-wrap: anywhere;
+  }
+  .co-lines:empty {
+    display: none;
+  }
+  .co-lines :global(b) {
+    font-weight: 620;
+    color: var(--ink);
+  }
+  .co-filled {
+    display: flex;
+    gap: 0.4rem;
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .co-filled :global(.pen) {
+    margin-top: 0.15em;
+  }
+  .co-diff {
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--warn);
+  }
+  .co-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .co-edit {
+    display: grid;
+    gap: 0.8rem;
+  }
+  .co-status,
+  .pick-status,
+  .co-note {
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .co-note {
+    padding: 0.55rem 0.8rem;
+    border-radius: var(--r);
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
+  /* The letterhead swatch: the top of a sheet of paper, with the logo where it will print. */
+  .lh-swatch {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.9rem;
+    margin: 0;
+    width: 6.5rem;
+    padding: 0.45rem 0.55rem 0.9rem;
+    background:
+      linear-gradient(var(--line), var(--line)) 0.55rem calc(100% - 0.55rem) / 60% 2px no-repeat,
+      linear-gradient(var(--line), var(--line)) 0.55rem calc(100% - 0.3rem) / 45% 2px no-repeat,
+      var(--paper);
+    border-radius: 2px;
+    filter: var(--paper-2);
+    clip-path: polygon(0 0, calc(100% - 0.7rem) 0, 100% 0.7rem, 100% 100%, 0 100%);
+  }
+  .lh-swatch::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0.7rem;
+    height: 0.7rem;
+    background: linear-gradient(225deg, transparent 50%, var(--neel-100) 50%);
+  }
+  .lh-swatch img {
+    display: block;
+    max-width: 100%;
+    max-height: 1.6rem;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: left center;
+  }
+  /* The file input stays focusable for keyboards; its label is the visible button. */
+  .file-btn {
+    position: relative;
+  }
+  .file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .file-btn:has(.file-input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Fill from a recent person ---------- */
+  .pick {
+    display: grid;
+    gap: 0.4rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: var(--r);
+    border: 1px dashed var(--neel-300);
+    background: var(--neel-50);
+  }
+  .pick .field-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .pick .field-label :global(svg) {
+    color: var(--neel-600);
+  }
+  .pick-row {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .pick-row .control {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.25rem;
+    padding-block: 0.3rem;
+    font-size: var(--fs-sm);
+  }
+  .text-btn {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  /* ---------- The document ---------- */
+  .doc-col {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .sheet {
+    min-width: 0;
+    overflow-x: auto;
+    padding: clamp(1.5rem, 4vw, 3.25rem);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: var(--shadow-lift);
+    font-size: 1rem;
+    line-height: 1.7;
+    min-height: 32rem;
+  }
+  .letterhead {
+    padding-bottom: 0.9rem;
+    margin-bottom: 1.4rem;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .letterhead img {
+    display: block;
+    max-width: 220px;
+    max-height: 56px;
+    object-fit: contain;
+    object-position: left center;
+  }
+  .doc :global(> * + *) {
+    margin-top: 0.85em;
+  }
+  .sheet :global(h1) {
+    font-size: 1.45rem;
+  }
+  .sheet :global(h2) {
+    font-size: 1.15rem;
+    margin-top: 1.4em;
+  }
+  .sheet :global(h3) {
+    font-size: 1rem;
+    margin-top: 1.2em;
+  }
+  .sheet :global(ul),
+  .sheet :global(ol) {
+    padding-left: 1.3rem;
+  }
+  .sheet :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .sheet :global(th),
+  .sheet :global(td) {
+    border: 1px solid var(--line-strong);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  /* Details still to fill in carry a yellow highlighter swipe, like a draft marked up by hand. */
+  .sheet :global(.ph),
+  .ph-demo {
+    background-image: linear-gradient(100deg, color-mix(in srgb, var(--hl-yellow) 55%, transparent) 0, var(--hl-yellow) 0.3em, color-mix(in srgb, var(--hl-yellow) 85%, transparent) 60%, var(--hl-yellow) calc(100% - 0.3em), color-mix(in srgb, var(--hl-yellow) 50%, transparent));
+    background-size: 100% 0.8em;
+    background-position: 0 90%;
+    background-repeat: no-repeat;
+    border-radius: 0.3em 0.1em 0.35em 0.1em;
+    padding: 0 0.2em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .sheet :global(.ph.filled) {
+    background: none;
+    padding: 0;
+  }
+  .sheet :global(.ph.unknown) {
+    background-image: linear-gradient(var(--hl-pink), var(--hl-pink));
+    color: var(--bad);
+  }
+  @media (max-width: 960px) {
+    .tpl {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .fields {
+      position: static;
+      max-height: none;
+    }
+  }
+  @media (max-width: 560px) {
+    .drafts-select {
+      flex: 1;
+      min-width: 0;
+      max-width: none;
+    }
+    .drafts-saved {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+  @media print {
+    .tpl {
+      display: block;
+    }
+    .sheet {
+      border: 0;
+      box-shadow: none;
+      padding: 0;
+      min-height: 0;
+    }
+    .letterhead {
+      border-bottom-color: #999;
+    }
+    .letterhead img {
+      max-height: 18mm;
+    }
+    .sheet :global(.ph) {
+      background: none;
+      box-shadow: none;
+    }
+    .sheet :global(.ph:not(.filled)) {
+      display: inline-block;
+      min-width: 8em;
+      border-bottom: 1px solid #000;
+      color: transparent;
+    }
+  }
+</style>

@@ -1,0 +1,148 @@
+---
+/**
+ * A checklist as a warp thread: one knot per section, its area in proportion
+ * to the number of steps in that section, the count inside it. The total sits
+ * beside the thread.
+ */
+import type { StepSection } from "./glance";
+interface Props {
+  sections: StepSection[];
+  total: number;
+}
+const { sections, total } = Astro.props;
+const MAX = 6;
+const shown = sections.slice(0, MAX);
+const more = sections.length - shown.length;
+const biggest = Math.max(1, ...sections.map((s) => s.count));
+/** Area follows the count: the diameter grows with its square root, from 1.1rem to 1.9rem. */
+const size = (n: number) => (1.1 + Math.sqrt(n / biggest) * 0.8).toFixed(3);
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+---
+
+<div class="cl">
+  <p class="glance-label" id="glance-kind">Steps in each section</p>
+  <div class="cols">
+    <div>
+      <ol class="steps" aria-labelledby="glance-kind">
+        {
+          shown.map((s) => (
+            <li style={`--d:${size(s.count)}rem`}>
+              <span class="k" aria-hidden="true">
+                {s.count}
+              </span>
+              <span class="t">
+                {s.title}
+                <span class="visually-hidden">: {plural(s.count, "step")}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+      {more > 0 && <p class="more">+{more} more {more === 1 ? "section" : "sections"}</p>}
+    </div>
+    <div class="total">
+      <p><strong class="num">{total}</strong> <span class="unit">{total === 1 ? "step" : "steps"}</span></p>
+      <p class="sub">in {plural(sections.length, "section")}</p>
+      <p class="note">Tick them off as you go; the ticks stay in this browser.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cl {
+    --col: 2.25rem; /* the knot column */
+    --row: 2.35rem;
+  }
+  .glance-label {
+    margin-bottom: 0.4rem;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 9.5rem;
+    gap: 1.25rem;
+    align-items: center;
+  }
+  .steps {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+  /* the warp thread, through every knot */
+  .steps::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--col) / 2 - 3px);
+    top: calc(var(--row) / 2);
+    bottom: calc(var(--row) / 2);
+    width: 6px;
+    border-radius: 3px;
+    background: var(--neel-200);
+  }
+  .steps li {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--col) minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.6rem;
+    min-height: var(--row);
+  }
+  .k {
+    justify-self: center;
+    display: grid;
+    place-items: center;
+    width: var(--d);
+    height: var(--d);
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--neel-600);
+    box-shadow: 0 0 0 3px var(--canvas);
+    color: var(--neel-800);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .t {
+    font-size: 0.875rem;
+    font-weight: 560;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  .more {
+    margin-top: 0.1rem;
+    padding-left: calc(var(--col) + 0.6rem);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .total {
+    padding-left: 1.1rem;
+    border-left: 1px solid var(--line-strong);
+    color: var(--ink-2);
+  }
+  .num {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    font-stretch: 104%;
+    line-height: 1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .unit {
+    font-size: var(--fs-md);
+    font-weight: 620;
+    color: var(--ink);
+  }
+  .sub {
+    margin-top: 0.15rem;
+    font-size: var(--fs-sm);
+  }
+  .note {
+    margin-top: 0.7rem;
+    font-size: var(--fs-xs);
+    line-height: 1.45;
+    color: var(--ink-3);
+  }
+</style>

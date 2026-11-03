@@ -1,0 +1,124 @@
+---
+title: Professional tax calculator
+description: Monthly and yearly professional tax on salary for Karnataka, Maharashtra, Chennai, Telangana, Andhra Pradesh, West Bengal and Gujarat, with the new West Bengal slabs.
+kind: calculator
+calculator: professional-tax
+glance:
+  inputs: ["State", "Monthly gross salary", "Employee's gender", "Financial year"]
+  output: "Professional tax"
+  formula: "Yearly tax = slab amount × 12 + any February top-up"
+stage: pay
+audiences: [hr, employees, founders]
+order: 40
+checked: 2026-11-02
+useWhen: You need the professional tax to deduct from a salary, or want to check the amount on a payslip, for an employee working in one of the states covered.
+tips:
+  - "Professional tax follows the state where the employee works, not where the company is registered."
+  - "In Karnataka and Maharashtra the February deduction is <strong>₹300</strong>, so the year adds up to ₹2,500."
+  - "West Bengal changed its slabs from <strong>October 2026</strong> salaries. Odisha stopped levying professional tax from <strong>1 April 2026</strong>."
+sources:
+  - title: Karnataka Tax on Professions (Amendment) Act, 2025 (Act 33 of 2025)
+    url: https://taxguru.in/wp-content/uploads/2025/04/Karnataka-PT-Amendment-Act-2025_compressed-1-4.pdf
+    publisher: Government of Karnataka (copy)
+  - title: "Karnataka professional tax amendment, 2023: ₹25,000 threshold"
+    url: https://www.khaitanco.com/thought-leaderships/Karnataka-Professional-Tax-Amendment-2023-Major-Changes-Brought-in-Effect
+    publisher: Khaitan & Co
+  - title: Maharashtra profession tax rate schedule
+    url: https://cavirtual.webtel.in/detail/15388.aspx
+    publisher: Webtel (reproduction)
+  - title: "Maharashtra professional tax amendment, 2023: women up to ₹25,000 exempt"
+    url: https://khaitanco.com/thought-leaderships/Maharashtra-Professional-Tax-Amendment-2023-Key-Takeaways
+    publisher: Khaitan & Co
+  - title: Revision of Greater Chennai Corporation professional tax, circular of 20 January 2025 (copy)
+    url: https://akriviahcm.com/resources/wp-content/uploads/2025/02/Revision-of-Chennai-Corporation-Professional-Tax-1.pdf
+    publisher: Greater Chennai Corporation
+  - title: West Bengal amends the professional tax schedule (Notification 1607-F.T.)
+    url: https://teamleaseregtech.com/updates/article/60103/west-bengal-finance-department-amendment-of-professional-tax-schedule/
+    publisher: TeamLease RegTech
+  - title: West Bengal P-tax schedule from 1 April 2014
+    url: https://comtax.wb.gov.in/Ptax-Schedule-New_(w.e.f._1-4-2014).pdf
+    publisher: Directorate of Commercial Taxes, West Bengal
+  - title: Rate of profession tax
+    url: https://commercialtax.gujarat.gov.in/vatwebsite/download/schedule/Rate_of_Profession_Tax.pdf
+    publisher: Commercial Tax Department, Gujarat
+  - title: "Professional tax: state-wise slabs (Telangana and Andhra Pradesh)"
+    url: https://zdblogs.zohocorp.com/payroll/academy/in/taxes-and-compliance/professional-tax-rules.html
+    publisher: Zoho Payroll
+  - title: Odisha repeals professional tax from 1 April 2026
+    url: https://www.scconline.com/blog/post/2026/04/23/odisha-repeals-levy-of-professional-tax-effective-from-1-april-2026/
+    publisher: SCC Online
+  - title: Professional tax slab rates 2026-27 (states without professional tax)
+    url: https://hrone.cloud/blog/professional-tax-slab-rates-2026-27/
+    publisher: HROne
+related: [toolkit/take-home-salary-calculator, handbooks/labour-law/08-state-specific-rules, handbooks/tds/02-salary-tds, glossary/professional-tax]
+faq:
+  - q: How much professional tax is deducted in Karnataka?
+    a: Nothing below ₹25,000 a month. From ₹25,000 it is ₹200 a month and ₹300 in February, ₹2,500 a year.
+  - q: Is professional tax deducted in Delhi?
+    a: No. Delhi does not levy professional tax on salaries, and nor do Haryana, Rajasthan, Uttar Pradesh, Uttarakhand, Himachal Pradesh or Jammu and Kashmir, as reported by payroll sources.
+  - q: What are the new West Bengal professional tax slabs?
+    a: From October 2026 salaries, nil up to ₹20,000 a month, ₹100 up to ₹30,000, ₹140 up to ₹50,000, ₹170 up to ₹1 lakh and ₹208 above ₹1 lakh.
+  - q: Do women pay professional tax in Maharashtra?
+    a: Women earning up to ₹25,000 a month are exempt. Above that they pay ₹200 a month and ₹300 in February.
+keywords: [professional tax calculator, professional tax slab karnataka, professional tax maharashtra, west bengal professional tax new slab 2026, professional tax chennai, pt deduction from salary]
+---
+
+## How it is worked out
+
+<Figure title="Professional tax for a year" caption="Find the slab for the monthly salary, then add up the months. Two states charge more in February.">
+  <Formula
+    result={{ value: "Yearly professional tax", label: "April to March" }}
+    parts={[{ value: "Slab amount", label: "for the monthly salary" }, { op: "×" }, { value: "12 months", label: "or two half-years in Chennai" }, { op: "+" }, { value: "February top-up", label: "Karnataka and Maharashtra" }]}
+    example="Example: in Karnataka a salary of ₹30,000 a month pays ₹200 for 11 months and ₹300 in February, ₹2,500 in the year."
+  />
+</Figure>
+
+Professional tax is a state tax on employment. The employer deducts it from salary and pays it to the state where the employee works. Each state sets its own slabs, and a few leave it to local bodies.
+
+## Slabs by state
+
+| State | Monthly salary | Professional tax |
+| --- | --- | --- |
+| Karnataka | Below ₹25,000 | Nil |
+| | ₹25,000 and above | ₹200 a month, ₹300 in February |
+| Maharashtra | Up to ₹7,500 (women: up to ₹25,000) | Nil |
+| | Above ₹7,500 up to ₹10,000 (men) | ₹175 a month |
+| | Above ₹10,000 (women: above ₹25,000) | ₹200 a month, ₹300 in February |
+| Telangana, Andhra Pradesh | Up to ₹15,000 | Nil |
+| | Above ₹15,000 up to ₹20,000 | ₹150 a month |
+| | Above ₹20,000 | ₹200 a month |
+| Gujarat | Up to ₹12,000 | Nil |
+| | Above ₹12,000 | ₹200 a month |
+| West Bengal, from October 2026 | Up to ₹20,000 | Nil |
+| | Above ₹20,000 up to ₹30,000 | ₹100 a month |
+| | Above ₹30,000 up to ₹50,000 | ₹140 a month |
+| | Above ₹50,000 up to ₹1,00,000 | ₹170 a month |
+| | Above ₹1,00,000 | ₹208 a month |
+
+Greater Chennai Corporation charges professional tax on each half-year's salary (April to September and October to March): nil up to ₹21,000, then ₹180, ₹425, ₹930 and ₹1,025 for each band up to ₹75,000, and ₹1,250 above ₹75,000. Other Tamil Nadu local bodies set their own rates.
+
+<Figure title="West Bengal: what changed in October 2026" caption="Monthly professional tax at a few salaries, before and after the new schedule.">
+  <Compare
+    columns={["Up to September 2026", "From October 2026"]}
+    highlight={1}
+    rows={[
+      { label: "₹15,000 a month", values: ["₹110", "Nil"] },
+      { label: "₹25,000 a month", values: ["₹130", "₹100"] },
+      { label: "₹35,000 a month", values: ["₹150", "₹140"] },
+      { label: "₹60,000 a month", values: ["₹200", "₹170"] },
+      { label: "₹1,20,000 a month", values: ["₹200", "₹208"] }
+    ]}
+  />
+</Figure>
+
+For 2026-27, someone in West Bengal earning ₹35,000 a month pays ₹150 a month from April to September and ₹140 a month from October to March, ₹1,740 for the year.
+
+## States with no professional tax
+
+Delhi, Haryana, Rajasthan, Uttar Pradesh, Uttarakhand, Himachal Pradesh and Jammu and Kashmir do not levy professional tax on salaries, as reported by payroll sources. Odisha repealed its professional tax with effect from 1 April 2026; tax for earlier months can still be recovered.
+
+<Callout type="note" title="Not covered here">
+Kerala's professional tax is set by each panchayat and municipality on half-yearly income, so one table cannot cover the state. Sources disagree on whether Goa currently levies professional tax on salaries. Several other states levy it with their own slabs. For these, check with the state's commercial tax department or the local body.
+</Callout>
+
+The tables were checked against each state's schedule, an amending Act or a reliable reproduction. For Telangana and Andhra Pradesh the official schedule could not be read, so the slabs come from payroll references; confirm them before a large payroll run.

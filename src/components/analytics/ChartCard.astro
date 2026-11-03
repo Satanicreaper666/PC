@@ -1,0 +1,39 @@
+---
+/**
+ * One dashboard chart: title, a live subtitle, optional tools, the chart,
+ * its table twin (toggle) and a caption that says how to read it.
+ * The dashboard script fills [data-plot], [data-table], [data-legend] and [data-sub].
+ */
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  id: string;
+  title: string;
+  caption: string;
+  /** Take a full row of the dashboard grid. */
+  wide?: boolean;
+}
+const { id, title, caption, wide = false } = Astro.props;
+---
+
+<figure class:list={["pa-card", { "pa-card-wide": wide }]} data-card={id} aria-labelledby={`pa-${id}-title`}>
+  <div class="pa-card-head">
+    <div class="pa-card-titles">
+      <h3 class="pa-card-title" id={`pa-${id}-title`}>{title}</h3>
+      <p class="pa-card-sub" data-sub></p>
+    </div>
+    <div class="pa-card-tools" data-print="hide">
+      <slot name="tools" />
+      <button type="button" class="btn btn-ghost btn-sm pa-table-btn" data-table-toggle aria-pressed="false" aria-controls={`pa-${id}-table`}>
+        <span class="pa-ic-table"><Icon name="list" size={16} /></span>
+        <span class="pa-ic-chart" hidden><Icon name="chart" size={16} /></span>
+        <span data-label>Show table</span>
+      </button>
+    </div>
+  </div>
+  <div class="pa-legend" data-legend hidden></div>
+  <div class="pa-plot" data-plot></div>
+  <div class="pa-table" id={`pa-${id}-table`} data-table hidden></div>
+  <p class="pa-empty" data-empty hidden></p>
+  <figcaption class="pa-cap" set:html={caption} />
+</figure>

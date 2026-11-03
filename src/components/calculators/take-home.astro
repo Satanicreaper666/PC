@@ -1,0 +1,256 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import AsAt from "./parts/AsAt.astro";
+import { PT_PICKER } from "../../lib/calc/professional-tax";
+import { ptState } from "../../data/statutory";
+
+const mhWomen = ptState("MH")?.schedules?.[0]?.women?.[1]?.min ?? 0;
+const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberFormat("en-IN").format(mhWomen)} a month.`;
+---
+
+<CalcShell id="take-home" resultLabel="Monthly in-hand pay" bars scenarioLabel="Offer {A}">
+  <Fragment slot="inputs">
+    <Num name="ctc" label="Annual CTC" prefix="₹" value="9,00,000" help="Cost to company for the year, as in the offer letter." />
+    <div class="two">
+      <Num name="basic" label="Basic pay + DA, % of CTC" value="50" suffix="%" />
+      <Num name="hra" label="HRA, % of basic" value="40" suffix="%" />
+    </div>
+    <Num
+      name="other"
+      label="Other allowances outside wages (optional)"
+      prefix="₹"
+      placeholder="0"
+      help="Monthly conveyance and similar allowances the Labour Codes leave out of wages. A special allowance counts as wages, so leave it out here: the calculator works it out as the balance."
+    />
+    <Pick
+      name="pf"
+      label="PF is worked out on"
+      options={[
+        { value: "restricted", label: "Wages up to the ceiling" },
+        { value: "actual", label: "Full wages" }
+      ]}
+      help="Most employers cap PF at the wage ceiling. Contributions above it are voluntary."
+    />
+    <Pick
+      name="grat"
+      label="Is gratuity part of the CTC?"
+      options={[
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" }
+      ]}
+      help="Many offer letters include a gratuity provision in CTC. It is paid only on exit, if eligible."
+    />
+    <Pick name="state" label="State where you work" style="select" options={PT_PICKER} value="KA" help="For professional tax." />
+    <div data-gender-field>
+      <Pick
+        name="gender"
+        label="Employee"
+        options={[
+          { value: "other", label: "Man or other" },
+          { value: "woman", label: "Woman" }
+        ]}
+        help={mhHelp}
+      />
+    </div>
+    <label class="check">
+      <input type="checkbox" name="pfin" value="1" />
+      <span>Count the employer's PF as an excluded item in the 50% test <small>(the law does not settle this)</small></span>
+    </label>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="inhand">₹0</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+<AsAt ids={["wages.halfRule", "epf.employeeRate", "epf.employerRate", "epf.wageCeiling", "esi.wageCeiling", "esi.employeeRate", "esi.employerRate", "gratuity.daysPerYear", "gratuity.divisor", "pt.karnataka", "pt.maharashtra"]} note="Professional tax for other states uses the slabs on the professional tax calculator page." />
+
+<script>
+  import { bindCalculator, inr, inrExact, num, type CalcStep } from "../../scripts/calc-kit";
+  import { computeTakeHome } from "../../lib/calc/take-home";
+  import type { Gender } from "../../lib/calc/professional-tax";
+  import { ptState, stat, statNum } from "../../data/statutory";
+  import { epfRules } from "../../lib/calc/epf";
+  import { esiRules } from "../../lib/calc/esi";
+  import { gratuityRules } from "../../lib/calc/gratuity";
+
+  const pf = epfRules();
+  const esi = esiRules();
+  const gr = gratuityRules();
+  const genderField = document.querySelector<HTMLElement>('[data-calc="take-home"] [data-gender-field]');
+  const syncGender = () => {
+    const sel = document.querySelector<HTMLSelectElement>('[data-calc="take-home"] select[name="state"]');
+    if (genderField && sel) genderField.hidden = sel.value !== "MH";
+  };
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const rs = (x: number) => inr(Math.round(x));
+
+  bindCalculator("take-home", (v) => {
+    syncGender();
+    const code = v.str("state", "KA");
+    const r = computeTakeHome({
+      ctc: v.num("ctc"),
+      basicPct: v.num("basic"),
+      hraPct: v.num("hra"),
+      otherExcluded: v.num("other"),
+      pfBasis: v.str("pf", "restricted") === "actual" ? "actual" : "restricted",
+      gratuityInCtc: v.str("grat", "yes") === "yes",
+      employerPfInTest: v.bool("pfin"),
+      state: code,
+      gender: v.str("gender", "other") as Gender
+    });
+    if (r.status !== "ok") return { outputs: { inhand: "₹0", sub: "" }, message: r.message };
+
+    const st = ptState(code);
+    const t = r.wagesTest;
+    const ptNote =
+      r.ptStatus === "none"
+        ? `${st?.name ?? "This state"} has no professional tax on salaries`
+        : r.ptStatus === "levied" && r.ptHalfYear !== null
+          ? `${inr(r.ptHalfYear)} a half-year, shown as a monthly average`
+          : r.ptStatus === "levied"
+            ? `${st?.name}${r.ptFebruary !== null ? `; ${inr(r.ptFebruary)} in February` : ""}`
+            : "Not worked out for this state";
+    const lines = [
+      { label: "Basic pay + DA", value: rs(r.basic) },
+      { label: "HRA", value: rs(r.hra) },
+      ...(r.otherExcluded > 0 ? [{ label: "Other allowances", value: rs(r.otherExcluded) }] : []),
+      { label: "Special allowance", value: rs(r.special), note: "The balance of CTC" },
+      { label: "Gross salary", value: inr(r.gross), strong: true },
+      { label: "Employee PF", value: `− ${inr(r.employeePf)}`, note: `${pf.employeeRate}% of ${rs(r.pfBase)}`, tone: "bad" as const },
+      ...(r.esiCovered ? [{ label: "Employee ESI", value: `− ${inr(r.employeeEsi)}`, note: `${esi.employeeRate}% of wages, rounded up`, tone: "bad" as const }] : []),
+      r.pt > 0 ? { label: "Professional tax", value: `− ${rs(r.pt)}`, note: ptNote, tone: "bad" as const } : { label: "Professional tax", value: "Nil", note: ptNote },
+      { label: "In-hand before income tax", value: rs(r.inHand), strong: true },
+      { label: "Employer PF", value: inr(r.employerPf), note: "Part of CTC, paid into PF and pension" },
+      ...(r.esiCovered ? [{ label: "Employer ESI", value: inr(r.employerEsi), note: `${esi.employerRate}% of wages, rounded up` }] : []),
+      ...(r.gratuityProvision > 0 ? [{ label: "Gratuity provision", value: rs(r.gratuityProvision), note: `${gr.daysPerYear} ÷ ${gr.divisor} of a month's wages a year, paid on exit if eligible` }] : []),
+      { label: "Monthly CTC", value: rs(r.monthlyCtc), strong: true },
+      {
+        label: "Wages under the Labour Codes",
+        value: rs(t.wages),
+        note: t.addBack > 0 ? `Includes ${rs(t.addBack)} added back by the 50% rule` : `Excluded allowances are ${pct(t.excludedShare)} of pay`
+      }
+    ];
+    const notes = [
+      t.addBack > 0
+        ? `50% rule: HRA and other excluded allowances are ${pct(t.excludedShare)} of total pay. The ${rs(t.addBack)} above half is added back to wages, so PF, ESI and gratuity are worked out on ${rs(t.wages)}.`
+        : `50% rule: HRA and other excluded allowances are ${pct(t.excludedShare)} of total pay, within the limit, so nothing is added back to wages.`,
+      "Income tax (TDS) is not deducted here. See the TDS handbook for how tax on salary works.",
+      `Employer PF admin and EDLI charges (${inr(r.admin + r.edli)} a month) are not included; some employers add them to CTC.`
+    ];
+    if (r.esiCovered) notes.push(`ESI applies because wages are ${inr(r.esiCeiling)} or less. It applies in covered establishments, usually those with ${stat("esi.coverageEmployees").display} or more.`);
+    if (r.ptStatus === "not-covered" || r.ptStatus === "unknown") notes.push("Professional tax for this state is not worked out here; check its schedule.");
+
+    // How this was worked out: the same arithmetic as lib/calc/take-home.ts, with its numbers.
+    const x = inrExact;
+    const pc = (n: number) => `${num(n, 2)}%`;
+    const half = statNum("wages.halfRule");
+    const ctc = v.num("ctc");
+    const capped = r.pfBase < t.wages;
+    const working: CalcStep[] = [
+      { label: "Monthly CTC", formula: `${inr(ctc)} ÷ 12`, result: x(r.monthlyCtc) },
+      { label: "Basic pay + DA", formula: `${x(r.monthlyCtc)} × ${pc(v.num("basic"))}`, result: x(r.basic) },
+      { label: "HRA", formula: `${x(r.basic)} × ${pc(v.num("hra"))}`, result: x(r.hra) },
+      {
+        label: "Special allowance",
+        formula: [x(r.monthlyCtc), x(r.basic), x(r.hra), ...(r.otherExcluded > 0 ? [x(r.otherExcluded)] : []), x(r.employerPf), ...(r.esiCovered ? [x(r.employerEsi)] : []), ...(r.gratuityProvision > 0 ? [x(r.gratuityProvision)] : [])].join(" − "),
+        result: x(r.special),
+        note: `CTC less basic, HRA${r.otherExcluded > 0 ? ", other allowances" : ""} and the employer's costs below. Those costs depend on wages, which include this allowance, so the parts are solved together.`
+      },
+      {
+        label: "Allowances outside wages, share of pay",
+        formula: `${x(t.excluded)} ÷ ${x(t.total)}`,
+        result: pct(t.excludedShare),
+        note: `HRA${r.otherExcluded > 0 ? " and other allowances" : ""}${v.bool("pfin") ? " and employer PF" : ""} ÷ total pay. ${t.addBack > 0 ? `More than ${half}%, so the excess is added back to wages` : `Within the ${half}% limit, so nothing is added back`}`
+      },
+      ...(t.addBack > 0 ? [{ label: "Added back to wages", formula: `${x(t.excluded)} − ${half}% × ${x(t.total)}`, result: x(t.addBack) }] : []),
+      {
+        label: "Wages under the Labour Codes",
+        formula: [x(r.basic), x(r.special), ...(t.addBack > 0 ? [x(t.addBack)] : [])].join(" + "),
+        result: x(t.wages),
+        note: "Basic + DA + special allowance; PF, ESI and gratuity are worked out on this"
+      },
+      {
+        label: "Employer PF",
+        formula: `${pf.employerRate}% × ${x(r.pfBase)}`,
+        result: x(r.employerPf),
+        note: capped ? `Wages capped at the ${inr(r.pfCeiling)} PF ceiling` : v.str("pf") === "actual" ? "On full wages" : undefined
+      },
+      ...(r.esiCovered ? [{ label: "Employer ESI", formula: `${esi.employerRate}% × ${x(t.wages)}, rounded up`, result: x(r.employerEsi) }] : []),
+      ...(r.gratuityProvision > 0 ? [{ label: "Gratuity provision", formula: `${x(t.wages)} × ${gr.daysPerYear} ÷ ${gr.divisor} ÷ 12`, result: x(r.gratuityProvision) }] : []),
+      {
+        label: "Gross salary",
+        formula: [x(r.basic), x(r.hra), ...(r.otherExcluded > 0 ? [x(r.otherExcluded)] : []), x(r.special)].join(" + "),
+        result: inr(r.gross),
+        note: "Rounded to the rupee"
+      },
+      { label: "Employee PF", formula: `${pf.employeeRate}% × ${x(r.pfBase)}`, result: x(r.employeePf) },
+      ...(r.esiCovered ? [{ label: "Employee ESI", formula: `${esi.employeeRate}% × ${x(t.wages)}, rounded up`, result: x(r.employeeEsi) }] : []),
+      {
+        label: "Professional tax",
+        formula: r.ptHalfYear !== null ? `${inr(r.ptHalfYear)} a half-year ÷ 6` : r.pt > 0 ? `${st?.name ?? "State"} slab for ${inr(r.gross)} a month` : "",
+        result: x(r.pt),
+        note: r.pt > 0 ? undefined : ptNote
+      },
+      {
+        label: "In-hand before income tax",
+        formula: [inr(r.gross), x(r.employeePf), ...(r.esiCovered ? [x(r.employeeEsi)] : []), ...(r.pt > 0 ? [x(r.pt)] : [])].join(" − "),
+        result: x(r.inHand)
+      }
+    ];
+    const warnings =
+      t.addBack > 0
+        ? [`Allowances outside wages are ${pct(t.excludedShare)} of pay, over the ${half}% limit. ${rs(t.addBack)} is added back to wages, so PF, ESI and gratuity are worked out on ${rs(t.wages)}.`]
+        : [];
+
+    return {
+      working,
+      warnings,
+      better: { inhand: "higher" },
+      outputs: { inhand: rs(r.inHand), sub: `a month before income tax, from a gross salary of ${inr(r.gross)}` },
+      lines,
+      bars: [
+        { label: "In hand", value: r.inHand, display: rs(r.inHand) },
+        { label: "PF, both shares", value: r.employeePf + r.employerPf, display: inr(r.employeePf + r.employerPf) },
+        ...(r.esiCovered ? [{ label: "ESI, both shares", value: r.employeeEsi + r.employerEsi, display: inr(r.employeeEsi + r.employerEsi) }] : []),
+        { label: "Gratuity provision", value: r.gratuityProvision, display: rs(r.gratuityProvision) },
+        { label: "Professional tax", value: r.pt, display: rs(r.pt) }
+      ],
+      notes
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  .check {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    cursor: pointer;
+  }
+  .check small {
+    font-weight: 450;
+    color: var(--ink-3);
+  }
+  .check input {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: 0.15rem;
+    accent-color: var(--neel-700);
+    flex: none;
+  }
+  @media (max-width: 420px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,64 @@
+---
+import Breadcrumbs from "./Breadcrumbs.astro";
+interface Props {
+  title: string;
+  lede?: string;
+  trail?: { name: string; href: string }[];
+  tone?: "band" | "ink";
+}
+const { title, lede, trail, tone = "band" } = Astro.props;
+---
+
+<header class:list={["page-hero", tone === "ink" ? "band-ink" : "band"]}>
+  {
+    Astro.slots.has("aside") ? (
+      <div class="wrap hero-split">
+        <div class="inner">
+          {trail && <Breadcrumbs trail={trail} />}
+          <h1 class="display">{title}</h1>
+          {lede && <p class="lede">{lede}</p>}
+          <slot />
+        </div>
+        <div class="aside" data-print="hide">
+          <slot name="aside" />
+        </div>
+      </div>
+    ) : (
+      <div class="wrap inner">
+        {trail && <Breadcrumbs trail={trail} />}
+        <h1 class="display">{title}</h1>
+        {lede && <p class="lede">{lede}</p>}
+        <slot />
+      </div>
+    )
+  }
+</header>
+
+<style>
+  .page-hero {
+    padding-block: 2rem 2.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .inner {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+  }
+  .aside {
+    min-width: 0;
+  }
+  /* Words and picture line up at the top: the picture is a second column of reading, not a decoration to centre. */
+  .hero-split {
+    align-items: start;
+  }
+  h1 {
+    max-width: 20ch;
+  }
+  .band-ink .lede {
+    color: var(--neel-200);
+  }
+  .band-ink :global(.crumbs a),
+  .band-ink :global(.crumbs [aria-current]) {
+    color: var(--neel-200);
+  }
+</style>

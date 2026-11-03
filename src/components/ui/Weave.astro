@@ -1,0 +1,35 @@
+---
+/**
+ * A piece of woven cloth as SVG. Decorative: always hidden from assistive tech.
+ * <Weave structure="twill" cols={12} rows={16} warp="#3B44A6" weft="#6B76D2" gap="#1B1F4C" accent="#EFAB22" accentCols={[3]} />
+ */
+import { weave, type WeaveOptions } from "../../lib/weave";
+interface Props extends WeaveOptions {
+  class?: string;
+  /** "slice" fills the box and crops; "meet" fits the whole cloth. */
+  fit?: "slice" | "meet";
+}
+const { class: cls, fit = "slice", ...opts } = Astro.props;
+const w = weave(opts);
+---
+
+<svg
+  class:list={["weave", cls]}
+  viewBox={`0 0 ${w.width} ${w.height}`}
+  preserveAspectRatio={`xMidYMid ${fit}`}
+  aria-hidden="true"
+  focusable="false"
+>
+  <rect width={w.width} height={w.height} fill={w.gap} />
+  <g stroke={w.gap} stroke-width={w.gapWidth} paint-order="stroke">
+    {w.rects.map((r) => <rect x={r.x.toFixed(1)} y={r.y.toFixed(1)} width={r.w.toFixed(1)} height={r.h.toFixed(1)} fill={r.fill} />)}
+  </g>
+</svg>
+
+<style>
+  .weave {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

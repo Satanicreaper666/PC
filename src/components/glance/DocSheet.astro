@@ -1,0 +1,167 @@
+---
+/**
+ * A letter, form or policy as a small sheet of paper listing its own section
+ * headings (or, for a letter without headings, the details it asks for, styled
+ * like the blanks in the document itself), with how much there is to fill in
+ * underneath. Green highlighter on what you get: the Word file or the PDF.
+ */
+import type { DocOutline } from "./glance";
+interface Props {
+  outline: DocOutline;
+  fields: number;
+  required: number;
+  kind: string;
+}
+const { outline, fields, required, kind } = Astro.props;
+const MAX = 6;
+const shown = outline.items.slice(0, MAX);
+const more = outline.items.length - shown.length;
+const numbered = shown.some((i) => i.n);
+const noun = outline.mode === "sections" ? "section" : "detail";
+const label = outline.mode === "sections" ? `Inside the ${kind}` : `What the ${kind} asks for`;
+const need = required === fields ? "all required" : required === 0 ? "all optional" : `${required} required`;
+---
+
+<div class="doc">
+  <p class="glance-label" id="glance-kind">{label}</p>
+  <div class:list={["sheet", outline.mode]}>
+    <svg class="fold" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path class="cut" d="M0 0h24v24Z" />
+      <path class="flap" d="M.75.75v19.5a3 3 0 0 0 3 3h19.5Z" />
+    </svg>
+    <ol class:list={["items", { numbered }]} aria-labelledby="glance-kind">
+      {
+        shown.map((it) => (
+          <li>
+            {numbered && <span class="n">{it.n ?? <span class="dot" aria-hidden="true" />}</span>}
+            <span class="t">{it.text}</span>
+            {outline.mode === "details" && <span class="blank" aria-hidden="true" />}
+          </li>
+        ))
+      }
+    </ol>
+    {more > 0 && <p class="more">+{more} more {more === 1 ? noun : `${noun}s`}</p>}
+  </div>
+  <p class="facts">
+    <strong>{fields} details</strong> to fill, {need}
+  </p>
+  <p class="facts out">
+    Download as <span class="hl hl-green" data-mark>Word or print to PDF</span>
+  </p>
+</div>
+
+<style>
+  .glance-label {
+    margin-bottom: 0.55rem;
+  }
+  .sheet {
+    position: relative;
+    width: min(100%, 20rem);
+    padding: 1rem 2.25rem 0.95rem 1.15rem;
+    background: var(--paper);
+    border: 1.5px solid var(--neel-600);
+    border-radius: 2px;
+  }
+  /* The dog-ear, drawn over the sheet's own corner: band colour cuts the corner away, the flap folds in. */
+  .fold {
+    position: absolute;
+    top: -1.5px;
+    right: -1.5px;
+    width: 24px;
+    height: 24px;
+    overflow: visible;
+  }
+  .cut {
+    fill: var(--canvas);
+  }
+  .flap {
+    fill: var(--neel-100);
+    stroke: var(--neel-600);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+  .items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .items li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: baseline;
+    font-size: 0.875rem;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+  .numbered li {
+    grid-template-columns: 1.55rem minmax(0, 1fr);
+  }
+  .n {
+    font-weight: 700;
+    color: var(--neel-600);
+    font-variant-numeric: tabular-nums;
+  }
+  .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--neel-300);
+    vertical-align: 0.15em;
+  }
+  /* A long heading wraps once, then stops: "Medical examination (only if the role needs one)". */
+  .t {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    font-weight: 560;
+    text-wrap: pretty;
+  }
+  /* Details a letter asks for, each followed by the blank it fills: a ruled line in the template's turmeric. */
+  .details li {
+    grid-template-columns: auto minmax(2rem, 1fr);
+    column-gap: 0.45rem;
+  }
+  .details .t {
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .details .blank {
+    align-self: end;
+    margin-bottom: 0.3em;
+    border-bottom: 1.5px solid var(--haldi-400);
+  }
+  .details .items {
+    gap: 0.4rem;
+  }
+  .more {
+    margin-top: 0.5rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .sheet:has(.numbered) .more {
+    padding-left: 1.55rem;
+  }
+  .facts {
+    margin-top: 0.8rem;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .facts strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .facts.out {
+    margin-top: 0.15rem;
+  }
+  .facts .hl {
+    color: var(--ink);
+  }
+</style>

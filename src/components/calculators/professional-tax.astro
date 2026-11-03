@@ -1,0 +1,157 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import AsAt from "./parts/AsAt.astro";
+import { PT_STATES } from "../../data/statutory";
+import { PT_PICKER, slabLabel } from "../../lib/calc/professional-tax";
+import { shortDate } from "../../lib/calc/working-days";
+
+const inrN = (n: number) => `₹${new Intl.NumberFormat("en-IN").format(n)}`;
+const mhWomen = PT_STATES.find((s) => s.code === "MH")?.schedules?.[0]?.women?.[1]?.min ?? 0;
+const slabsText = (slabs: { min: number; minInclusive?: boolean; amount: number; february?: number }[], per: string) =>
+  slabs.map((s, i) => `${slabLabel(slabs, i)}: ${s.amount ? `${inrN(s.amount)}${per}${s.february ? ` (${inrN(s.february)} in February)` : ""}` : "nil"}`).join("; ");
+
+const rows = PT_STATES.filter((s) => s.verified).map((s) => {
+  let label = s.law;
+  if (s.status === "levied" && s.schedules) {
+    const per = s.basis === "half-yearly" ? " a half-year" : " a month";
+    label = s.schedules
+      .map((sch) => {
+        const when = sch.until ? `Up to ${shortDate(sch.until)}: ` : sch.from && s.schedules!.length > 1 ? `From ${shortDate(sch.from)}: ` : "";
+        const men = slabsText(sch.slabs, per);
+        return sch.women ? `${when}${men}. Women: ${slabsText(sch.women, per)}` : `${when}${men}`;
+      })
+      .join(". ");
+  } else if (s.status === "none") label = "No professional tax on salaries";
+  return { value: s.name, label, law: s.law, source: s.source, confidence: s.confidence };
+});
+---
+
+<CalcShell id="pt" resultLabel="Professional tax">
+  <Fragment slot="inputs">
+    <Pick name="state" label="State where the employee works" style="select" options={PT_PICKER} value="KA" />
+    <Num name="salary" label="Monthly gross salary" prefix="₹" value="30,000" help="Gross salary for the month, before deductions. Each state's Act defines salary in its own words." />
+    <div data-gender-field>
+      <Pick
+        name="gender"
+        label="Employee"
+        options={[
+          { value: "other", label: "Man or other" },
+          { value: "woman", label: "Woman" }
+        ]}
+        help={`Maharashtra exempts women earning up to ${inrN(mhWomen)} a month.`}
+      />
+    </div>
+    <Pick
+      name="fy"
+      label="Financial year"
+      options={[
+        { value: "2026-27", label: "2026-27" },
+        { value: "2027-28", label: "2027-28" }
+      ]}
+      help="2027-28 assumes today's rates continue."
+    />
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="amount">₹0</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+<AsAt rows={rows} note="Only the states listed are worked out. Kerala and other Tamil Nadu local bodies set their own rates; whether Goa levies professional tax on salaries could not be confirmed." />
+
+<script>
+  import { bindCalculator, inr } from "../../scripts/calc-kit";
+  import { fyStart, ptYear, scheduleFor, slabLabel } from "../../lib/calc/professional-tax";
+  import type { Gender } from "../../lib/calc/professional-tax";
+  import { ptState } from "../../data/statutory";
+
+  const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthName = (iso: string) => `${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+  const addMonths = (iso: string, n: number) => {
+    const y = Number(iso.slice(0, 4));
+    const m = Number(iso.slice(5, 7)) - 1 + n;
+    return `${y + Math.floor(m / 12)}-${String((m % 12) + 1).padStart(2, "0")}-01`;
+  };
+
+  const genderField = document.querySelector<HTMLElement>("[data-gender-field]");
+  const syncGender = () => {
+    const sel = document.querySelector<HTMLSelectElement>('[data-calc="pt"] select[name="state"]');
+    if (genderField && sel) genderField.hidden = sel.value !== "MH";
+  };
+  document.querySelector('[data-calc="pt"] form')?.addEventListener("change", syncGender);
+
+  bindCalculator("pt", (v) => {
+    syncGender();
+    const code = v.str("state", "KA");
+    const salary = v.num("salary");
+    const fy = v.str("fy", "2026-27");
+    const st = ptState(code);
+    if (!st || code === "OTHER")
+      return { outputs: { amount: "—", sub: "" }, message: "This calculator covers the states listed. For another state, check the professional tax schedule of the state where the employee works." };
+    if (st.status === "not-covered") return { outputs: { amount: "—", sub: "" }, message: `${st.name} is not worked out here. ${st.note ?? ""}`.trim() };
+    if (st.status === "none")
+      return {
+        outputs: { amount: "Nil", sub: `${st.name} has no professional tax on salaries${st.code === "OD" ? " from 1 April 2026" : ""}.` },
+        lines: [{ label: "Professional tax", value: "₹0", strong: true }],
+        notes: [st.note ?? "As reported by payroll sources; check if your state's position changes."]
+      };
+    if (salary <= 0) return { outputs: { amount: "₹0", sub: "" }, message: "Enter the monthly gross salary." };
+
+    const y = ptYear(code, salary, fyStart(fy), v.str("gender", "other") as Gender);
+    const notes: string[] = [];
+    if (y.basis === "half-yearly") {
+      const lines = y.months.map((m) => ({
+        label: `${monthName(m.month)} to ${monthName(addMonths(m.month, 5))}`,
+        value: inr(m.amount),
+        note: `Half-year salary ${inr(y.halfYearSalary ?? 0)}`
+      }));
+      notes.push("Greater Chennai Corporation charges professional tax for each half-year (April–September and October–March) on the half-year's salary. Other local bodies in Tamil Nadu set their own rates.");
+      notes.push("This assumes the same salary every month.");
+      return {
+        working: [{ label: `Total for ${fy}`, formula: y.months.map((m) => inr(m.amount)).join(" + "), result: inr(y.total), note: "Two half-years, each on the half-year's salary" }],
+        outputs: { amount: `${inr(y.months[0]?.amount ?? 0)} a half-year`, sub: `${inr(y.total)} in ${fy}.` },
+        lines: [...lines, { label: `Total for ${fy}`, value: inr(y.total), strong: true }],
+        notes
+      };
+    }
+
+    // Monthly states: headline this month's amount if it falls in the chosen year, otherwise April's.
+    const now = new Date();
+    const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    const current = y.months.find((m) => m.month === thisMonth && m.month.slice(5, 7) !== "02") ?? y.months[0];
+    const usual = current?.amount ?? 0;
+    const feb = y.months.find((m) => m.month.slice(5, 7) === "02");
+    const febSch = feb ? scheduleFor(st, feb.month) : undefined;
+    const febSlab = febSch ? (v.str("gender") === "woman" && febSch.women ? febSch.women : febSch.slabs)[feb!.slab] : undefined;
+    const febTopUp = feb && febSlab?.february !== undefined && feb.amount === febSlab.february;
+    const lines = y.runs.map((r) => ({
+      label: r.months === 1 ? monthName(r.from) : `${monthName(r.from)} to ${monthName(r.to)}`,
+      value: r.months === 1 ? inr(r.amount) : `${inr(r.amount)} a month`
+    }));
+    const lastSlab = y.months[y.months.length - 1];
+    const sch = st.schedules?.find((s) => !s.until) ?? st.schedules?.[0];
+    if (sch) {
+      const slabs = v.str("gender") === "woman" && sch.women ? sch.women : sch.slabs;
+      notes.push(`Slab: monthly salary ${slabLabel(slabs, lastSlab.slab).replace(/^[A-Z]/, (c) => c.toLowerCase())}.`);
+    }
+    if (code === "WB") notes.push("West Bengal's new slabs apply from October 2026 salaries (Notification 1607-F.T. of 16 September 2026).");
+    if (st.confidence !== "high" && st.note) notes.push(st.note);
+    notes.push("The employer deducts professional tax and pays it to the state. This assumes the same salary every month.");
+    return {
+      working: [
+        {
+          label: `Total for ${fy}`,
+          formula: y.runs.map((r) => (r.months === 1 ? inr(r.amount) : `${inr(r.amount)} × ${r.months} months`)).join(" + "),
+          result: inr(y.total)
+        }
+      ],
+      outputs: {
+        amount: usual ? `${inr(usual)} a month` : "Nil",
+        sub: y.total === 0 ? "This salary is below the taxable slab." : `${inr(y.total)} in ${fy}${febTopUp ? `, including ${inr(feb!.amount)} in February` : ""}.`
+      },
+      lines: [...lines, { label: `Total for ${fy}`, value: inr(y.total), strong: true }],
+      notes
+    };
+  });
+</script>

@@ -1,0 +1,197 @@
+---
+import { render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/site/Breadcrumbs.astro";
+import Icon from "../../components/ui/Icon.astro";
+import Checked from "../../components/content/Checked.astro";
+import Callout from "../../components/content/Callout.astro";
+import Faq from "../../components/content/Faq.astro";
+import Sources from "../../components/content/Sources.astro";
+import Related from "../../components/content/Related.astro";
+import Disclaimer from "../../components/content/Disclaimer.astro";
+import TemplateTool from "../../components/tools/TemplateTool.astro";
+import ChecklistTool from "../../components/tools/ChecklistTool.astro";
+import SurveyTool from "../../components/tools/SurveyTool.astro";
+import ToolGlance from "../../components/glance/ToolGlance.astro";
+import PinButton from "../../components/desk/PinButton.astro";
+import { mdxComponents } from "../../components/content/mdx";
+import { STAGE_INFO, TOOL_KIND_INFO, audienceList } from "../../data/taxonomy";
+import { allTools, toolUrl, toolFacts, resolveRefs, breadcrumbLd, faqLd, type Tool } from "../../lib/library";
+import type { IconName } from "../../lib/icons";
+
+export async function getStaticPaths() {
+  return (await allTools()).map((t) => ({ params: { slug: t.id }, props: { entry: t } }));
+}
+
+const { entry } = Astro.props as { entry: Tool };
+const d = entry.data;
+const kind = TOOL_KIND_INFO[d.kind];
+const stage = STAGE_INFO[d.stage];
+const isTemplate = d.kind === "letter" || d.kind === "form" || d.kind === "policy";
+const rendersBody = d.kind === "calculator" || d.kind === "app" || d.kind === "plan" || d.kind === "survey";
+const { Content } = rendersBody ? await render(entry) : { Content: null };
+const calculators = import.meta.glob<{ default: (props: Record<string, unknown>) => unknown }>("../../components/calculators/*.astro", { eager: true });
+const Calc = d.calculator ? calculators[`../../components/calculators/${d.calculator}.astro`]?.default : undefined;
+const related = await resolveRefs(d.related);
+
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Toolkit", href: "/toolkit/" },
+  { name: stage.label, href: `/toolkit/#${d.stage}` },
+  { name: d.title, href: toolUrl(entry) }
+];
+const appLd =
+  d.kind === "calculator" || d.kind === "app"
+    ? {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: d.title,
+        description: d.description,
+        url: new URL(toolUrl(entry), Astro.site).toString(),
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Any",
+        isAccessibleForFree: true,
+        offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
+        inLanguage: "en-IN"
+      }
+    : {
+        "@context": "https://schema.org",
+        "@type": "DigitalDocument",
+        name: d.title,
+        description: d.description,
+        url: new URL(toolUrl(entry), Astro.site).toString(),
+        isAccessibleForFree: true,
+        inLanguage: "en-IN",
+        dateModified: d.checked.toISOString()
+      };
+const ld = [appLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean) as Record<string, unknown>[];
+---
+
+<BaseLayout title={d.title} description={d.description} jsonLd={ld} modified={d.checked} image="/og/toolkit.png">
+  <article data-pagefind-body data-pagefind-meta={`kind:${kind.label}`} data-pagefind-filter="section:Toolkit">
+    <header class="head band">
+      <div class="wrap hero-split">
+        <div class="head-inner">
+          <Breadcrumbs trail={trail} />
+          <p class="kicker">
+            <span class="chip"><Icon name={kind.icon as IconName} size={15} />{kind.label}</span>
+            {d.code && <span class="chip">{d.code}</span>}
+            <span class="chip">{stage.label}</span>
+          </p>
+          <h1 class="display">{d.title}</h1>
+          <p class="lede">{d.description}</p>
+          <p class="use-when"><strong>Use it when</strong> {d.useWhen.replace(/^./, (c) => c.toLowerCase())}</p>
+          <div class="meta">
+            <Checked date={d.checked} sources={d.sources.length || undefined} />
+            <span class="chip"><Icon name="people" size={15} /> For {audienceList(d.audiences)}</span>
+            <span class="chip chip-good"><Icon name="lock" size={15} /> Works in your browser; nothing is uploaded</span>
+            <PinButton item={{ href: toolUrl(entry), title: d.title, kind: kind.label, art: d.kind, code: d.code, description: d.description, meta: toolFacts(entry) }} />
+          </div>
+        </div>
+        <ToolGlance entry={entry} />
+      </div>
+    </header>
+
+    <div class="wrap tool-area">
+      {(d.kind === "calculator" || d.kind === "app") && Calc && <Calc />}
+      {(d.kind === "calculator" || d.kind === "app") && !Calc && <p class="muted">This tool is being rebuilt.</p>}
+      {isTemplate && <TemplateTool entry={entry} />}
+      {d.kind === "checklist" && <ChecklistTool entry={entry} />}
+      {d.kind === "survey" && <SurveyTool entry={entry} />}
+    </div>
+
+    <div class="wrap after">
+      {
+        d.tips.length > 0 && (
+          <Callout type="tip" title={isTemplate ? "Before you send it" : "Tips"}>
+            <ul>
+              {d.tips.map((t) => (
+                <li set:html={t} />
+              ))}
+            </ul>
+          </Callout>
+        )
+      }
+      {
+        Content && (
+          <div class="prose content">
+            <Content components={mdxComponents} />
+          </div>
+        )
+      }
+      <Faq items={d.faq} />
+      <Sources items={d.sources} checked={d.checked} />
+      <Disclaimer kind={d.kind === "calculator" || d.kind === "app" ? "tool" : d.kind === "survey" ? "survey" : d.kind === "plan" ? "plan" : isTemplate || d.kind === "checklist" ? "template" : "law"} />
+      <div data-pagefind-ignore data-print="hide"><Related items={related} /></div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .head {
+    padding-block: 2rem 2.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .head-inner {
+    display: grid;
+    gap: 0.85rem;
+  }
+  .kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  h1 {
+    max-width: 24ch;
+  }
+  .use-when {
+    max-width: 62ch;
+    color: var(--ink-2);
+  }
+  .use-when strong {
+    color: var(--ink);
+    font-weight: 650;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.75rem;
+  }
+  .tool-area {
+    padding-block: 2rem 1rem;
+  }
+  /* A centred text column with room on both sides for wide figures. */
+  .after {
+    display: grid;
+    grid-template-columns: [wide-start] minmax(0, 1fr) [content-start] minmax(0, 44rem) [content-end] minmax(0, 1fr) [wide-end];
+    row-gap: 2.5rem;
+    padding-block: 2rem var(--section);
+  }
+  .after > :global(*) {
+    grid-column: content;
+    min-width: 0;
+  }
+  .after > .content {
+    grid-column: wide-start / wide-end;
+    display: grid;
+    grid-template-columns: subgrid;
+    max-width: none;
+  }
+  .content > :global(*) {
+    grid-column: content;
+    min-width: 0;
+  }
+  .content > :global(.wide) {
+    grid-column: wide-start / wide-end;
+  }
+  @media print {
+    .head {
+      padding: 0 0 1rem;
+    }
+    .meta,
+    .kicker {
+      display: none;
+    }
+  }
+</style>

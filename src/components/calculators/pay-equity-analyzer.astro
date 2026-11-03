@@ -1,0 +1,806 @@
+---
+import Icon from "../ui/Icon.astro";
+import { MIN_GROUP } from "../../lib/calc/pay-equity-analyzer";
+---
+
+<div class="pe" data-pay-equity>
+  <div class="pe-top">
+    <section class="panel inputs" aria-labelledby="pe-in-title">
+      <p class="panel-title" id="pe-in-title">Your data</p>
+
+      <div class="field">
+        <label class="field-label" for="pe-paste">Paste rows: role, gender, annual pay</label>
+        <textarea class="control" id="pe-paste" rows="6" placeholder={"Software engineer\tWoman\t10,50,000\nSoftware engineer\tMan\t11,00,000\nSales executive\tF\t5,60,000"} aria-describedby="pe-paste-help"></textarea>
+        <span class="field-help" id="pe-paste-help">Copy three columns from Excel or Google Sheets, or type them with commas. Pay can be written as 12,50,000 or 12.5 lakh. Leave names out; they aren't needed.</span>
+      </div>
+      <button class="btn btn-secondary" type="button" data-paste-add><Icon name="plus" size={18} /> Add these rows</button>
+      <div class="msg" data-paste-msg role="status" hidden></div>
+
+      <form class="one" data-one novalidate aria-labelledby="pe-one-title">
+        <p class="sub-title" id="pe-one-title">Or add one person</p>
+        <div class="field">
+          <label class="field-label" for="pe-role">Role</label>
+          <input class="control" id="pe-role" name="role" type="text" list="pe-roles" maxlength="80" autocomplete="off" placeholder="For example, Software engineer" />
+          <datalist id="pe-roles" data-roles></datalist>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label class="field-label" for="pe-gender">Gender</label>
+            <select class="control" id="pe-gender" name="gender">
+              <option value="woman">Woman</option>
+              <option value="man">Man</option>
+              <option value="other">Another gender or not stated</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="pe-pay">Annual pay</label>
+            <input class="control" id="pe-pay" name="pay" type="text" inputmode="decimal" autocomplete="off" placeholder="₹ a year" />
+          </div>
+        </div>
+        <p class="field-error" data-one-error hidden></p>
+        <button class="btn btn-secondary" type="submit"><Icon name="plus" size={18} /> Add</button>
+      </form>
+
+      <div class="data-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-example>Load an example</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-csv><Icon name="download" size={16} /> Download CSV</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-clear><Icon name="x" size={16} /> Clear all</button>
+      </div>
+      <label class="keep">
+        <input type="checkbox" data-keep />
+        <span>Keep this data in this browser on this device</span>
+      </label>
+      <p class="privacy"><Icon name="lock" size={16} /><span>Your data never leaves this browser: nothing is uploaded or sent anywhere. Unless you tick the box above, it is gone when you close the page.</span></p>
+    </section>
+
+    <section class="panel results" aria-labelledby="pe-out-title" aria-live="polite">
+      <p class="panel-title" id="pe-out-title">Pay gaps</p>
+      <p class="empty" data-empty>
+        Add at least one woman and one man to see a gap, or <button type="button" class="linkish" data-example>load an example</button>.
+      </p>
+      <div data-out-area hidden>
+        <p class="counts" data-counts></p>
+        <dl class="kpis">
+          <div class="kpi">
+            <dt>Unadjusted gap, mean</dt>
+            <dd><span class="kv" data-k="mean"></span><span class="kn" data-kn="mean"></span></dd>
+          </div>
+          <div class="kpi">
+            <dt>Unadjusted gap, median</dt>
+            <dd><span class="kv" data-k="median"></span><span class="kn" data-kn="median"></span></dd>
+          </div>
+          <div class="kpi accent">
+            <dt>Like-for-like gap, same role</dt>
+            <dd><span class="kv" data-k="lfl"></span><span class="kn" data-kn="lfl"></span></dd>
+          </div>
+        </dl>
+        <div class="caution" data-caution>
+          <Icon name="alert" size={18} />
+          <div data-caution-text></div>
+        </div>
+        <div class="quart" data-quart>
+          <p class="q-title">Women's share of each pay quarter</p>
+          <ul class="legend" aria-hidden="true">
+            <li><span class="sw c1"></span>Women</li>
+            <li><span class="sw c2"></span>Men</li>
+          </ul>
+          <div class="q-rows" data-q-rows></div>
+          <p class="q-note" data-q-note></p>
+          <div class="tip" role="tooltip" hidden></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel roles" data-roles-area hidden aria-labelledby="pe-roles-title">
+    <h2 class="t" id="pe-roles-title">Gaps within each role</h2>
+    <p class="muted small">Positive gaps mean women in the role are paid less on average. Roles with fewer than {MIN_GROUP} women or {MIN_GROUP} men are marked; one person can move their average a lot.</p>
+    <div class="tw" role="region" tabindex="0" aria-labelledby="pe-roles-title">
+      <table class="rt">
+        <caption class="visually-hidden">Number of women and men, average pay and gap for each role</caption>
+        <thead>
+          <tr>
+            <th scope="col">Role</th>
+            <th scope="col">Women</th>
+            <th scope="col">Men</th>
+            <th scope="col">Women's average</th>
+            <th scope="col">Men's average</th>
+            <th scope="col">Gap</th>
+            <th scope="col">Read with care</th>
+          </tr>
+        </thead>
+        <tbody data-role-rows></tbody>
+      </table>
+    </div>
+    <details class="rows">
+      <summary>Your rows <span data-row-count></span></summary>
+      <div class="tw" role="region" tabindex="0" aria-label="Your rows">
+        <table class="dt">
+          <caption class="visually-hidden">Every row you added</caption>
+          <thead>
+            <tr><th scope="col">Role</th><th scope="col">Gender</th><th scope="col">Annual pay</th><th scope="col"><span class="visually-hidden">Remove</span></th></tr>
+          </thead>
+          <tbody data-data-rows></tbody>
+        </table>
+      </div>
+      <p class="tiny muted" data-row-limit hidden></p>
+    </details>
+  </section>
+</div>
+
+<script>
+  import { analyse, parseRows, parsePay, cleanRole, toCsv, GENDER_LABEL, EXAMPLE_ROWS, MIN_GROUP, type PayRow, type Gender, type Analysis } from "../../lib/calc/pay-equity-analyzer";
+
+  const KEY = "peoplecraft:pay-equity:v1";
+  const SHOW_ROWS = 300;
+  const root = document.querySelector<HTMLElement>("[data-pay-equity]")!;
+  const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+  const keep = $<HTMLInputElement>("[data-keep]");
+  const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+  const pct = (n: number) => `${new Intl.NumberFormat("en-IN", { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(Math.abs(n))}%`;
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+  let rows: PayRow[] = [];
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const arr: unknown = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        rows = arr.filter((r) => r && typeof r.role === "string" && ["woman", "man", "other"].includes(r.gender) && typeof r.pay === "number" && r.pay > 0);
+        keep.checked = true;
+      }
+    }
+  } catch {
+    /* storage unavailable: work in memory */
+  }
+
+  function persist() {
+    try {
+      if (keep.checked && rows.length) localStorage.setItem(KEY, JSON.stringify(rows));
+      else localStorage.removeItem(KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+  function commit() {
+    persist();
+    render();
+  }
+  keep.addEventListener("change", persist);
+
+  function gapWords(g: number | null, subject: string) {
+    if (g === null) return "Needs at least one woman and one man.";
+    if (Math.abs(g) < 0.05) return `No difference between women's and men's ${subject}.`;
+    return g > 0 ? `Women's ${subject} is ${pct(g)} lower than men's.` : `Women's ${subject} is ${pct(g)} higher than men's.`;
+  }
+  function setKpi(key: string, g: number | null, note: string) {
+    $(`[data-k="${key}"]`).textContent = g === null ? "—" : pct(g);
+    $(`[data-kn="${key}"]`).textContent = note;
+  }
+
+  function render() {
+    const a = analyse(rows);
+    const hasGap = a.counts.women > 0 && a.counts.men > 0;
+    $("[data-empty]").hidden = hasGap;
+    $("[data-out-area]").hidden = !hasGap;
+    $("[data-roles-area]").hidden = rows.length === 0;
+    renderRoles(a);
+    renderRows();
+    const roles = new Set(rows.map((r) => r.role));
+    $("[data-roles]").replaceChildren(...[...roles].sort().map((r) => Object.assign(document.createElement("option"), { value: r })));
+    if (!hasGap) return;
+
+    $("[data-counts]").textContent = `${plural(a.counts.total, "person", "people")}: ${a.counts.women} ${a.counts.women === 1 ? "woman" : "women"}, ${a.counts.men} ${a.counts.men === 1 ? "man" : "men"}${a.counts.other ? `, ${a.counts.other} another gender or not stated (not in the gap figures)` : ""}.`;
+    setKpi("mean", a.overall.gapMean, gapWords(a.overall.gapMean, "average pay"));
+    setKpi("median", a.overall.gapMedian, gapWords(a.overall.gapMedian, "median pay"));
+    const l = a.likeForLike;
+    const lflNote =
+      l.gap === null
+        ? "No role has both women and men to compare."
+        : `${gapWords(l.gap, "pay in the same role")} Compares ${plural(l.women, "woman", "women")} with men in ${plural(l.roles, "role", "roles")}.`;
+    setKpi("lfl", l.gap, lflNote);
+
+    const caution: string[] = [];
+    const compared = l.women + l.men;
+    if (l.inSmallGroups > 0) caution.push(`${l.inSmallGroups} of the ${compared} people compared are in roles with fewer than ${MIN_GROUP} women or ${MIN_GROUP} men. In groups that small, one person can move an average a lot: treat those gaps as prompts to review individual cases, not as findings.`);
+    if (a.likeForLikeLarge.roles > 0 && l.gap !== null && a.likeForLikeLarge.gap !== null && a.likeForLikeLarge.roles < l.roles)
+      caution.push(`Using only the ${plural(a.likeForLikeLarge.roles, "role", "roles")} with at least ${MIN_GROUP} women and ${MIN_GROUP} men, the like-for-like gap is ${pct(a.likeForLikeLarge.gap)} (${a.likeForLikeLarge.gap >= 0 ? "women paid less" : "women paid more"}).`);
+    if (l.womenNotCompared > 0) caution.push(`${plural(l.womenNotCompared, "woman is", "women are")} in roles with no men, so ${l.womenNotCompared === 1 ? "she isn't" : "they aren't"} in the like-for-like figure.`);
+    caution.push("Same role is not the whole story: experience, performance, location and hours can explain a gap, or can themselves reflect bias. No statistical test is applied.");
+    $("[data-caution-text]").replaceChildren(...caution.map((c) => Object.assign(document.createElement("p"), { textContent: c })));
+
+    renderQuartiles(a);
+  }
+
+  function renderQuartiles(a: Analysis) {
+    const host = $("[data-q-rows]");
+    const q = a.quartiles;
+    $("[data-quart]").hidden = q.length === 0;
+    if (!q.length) return;
+    host.replaceChildren(
+      ...q.map((x) => {
+        const n = x.women + x.men;
+        const w = n ? (x.women / n) * 100 : 0;
+        const row = document.createElement("div");
+        row.className = "q-row";
+        const label = Object.assign(document.createElement("span"), { className: "q-label", textContent: x.label });
+        const bar = document.createElement("span");
+        bar.className = "q-bar";
+        bar.tabIndex = 0;
+        const desc = `${x.label}: ${plural(x.women, "woman", "women")} and ${plural(x.men, "man", "men")}, ${Math.round(w)}% women`;
+        bar.setAttribute("role", "img");
+        bar.setAttribute("aria-label", desc);
+        bar.dataset.tip = desc;
+        const parts: [number, string, string][] = [
+          [w, "c1", "#fff"],
+          [100 - w, "c2", "#151a3b"]
+        ];
+        for (const [share, c, ink] of parts) {
+          if (share <= 0) continue;
+          const s = document.createElement("span");
+          s.className = `q-seg ${c}`;
+          s.style.flexGrow = String(share);
+          s.style.color = ink;
+          const t = Object.assign(document.createElement("span"), { textContent: `${Math.round(share)}%` });
+          s.append(t);
+          bar.append(s);
+        }
+        row.append(label, bar);
+        return row;
+      })
+    );
+    requestAnimationFrame(() =>
+      host.querySelectorAll<HTMLElement>(".q-seg").forEach((s) => {
+        const t = s.firstElementChild as HTMLElement;
+        t.hidden = false;
+        t.hidden = t.offsetWidth + 10 > s.clientWidth;
+      })
+    );
+    const share = a.counts.women / (a.counts.women + a.counts.men);
+    $("[data-q-note]").textContent = `Women are ${Math.round(share * 100)}% of the people compared. If their share falls in the higher-paid quarters, the unadjusted gap is mostly about who holds which roles; the like-for-like gap shows pay for the same role.`;
+  }
+
+  function renderRoles(a: Analysis) {
+    const td = (text: string, cls = "") => Object.assign(document.createElement("td"), { textContent: text, className: cls });
+    $("[data-role-rows]").replaceChildren(
+      ...a.roles.map((r) => {
+        const tr = document.createElement("tr");
+        const th = Object.assign(document.createElement("th"), { scope: "row", textContent: r.role });
+        const gap = r.gap === null ? "—" : Math.abs(r.gap) < 0.05 ? "0.0%" : `${pct(r.gap)} ${r.gap > 0 ? "lower" : "higher"}`;
+        const note = !r.comparable ? (r.women ? "Only women" : r.men ? "Only men" : "No women or men") : r.small ? `Fewer than ${MIN_GROUP} ${r.women < MIN_GROUP && r.men < MIN_GROUP ? "of each" : r.women < MIN_GROUP ? "women" : "men"}` : "";
+        tr.className = r.small || !r.comparable ? "is-small" : "";
+        tr.append(th, td(String(r.women)), td(String(r.men)), td(r.meanWomen === null ? "—" : inr(r.meanWomen)), td(r.meanMen === null ? "—" : inr(r.meanMen)), td(gap, "gap"), td(note, "note"));
+        return tr;
+      })
+    );
+  }
+
+  function renderRows() {
+    $("[data-row-count]").textContent = rows.length ? `(${rows.length})` : "";
+    const shown = rows.slice(0, SHOW_ROWS);
+    $("[data-data-rows]").replaceChildren(
+      ...shown.map((r, i) => {
+        const tr = document.createElement("tr");
+        const rm = Object.assign(document.createElement("button"), { type: "button", className: "rm", textContent: "Remove" });
+        rm.setAttribute("aria-label", `Remove row ${i + 1}: ${r.role}, ${GENDER_LABEL[r.gender]}, ${inr(r.pay)}`);
+        rm.addEventListener("click", () => {
+          rows.splice(i, 1);
+          commit();
+        });
+        const tdRm = document.createElement("td");
+        tdRm.append(rm);
+        tr.append(
+          Object.assign(document.createElement("td"), { textContent: r.role }),
+          Object.assign(document.createElement("td"), { textContent: GENDER_LABEL[r.gender] }),
+          Object.assign(document.createElement("td"), { textContent: inr(r.pay), className: "num" }),
+          tdRm
+        );
+        return tr;
+      })
+    );
+    const limit = $("[data-row-limit]");
+    limit.hidden = rows.length <= SHOW_ROWS;
+    limit.textContent = `Showing the first ${SHOW_ROWS} of ${rows.length} rows. Every row is included in the results; download the CSV to see them all.`;
+  }
+
+  // Paste
+  $("[data-paste-add]").addEventListener("click", () => {
+    const ta = $<HTMLTextAreaElement>("#pe-paste");
+    const r = parseRows(ta.value);
+    const msg = $("[data-paste-msg]");
+    rows.push(...r.rows);
+    if (r.rows.length) commit();
+    const head = r.rows.length ? `Added ${plural(r.rows.length, "row", "rows")}.` : r.errors.length ? "" : "Paste at least one row: role, gender, annual pay.";
+    msg.replaceChildren(document.createTextNode(head));
+    if (r.errors.length) {
+      msg.append(Object.assign(document.createElement("p"), { textContent: `${plural(r.errors.length, "line wasn't", "lines weren't")} added. ${r.errors.length === 1 ? "It is" : "They are"} left in the box to fix:` }));
+      const ul = document.createElement("ul");
+      ul.append(...r.errors.slice(0, 8).map((e) => Object.assign(document.createElement("li"), { textContent: `Line ${e.line}: ${e.message}` })));
+      msg.append(ul);
+      ta.value = r.errors.map((e) => e.text).join("\n");
+    } else ta.value = "";
+    msg.classList.toggle("has-errors", r.errors.length > 0);
+    msg.hidden = false;
+  });
+
+  // One person
+  const one = $<HTMLFormElement>("[data-one]");
+  one.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const fd = new FormData(one);
+    const role = cleanRole(String(fd.get("role") ?? ""));
+    const pay = parsePay(String(fd.get("pay") ?? ""));
+    const gender = String(fd.get("gender")) as Gender;
+    const err = $("[data-one-error]");
+    if (!role || pay === null) {
+      err.textContent = !role ? "Enter a role." : "Enter annual pay as a number, for example 8,40,000 or 8.4 lakh.";
+      err.hidden = false;
+      (one.querySelector<HTMLInputElement>(!role ? "#pe-role" : "#pe-pay"))!.focus();
+      return;
+    }
+    err.hidden = true;
+    rows.push({ role, gender, pay });
+    one.querySelector<HTMLInputElement>("#pe-pay")!.value = "";
+    commit();
+    one.querySelector<HTMLInputElement>("#pe-pay")!.focus();
+  });
+
+  root.querySelectorAll("[data-example]").forEach((b) =>
+    b.addEventListener("click", () => {
+      if (rows.length && !window.confirm("Replace your rows with the example data?")) return;
+      rows = EXAMPLE_ROWS.map((r) => ({ ...r }));
+      commit();
+    })
+  );
+  $("[data-csv]").addEventListener("click", () => {
+    if (!rows.length) return;
+    const blob = new Blob(["﻿" + toCsv(rows)], { type: "text/csv;charset=utf-8" });
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "pay-equity-data.csv" });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  $("[data-clear]").addEventListener("click", () => {
+    if (!rows.length) return;
+    if (!window.confirm(`Remove all ${rows.length} rows? This can't be undone.`)) return;
+    rows = [];
+    commit();
+  });
+
+  // Tooltips on the quarter bars
+  const quart = $("[data-quart]");
+  const tip = quart.querySelector<HTMLElement>(".tip")!;
+  const show = (t: HTMLElement, x?: number) => {
+    tip.textContent = t.dataset.tip ?? "";
+    tip.hidden = false;
+    const qb = quart.getBoundingClientRect();
+    const tb = t.getBoundingClientRect();
+    const cx = (x ?? tb.left + tb.width / 2) - qb.left;
+    tip.style.left = `${Math.max(0, Math.min(qb.width - tip.offsetWidth, cx - tip.offsetWidth / 2))}px`;
+    tip.style.top = `${tb.top - qb.top - tip.offsetHeight - 6}px`;
+  };
+  quart.addEventListener("pointermove", (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+    if (t) show(t, e.clientX);
+    else tip.hidden = true;
+  });
+  quart.addEventListener("pointerleave", () => (tip.hidden = true));
+  quart.addEventListener("focusin", (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>("[data-tip]");
+    if (t) show(t);
+  });
+  quart.addEventListener("focusout", () => (tip.hidden = true));
+
+  render();
+</script>
+
+<style>
+  .pe {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .pe-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .panel {
+    padding: 1.25rem 1.25rem 1.4rem;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line);
+    min-width: 0;
+  }
+  .inputs {
+    background: var(--canvas);
+    display: grid;
+    gap: 0.9rem;
+  }
+  .results,
+  .roles {
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+    display: grid;
+    gap: 0.9rem;
+  }
+  .panel-title {
+    font-weight: 650;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .inputs > .btn,
+  .one .btn {
+    justify-self: start;
+  }
+  .inputs textarea {
+    font-size: var(--fs-sm);
+  }
+  .msg {
+    font-size: var(--fs-sm);
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--r);
+    background: var(--good-soft);
+    color: var(--good);
+    font-weight: 560;
+  }
+  .msg.has-errors {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .msg :global(ul) {
+    margin: 0.3rem 0 0;
+    padding-left: 1.1rem;
+    font-weight: 500;
+  }
+  .one {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+  }
+  .sub-title {
+    font-weight: 650;
+    font-size: var(--fs-sm);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .data-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+  }
+  .keep {
+    display: flex;
+    gap: 0.55rem;
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    cursor: pointer;
+  }
+  .keep input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.2rem;
+    accent-color: var(--primary);
+  }
+  .privacy {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .privacy :global(svg) {
+    flex: none;
+    margin-top: 0.1rem;
+    color: var(--good);
+  }
+  .empty {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--r);
+    background: var(--canvas);
+  }
+  .linkish {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  [data-out-area] {
+    display: grid;
+    gap: 1rem;
+  }
+  .counts {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .kpis {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 2px solid var(--neel-700);
+  }
+  .kpi {
+    padding: 0.8rem 0.9rem 0.9rem 0;
+    display: grid;
+    gap: 0.3rem;
+    align-content: start;
+  }
+  .kpi + .kpi {
+    padding-left: 0.9rem;
+    border-left: 1px solid var(--line);
+  }
+  .kpi dt {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-2);
+  }
+  .kpi dd {
+    margin: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+  .kv {
+    font-size: var(--fs-xl);
+    font-weight: 660;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--neel-800);
+  }
+  .kn {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+  .kpi.accent .kv {
+    color: var(--ink);
+  }
+  .caution {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: var(--r);
+    background: var(--warn-soft);
+    color: var(--warn);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+  .caution :global(p + p) {
+    margin-top: 0.4rem;
+  }
+  .caution :global(svg) {
+    margin-top: 0.15rem;
+  }
+  .quart {
+    position: relative;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .q-title {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-2);
+  }
+  .legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+  .c1 {
+    background: var(--c1);
+  }
+  .c2 {
+    background: var(--c2);
+  }
+  .q-rows {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .q-rows :global(.q-row) {
+    display: grid;
+    grid-template-columns: minmax(7rem, 10rem) 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: var(--fs-xs);
+  }
+  .q-rows :global(.q-label) {
+    color: var(--ink-2);
+  }
+  .q-rows :global(.q-bar) {
+    display: flex;
+    gap: 2px;
+    height: 22px;
+    min-width: 0;
+  }
+  .q-rows :global(.q-bar:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .q-rows :global(.q-seg) {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 0.4rem;
+    border-radius: 4px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .q-rows :global(.q-seg.c1) {
+    background: var(--c1);
+  }
+  .q-rows :global(.q-seg.c2) {
+    background: var(--c2);
+    justify-content: flex-end;
+  }
+  .q-note {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.45;
+  }
+  .tip {
+    position: absolute;
+    z-index: 5;
+    max-width: 19rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--r-sm);
+    background: var(--ink);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    line-height: 1.35;
+    pointer-events: none;
+    box-shadow: var(--shadow-float);
+  }
+  .roles .t {
+    font-size: var(--fs-md);
+  }
+  .tw {
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .rt,
+  .dt {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .rt thead th,
+  .dt thead th {
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-weight: 620;
+    text-align: right;
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  .rt thead th:first-child,
+  .rt thead th:last-child,
+  .dt thead th {
+    text-align: left;
+  }
+  .rt :global(tbody th),
+  .rt :global(td),
+  .dt :global(td) {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .rt :global(tbody th) {
+    text-align: left;
+    font-weight: 600;
+    white-space: normal;
+    min-width: 10rem;
+  }
+  .rt :global(td) {
+    text-align: right;
+  }
+  .rt :global(td.gap) {
+    font-weight: 650;
+  }
+  .rt :global(td.note) {
+    text-align: left;
+    color: var(--warn);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+  }
+  .rt :global(tr.is-small td:not(.note)),
+  .rt :global(tr.is-small th) {
+    color: var(--ink-2);
+  }
+  .dt :global(td.num) {
+    font-variant-numeric: tabular-nums;
+  }
+  .rows {
+    min-width: 0;
+  }
+  .rows summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    padding: 0.3rem 0;
+  }
+  .rows .tw {
+    margin-top: 0.6rem;
+    max-height: 26rem;
+    overflow: auto;
+  }
+  .dt :global(.rm) {
+    background: none;
+    border: 0;
+    padding: 0.3rem 0.4rem;
+    border-radius: 6px;
+    color: var(--bad);
+    font: inherit;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dt :global(.rm:hover) {
+    background: var(--bad-soft);
+  }
+  @media (max-width: 900px) {
+    .pe-top {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .kpis {
+      grid-template-columns: 1fr;
+    }
+    .kpi + .kpi {
+      padding-left: 0;
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+    .two {
+      grid-template-columns: 1fr;
+    }
+    .q-rows :global(.q-row) {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+  }
+  @media print {
+    .inputs,
+    .rows,
+    .tip {
+      display: none;
+    }
+    .pe-top {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

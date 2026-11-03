@@ -1,0 +1,345 @@
+---
+import Icon from "../ui/Icon.astro";
+import StickyNote from "../marks/StickyNote.astro";
+import type { Tool } from "../../lib/library";
+interface Props {
+  entry: Tool;
+}
+const { entry } = Astro.props;
+const { questions, bands } = entry.data;
+const scale = entry.data.scale ?? { min: 1, max: 5, labels: ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"] };
+const values = Array.from({ length: scale.max - scale.min + 1 }, (_, i) => scale.min + i);
+const dims = Array.from(new Set(questions.map((q) => q.dimension ?? "Overall")));
+---
+
+<div class="sv" data-survey={entry.id} data-title={entry.data.title} data-min={scale.min} data-max={scale.max} data-bands={JSON.stringify(bands)}>
+  <p class="sv-next" data-sv-next role="status" aria-live="polite" hidden></p>
+  <form class="qs" data-sv-form>
+    {
+      dims.map((d) => (
+        <fieldset class="dim">
+          {dims.length > 1 && <legend>{d}</legend>}
+          {questions
+            .filter((q) => (q.dimension ?? "Overall") === d)
+            .map((q) => (
+              <fieldset class="q" data-dim={d} data-rev={q.reverse ? "1" : "0"} data-q={q.id}>
+                <legend class="qt">{q.text}</legend>
+                <div class="scale" role="radiogroup">
+                  {values.map((v, i) => (
+                    <label class="opt">
+                      <input type="radio" name={q.id} value={v} />
+                      <span class="num">{v}</span>
+                      <span class="lbl">{scale.labels[i] ?? v}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ))}
+        </fieldset>
+      ))
+    }
+    <div class="sv-actions" data-print="hide">
+      <button class="btn" type="submit"><Icon name="chart" size={18} /> See my results</button>
+      <button class="btn btn-ghost" type="reset"><Icon name="refresh" size={16} /> Start again</button>
+      <p class="tiny muted" data-sv-progress role="status" aria-live="polite"></p>
+    </div>
+  </form>
+
+  <section class="results" data-sv-results hidden aria-labelledby="sv-results-title" tabindex="-1">
+    <h2 id="sv-results-title">Your results</h2>
+    <p class="sv-band" data-sv-band></p>
+    <p class="advice" data-sv-advice></p>
+    <div class="bars" data-sv-bars></div>
+    <div class="sv-actions" data-print="hide">
+      <button class="btn btn-secondary btn-sm" type="button" data-print-page><Icon name="printer" size={16} /> Print results</button>
+      <button class="btn btn-secondary btn-sm" type="button" data-sv-another><Icon name="user-plus" size={16} /> Add another person's answers</button>
+    </div>
+    <p class="tiny muted">Scores are averages on a {scale.min} to {scale.max} scale. Reverse-worded questions are flipped so higher is always better. Answers stay in this browser.</p>
+    <p class="tiny muted" data-print="hide">Running it with a team on one device? Use <strong>Add another person's answers</strong>: the form clears for the next person, and the team's averages build up below.</p>
+  </section>
+
+  <section class="team" data-sv-team hidden aria-labelledby="sv-team-title">
+    <details class="team-box" data-sv-team-details>
+      <summary>
+        <span class="team-title" id="sv-team-title"><Icon name="people" size={18} /> Team results</span>
+        <span class="team-count" data-sv-team-count></span>
+        <Icon name="chevron-down" size={18} class="team-chev" />
+      </summary>
+      <div class="team-body">
+        <p class="sv-band" data-sv-team-overall></p>
+        <p class="advice" data-sv-team-advice></p>
+        <div class="bars" data-sv-team-bars></div>
+        <p class="team-low" data-sv-team-low></p>
+        <div class="team-few" data-sv-team-few hidden>
+          <StickyNote color="pink" title="Fewer than five answers" tilt={-0.6}>
+            <p>With fewer than five responses, people can work out who said what. Share area scores with the team only once five or more people have answered.</p>
+          </StickyNote>
+        </div>
+        <div class="sv-actions" data-print="hide">
+          <button class="btn btn-secondary btn-sm" type="button" data-sv-csv><Icon name="download" size={16} /> Download responses as CSV</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-sv-clear><Icon name="x" size={16} /> Clear all responses</button>
+        </div>
+        <div class="confirm" data-sv-confirm hidden>
+          <p data-sv-confirm-text></p>
+          <div class="sv-actions">
+            <button class="btn btn-sm" type="button" data-sv-clear-yes>Delete responses</button>
+            <button class="btn btn-secondary btn-sm" type="button" data-sv-clear-no>Keep them</button>
+          </div>
+        </div>
+        <p class="tiny muted">
+          Responses are kept on this device only, in a random order and without names or times, so a response number doesn't show who answered. The CSV has the same anonymous rows.
+        </p>
+      </div>
+    </details>
+  </section>
+  <p class="team-status" data-sv-team-status role="status" aria-live="polite" data-print="hide"></p>
+</div>
+
+<script>
+  import "../../scripts/survey-tool";
+</script>
+
+<style>
+  .sv {
+    display: grid;
+    gap: 2rem;
+    max-width: 52rem;
+  }
+  .sv-next {
+    padding: 0.75rem 1rem;
+    border-radius: var(--r);
+    border: 1px solid var(--neel-200);
+    background: var(--neel-50);
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    color: var(--neel-800);
+  }
+  .qs {
+    display: grid;
+    gap: 1.5rem;
+  }
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .dim > legend {
+    font-size: var(--fs-lg);
+    font-weight: 650;
+    margin-bottom: 0.75rem;
+  }
+  .dim {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .q {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+  }
+  .qt {
+    float: left;
+    width: 100%;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 0;
+  }
+  .qt + * {
+    clear: both;
+  }
+  .scale {
+    margin-top: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: 0.4rem;
+  }
+  .opt {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.15rem;
+    padding: 0.5rem 0.3rem;
+    border: 1.5px solid var(--line);
+    border-radius: var(--r);
+    cursor: pointer;
+    text-align: center;
+    transition:
+      border-color 120ms,
+      background-color 120ms;
+  }
+  .opt input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .opt:hover {
+    border-color: var(--neel-300);
+  }
+  .opt:has(input:checked) {
+    border-color: var(--neel-600);
+    background: var(--neel-50);
+  }
+  .opt:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .num {
+    font-weight: 700;
+    color: var(--neel-700);
+  }
+  .lbl {
+    font-size: 0.78rem;
+    color: var(--ink-2);
+    line-height: 1.25;
+  }
+  .sv-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+  }
+  .results {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.4rem;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line);
+    background: var(--canvas);
+  }
+  /* Not ".band": that global class tints a page band. */
+  .sv-band {
+    font-size: var(--fs-lg);
+    font-weight: 650;
+  }
+  .advice {
+    color: var(--ink-2);
+    max-width: 60ch;
+  }
+  .bars {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .bars :global(.bar-row) {
+    display: grid;
+    grid-template-columns: minmax(8rem, 14rem) 1fr 2.5rem;
+    gap: 0.8rem;
+    align-items: center;
+    font-size: var(--fs-sm);
+  }
+  @media (max-width: 560px) {
+    .bars :global(.bar-row) {
+      grid-template-columns: 1fr 2.5rem;
+      row-gap: 0.25rem;
+    }
+    .bars :global(.bar-row > :first-child) {
+      grid-column: 1 / -1;
+    }
+  }
+  .bars :global(.bt) {
+    height: 14px;
+    border-radius: 4px;
+    background: var(--neel-100);
+    overflow: hidden;
+  }
+  .bars :global(.bf) {
+    display: block;
+    height: 100%;
+    background: var(--neel-600);
+    border-radius: 0 4px 4px 0;
+  }
+  .bars :global(.bv) {
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* ---------- Team results: closed by default, so the next person doesn't see them ---------- */
+  .team {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .team-box {
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+  }
+  .team-box summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.9rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    list-style: none;
+    border-radius: var(--r-xl);
+  }
+  .team-box summary::-webkit-details-marker {
+    display: none;
+  }
+  .team-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: var(--fs-md);
+    font-weight: 650;
+  }
+  .team-title :global(svg) {
+    color: var(--neel-600);
+  }
+  .team-count {
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    background: var(--neel-50);
+    color: var(--neel-800);
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  .team-box :global(.team-chev) {
+    margin-left: auto;
+    color: var(--ink-3);
+    transition: transform 200ms var(--ease);
+  }
+  .team-box[open] :global(.team-chev) {
+    transform: rotate(180deg);
+  }
+  .team-body {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0.25rem 1.25rem 1.35rem;
+  }
+  .team-low {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .team-few {
+    max-width: 30rem;
+    margin: 0.4rem 0 0.2rem 0.3rem;
+  }
+  .confirm {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+  }
+  .team-status {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .team-status:empty {
+    display: none;
+  }
+  @media print {
+    .team-box {
+      box-shadow: none;
+    }
+    .team-box :global(.team-chev) {
+      display: none;
+    }
+  }
+</style>

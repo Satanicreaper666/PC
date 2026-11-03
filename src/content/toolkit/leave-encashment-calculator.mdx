@@ -1,0 +1,99 @@
+---
+title: Leave encashment calculator
+description: Work out the cash value of unused earned leave from monthly wages, and when it must be paid under the OSH Code when a worker leaves, retires or asks at year end.
+kind: calculator
+calculator: leave-encashment
+glance:
+  inputs: ["Monthly wages", "Leave to encash", "26 or 30 days", "Why it's encashed", "OSH Code worker"]
+  output: "Leave encashment"
+  formula: "Encashment = monthly wages ÷ 26 or 30 × leave days"
+stage: pay
+audiences: [hr, employees, founders]
+order: 50
+checked: 2026-11-02
+useWhen: An employee is leaving or retiring with unused leave, or a worker has asked to encash leave at the end of the calendar year, and you need the amount and the payment deadline.
+tips:
+  - "Use the wages and the divisor (26 or 30) that your <strong>leave policy</strong> names. The law does not fix the divisor."
+  - "For workers who quit or are let go, unused leave must be paid within <strong>two working days</strong>. Put it in the same run as the final wages."
+  - "State Shops and Establishments Acts and company policies can be more generous than the OSH Code. Apply whichever gives the employee more."
+sources:
+  - title: The Occupational Safety, Health and Working Conditions Code, 2020, section 32 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/22041/1/2020-37.pdf
+    publisher: Ministry of Law and Justice
+  - title: Government makes the four Labour Codes effective (21 November 2025)
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2192463
+    publisher: Press Information Bureau
+  - title: "Section 32, OSH Code: annual leave with wages"
+    url: https://www.taxclue.in/blog/section-32-osh-code-2020-annual-leave-with-wages/
+    publisher: TaxClue
+  - title: FAQs on the OSH Code and the OSH (Central) Rules, 2026
+    url: https://acuitylaw.co.in/md/faqs/faqs-on-the-occupational-safety-health-and-working-conditions-code-2020-and-the-occupational-safety-health-and-working-conditions-central-rules-2026/
+    publisher: Acuity Law
+  - title: Ministry FAQs on the four Labour Codes, including the additional FAQs of 16 March 2026 (summary)
+    url: https://www.scconline.com/blog/post/2026/04/26/ministry-faqs-four-labour-codes-india-2026/
+    publisher: SCC Online
+related: [toolkit/full-and-final-settlement-calculator, toolkit/working-days-calculator, toolkit/leave-policy, handbooks/labour-law/03-leave-and-working-hours, glossary/earned-leave, glossary/leave-encashment]
+faq:
+  - q: How is leave encashment calculated?
+    a: Unused leave days × a day's wages, where a day's wages is monthly wages ÷ 26 or ÷ 30, as the leave policy says. For example ₹40,000 ÷ 26 × 18 days = ₹27,692.
+  - q: How much earned leave does a worker get under the new Labour Codes?
+    a: A worker who works 180 days or more in a calendar year earns one day of annual leave for every 20 days worked. Up to 30 days can be carried forward.
+  - q: When must leave encashment be paid after resignation?
+    a: For a worker under the OSH Code, within two working days of leaving. On retirement or death it is due within two months.
+  - q: Can unused leave be encashed every year?
+    a: Under the OSH Code a worker can ask to encash leave at the end of the calendar year. Company policies set their own rules for other employees.
+keywords: [leave encashment calculator, earned leave encashment formula, leave encashment on resignation, annual leave osh code, leave encashment 26 or 30 days, el encashment calculation]
+---
+
+## How the amount is worked out
+
+<Figure title="Leave encashment" caption="A day's wages times the leave days. The divisor comes from the leave policy.">
+  <Formula
+    result={{ value: "Leave encashment" }}
+    parts={[{ value: "Monthly wages", label: "as the policy defines them" }, { op: "÷" }, { value: "26 or 30", label: "working or calendar days" }, { op: "×" }, { value: "Leave days", label: "unused leave" }]}
+    example="Example: ₹40,000 ÷ 26 × 18 days = ₹27,692. With a 30-day divisor it is ₹24,000."
+  />
+</Figure>
+
+The OSH Code says unused leave is paid as wages, but it does not fix how a day's wages are worked out. Policies usually divide monthly wages by 26 (working days, the same divisor used for gratuity and overtime) or by 30 (calendar days). Dividing by 26 gives a higher figure. Use the wages and divisor your policy names; under the Labour Codes, wages are basic pay, dearness allowance and other pay not on the exclusion list.
+
+## How workers earn leave under the OSH Code
+
+<Figure title="From days worked to cash" caption="Read left to right. Leave is earned in a calendar year, carried forward within a limit, and paid out at year end on request or when the worker leaves." wide>
+  <Flow
+    steps={[
+      { who: "Worker", title: "Works 180 days in the year", detail: "Lay-off, maternity leave and leave taken count towards it" },
+      { title: "Earns 1 day for every 20 days", detail: "1 for every 15 for adolescents" },
+      { title: "Carries forward up to 30 days", detail: "Refused leave is not capped" }
+    ]}
+    outcomes={[
+      { title: "Encashed at year end", detail: "When the worker asks", tone: "good" },
+      { title: "Paid on leaving", detail: "Within 2 working days, or 2 months on retirement or death", tone: "good" }
+    ]}
+  />
+</Figure>
+
+A "worker" who works <Fact id="leave.eligibilityDays" /> or more in a calendar year earns annual leave at <Fact id="leave.accrualDays" />. Up to <Fact id="leave.carryForwardMax" /> can be carried forward; leave the worker applied for and was refused can be carried forward without a limit. The PIB note on the Codes puts it simply: every worker can take annual leave after 180 days of work in a year.
+
+### When it must be paid
+
+<Figure title="Payment deadlines" caption="Compare the columns for the two kinds of employee.">
+  <Compare
+    columns={["Worker under the OSH Code", "Manager, administrator or senior supervisor"]}
+    rows={[
+      { label: "Leaving: resignation, discharge, dismissal", values: ["Within 2 working days", "As the policy or state law says"] },
+      { label: "Retirement or death", values: ["Within 2 months", "As the policy or state law says"] },
+      { label: "Encashment while in service", values: ["At year end, on request", "As the policy says"] }
+    ]}
+  />
+</Figure>
+
+"Worker" leaves out people employed mainly in a managerial or administrative role, and supervisors earning more than <Fact id="osh.supervisorWageLimit" />. Their leave comes from the state Shops and Establishments Act and company policy. Whether the Code on Wages' two-working-day rule for final wages also covers their leave encashment is debated, so the safe course is to pay it with the final wages.
+
+<Callout type="tip">
+The OSH Code's leave rules apply to establishments with 10 or more workers. State Shops and Establishments Acts continue alongside them, and some allow more carry-forward. Where two rules differ, most employers apply the one that is better for the employee.
+</Callout>
+
+## Tax
+
+Income tax on leave encashment depends on why and when it is paid, under the Income-tax Act, 2025. This calculator does not work out tax; see the TDS handbook chapter on [joiners and leavers](/handbooks/tds/joiners-leavers-and-transfers/).

@@ -1,0 +1,136 @@
+---
+/**
+ * Where a tool fits: the six stages of working life as knots on one thread,
+ * in the loom's language. The tool's own stage is the turmeric knot. Every
+ * knot links to that stage's tools on /toolkit/.
+ */
+import { STAGES, STAGE_INFO, type Stage } from "../../data/taxonomy";
+interface Props {
+  stage: Stage;
+}
+const { stage } = Astro.props;
+
+/** The accessible name always contains the visible short name, so voice control can say "Exit". */
+const nameFor = (s: Stage) => {
+  const { label, short } = STAGE_INFO[s];
+  const base = label.toLowerCase().includes(short.toLowerCase()) ? label : `${short} (${label.toLowerCase()})`;
+  return s === stage ? `${base}, this tool's stage: all tools` : `${base}: all tools`;
+};
+---
+
+<div class="fit">
+  <p class="glance-label" id="glance-fit">Where it fits</p>
+  <ol class="stages" aria-labelledby="glance-fit">
+    {
+      STAGES.map((s) => (
+        <li class:list={["st", { here: s === stage }]}>
+          <a href={`/toolkit/#${s}`} aria-label={nameFor(s)}>
+            <span class="knot" aria-hidden="true" />
+            <span class="nm">{STAGE_INFO[s].short}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .fit {
+    --k: 1.625rem; /* the row the knots sit on */
+  }
+  .glance-label {
+    margin-bottom: 0.55rem;
+  }
+  .stages {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  /* the weft thread, from the first knot to the last */
+  .stages::before {
+    content: "";
+    position: absolute;
+    left: calc(100% / 12);
+    right: calc(100% / 12);
+    top: calc(var(--k) / 2 - 3px);
+    height: 6px;
+    border-radius: 3px;
+    background: var(--neel-200);
+  }
+  .st a {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.3rem;
+    padding-bottom: 0.15rem;
+    color: var(--ink-3);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .knot {
+    width: 1rem;
+    height: 1rem;
+    margin-block: calc((var(--k) - 1rem) / 2);
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--neel-600);
+    /* a gap of band colour, so the knot sits over the thread like the loom's */
+    box-shadow: 0 0 0 3px var(--canvas);
+    transition: transform 180ms var(--ease-out), border-color 180ms;
+  }
+  .here .knot {
+    width: var(--k);
+    height: var(--k);
+    margin-block: 0;
+    background: var(--accent);
+    border-color: var(--haldi-700);
+  }
+  .nm {
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    line-height: 1.2;
+  }
+  .here .nm {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .st a:hover .knot {
+    transform: scale(1.15);
+    border-color: var(--neel-800);
+  }
+  .here a:hover .knot {
+    border-color: var(--haldi-700);
+  }
+  .st a:hover .nm {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  /* Focus shows on the knot itself, plus the name. */
+  .st a:focus-visible {
+    outline: none;
+  }
+  .st a:focus-visible .knot {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .st a:focus-visible .nm {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  @media (forced-colors: active) {
+    .stages::before {
+      background: CanvasText;
+    }
+    .knot {
+      border-color: CanvasText;
+    }
+    .here .knot {
+      background: Highlight;
+    }
+  }
+</style>

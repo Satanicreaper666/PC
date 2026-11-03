@@ -1,0 +1,411 @@
+---
+import { Picture } from "astro:assets";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import Icon from "../../components/ui/Icon.astro";
+import { AUDIENCES, AUDIENCE_INFO } from "../../data/taxonomy";
+import { CONTACT, AUTHOR } from "../../data/contact";
+import { SITE } from "../../data/site";
+import { allChapters, allTools, allTerms, roleJds, breadcrumbLd } from "../../lib/library";
+import type { IconName } from "../../lib/icons";
+import portrait from "../../assets/akash-mukundan.jpg";
+
+const [chapters, tools, terms, jds] = await Promise.all([allChapters(), allTools(), allTerms(), roleJds()]);
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "About", href: "/about/" }
+];
+const wa = CONTACT.whatsapp ? `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent("Hi Akash, I have a question about PeopleCraft.")}` : "";
+const ld = [
+  breadcrumbLd(Astro.site, trail),
+  {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "About PeopleCraft",
+    url: new URL("/about/", Astro.site).toString(),
+    mainEntity: {
+      "@type": "Organization",
+      name: SITE.name,
+      url: new URL("/", Astro.site).toString(),
+      logo: new URL("/icons/icon-512.png", Astro.site).toString(),
+      founder: { "@type": "Person", name: AUTHOR.name, jobTitle: AUTHOR.role, sameAs: [AUTHOR.linkedin] },
+      sameAs: [CONTACT.linkedin].filter(Boolean)
+    }
+  }
+];
+---
+
+<BaseLayout title="About PeopleCraft" description="PeopleCraft is a free HR library for India built by Akash Mukundan, an HR business partner in Bengaluru. No sign-up, no paywall, no tracking." jsonLd={ld}>
+  <PageHero title="About PeopleCraft" lede="A free HR library for India, written in plain English for everyone who works: the people who run HR, the founders who hire, the employees who get paid, and the students about to start." trail={trail} />
+
+  <div class="wrap section about">
+    <section class="author" aria-labelledby="author-name">
+      <figure class="portrait">
+        <span class="tape t1" aria-hidden="true"></span>
+        <span class="tape t2" aria-hidden="true"></span>
+        <Picture src={portrait} formats={["avif", "webp"]} widths={[280, 560]} sizes="(max-width: 640px) 9rem, 14rem" alt="Akash Mukundan" class="photo" loading="eager" />
+        <figcaption class="hand">Akash, Bengaluru</figcaption>
+      </figure>
+      <div class="who">
+        <p class="small muted">Built by</p>
+        <h2 id="author-name">{AUTHOR.name}</h2>
+        <p class="role">{AUTHOR.role}</p>
+        <ul class="creds" aria-label="Credentials">
+          {AUTHOR.credentials.map((c) => <li class="chip">{c}</li>)}
+        </ul>
+        <div class="links">
+          {
+            AUTHOR.linkedin && (
+              <a class="btn btn-secondary btn-sm" href={AUTHOR.linkedin} target="_blank" rel="noopener">
+                <Icon name="external-link" size={16} />
+                LinkedIn
+              </a>
+            )
+          }
+          {
+            CONTACT.email && (
+              <a class="btn btn-secondary btn-sm" href={`mailto:${CONTACT.email}`}>
+                <Icon name="mail" size={16} />
+                Email
+              </a>
+            )
+          }
+          {
+            wa && (
+              <a class="btn btn-secondary btn-sm" href={wa} target="_blank" rel="noopener">
+                <Icon name="message" size={16} />
+                WhatsApp
+              </a>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <div class="prose story">
+      <p class="first">
+        PeopleCraft exists because there was no single place that brought together Indian labour law, HR tools, compliance references and workforce analytics, without a paywall or a sales pitch.
+      </p>
+      <p>
+        Akash has spent more than five years in HR across healthcare, aerospace, retail and technology: from psychiatric hospitals with NABH compliance to aerospace companies with DGCA and AS9100D
+        audits. The same problem kept coming back. Checking a Labour Code provision, working out gratuity, drafting a JD or building an org chart for a leadership review meant searching late at
+        night and stitching together sources that were often out of date.
+      </p>
+      <p>
+        Enterprise HR platforms are priced for very large companies. The free material was scattered and still stuck before the Labour Codes. There was nothing in between for the working HR
+        professional, the founder or the employee, so he built it.
+      </p>
+      <p>
+        The labour law chapters draw on audits he has prepared for. The recruitment material comes from hiring more than 255 people across engineering, clinical and retail roles. The analytics
+        tool exists because he was tired of rebuilding the same dashboard at every new company. And it is free, because basic HR knowledge in India shouldn't sit behind enterprise pricing.
+      </p>
+    </div>
+
+    <div class="facts" role="group" aria-label="What's in the library">
+      <p><strong>{chapters.length}</strong> handbook chapters</p>
+      <p><strong>{tools.length}</strong> tools</p>
+      {jds.length > 0 && <p><strong>{jds.length}</strong> job descriptions</p>}
+      <p><strong>{terms.length}</strong> glossary terms</p>
+    </div>
+
+    <section class="principles" aria-labelledby="principles-h">
+      <h2 id="principles-h">What PeopleCraft promises</h2>
+      <ul>
+        <li>
+          <Icon name="lock" size={22} />
+          <div>
+            <h3>Private by design</h3>
+            <p>No login, no tracking and no data collection. Every tool runs in your browser, so employee data, salaries and org charts stay on your device.</p>
+          </div>
+        </li>
+        <li>
+          <Icon name="map-pin" size={22} />
+          <div>
+            <h3>Built for India</h3>
+            <p>Written from the Labour Codes, Indian payroll and Indian HR practice up, not a global product with an India chapter.</p>
+          </div>
+        </li>
+        <li>
+          <Icon name="heart" size={22} />
+          <div>
+            <h3>Free, all of it</h3>
+            <p>No paid tier and nothing to unlock. Every chapter, tool and template is free to use and adapt.</p>
+          </div>
+        </li>
+        <li>
+          <Icon name="stamp" size={22} />
+          <div>
+            <h3>Checked, not guessed</h3>
+            <p>Every rule and number links to the law or notice it comes from, with the date it was last checked. <a href="/about/how-we-check/">How facts are checked</a>.</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <div class="prose">
+      <h2>How it's made</h2>
+      <p>
+        PeopleCraft is built by one person using AI as a force multiplier: the site and much of the first drafting were done with Claude, Anthropic's AI model. That is why every legal fact is checked
+        against official sources and dated, and why each page lists the sources it relies on.
+      </p>
+
+      <h2>Who it's for</h2>
+    </div>
+
+    <ul class="readers">
+      {
+        AUDIENCES.map((a) => (
+          <li>
+            <a href={AUDIENCE_INFO[a].path}>
+              <Icon name={AUDIENCE_INFO[a].icon as IconName} size={20} />
+              <span>
+                <strong>{AUDIENCE_INFO[a].label}</strong>
+                <span class="small muted">{AUDIENCE_INFO[a].blurb}</span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="prose">
+      <h2>What it isn't</h2>
+      <p>
+        PeopleCraft is general information, not legal, tax or financial advice, and it is not a certification. Your contract, your company's policy, your state's rules or a recent notification can change the
+        answer for you. See the <a href="/disclaimer/">disclaimer</a>.
+      </p>
+
+      <h2>Talk to us</h2>
+      <p>Spotted something wrong or out of date? Want a tool that isn't here yet? Corrections are checked against the source and fixed on the page.</p>
+    </div>
+
+    <div class="contact">
+      {
+        wa && (
+          <a class="btn" href={wa} target="_blank" rel="noopener">
+            <Icon name="message" size={18} />
+            Message on WhatsApp
+          </a>
+        )
+      }
+      {
+        CONTACT.email && (
+          <a class="btn btn-secondary" href={`mailto:${CONTACT.email}`}>
+            <Icon name="mail" size={18} />
+            {CONTACT.email}
+          </a>
+        )
+      }
+      {
+        CONTACT.linkedin && (
+          <a class="btn btn-secondary" href={CONTACT.linkedin} target="_blank" rel="noopener">
+            <Icon name="external-link" size={18} />
+            PeopleCraft on LinkedIn
+          </a>
+        )
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .about {
+    display: grid;
+    gap: 2rem;
+    max-width: 50rem;
+    padding-bottom: var(--section);
+  }
+  .author {
+    display: grid;
+    grid-template-columns: 14rem 1fr;
+    gap: 1.75rem;
+    align-items: center;
+  }
+  /* A print taped into the notebook, captioned by hand. */
+  .portrait {
+    position: relative;
+    margin: 0;
+    padding: 10px 10px 2.4rem;
+    background: var(--paper);
+    border-radius: 2px;
+    transform: rotate(-2deg);
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.06),
+      2px 3px 0 rgb(17 20 58 / 0.08),
+      8px 16px 28px -14px rgb(17 20 58 / 0.4);
+  }
+  .portrait :global(.photo) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 1px;
+    outline: 1px solid rgb(0 0 0 / 0.1);
+    outline-offset: -1px;
+  }
+  .portrait figcaption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.45rem;
+    text-align: center;
+    font-size: 1.35rem;
+  }
+  .portrait .tape {
+    position: absolute;
+    z-index: 2;
+    width: 4.2rem;
+    height: 1.3rem;
+    background: rgb(255 227 110 / 0.62);
+    box-shadow: 0 1px 2px rgb(17 20 58 / 0.14);
+  }
+  .portrait .t1 {
+    top: -0.5rem;
+    left: -1.1rem;
+    transform: rotate(-38deg);
+  }
+  .portrait .t2 {
+    top: -0.5rem;
+    right: -1.1rem;
+    transform: rotate(36deg);
+    background: rgb(191 224 255 / 0.65);
+  }
+  .who {
+    display: grid;
+    gap: 0.4rem;
+    align-content: center;
+  }
+  .who h2 {
+    font-size: var(--fs-xl);
+    font-stretch: 106%;
+    line-height: 1.05;
+  }
+  .role {
+    color: var(--ink-2);
+    font-weight: 560;
+  }
+  .creds {
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .links {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .story .first {
+    font-size: var(--fs-md);
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    border-block: 2px solid var(--neel-700);
+  }
+  .facts p {
+    display: grid;
+    gap: 0.1rem;
+    padding: 1rem 1rem 1.1rem 0;
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .facts strong {
+    font-size: var(--fs-2xl);
+    font-stretch: 106%;
+    line-height: 1;
+    color: var(--neel-700);
+    font-variant-numeric: tabular-nums;
+  }
+  .principles h2 {
+    font-size: var(--fs-xl);
+    margin-bottom: 1rem;
+  }
+  .principles ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: 1rem 1.5rem;
+  }
+  .principles li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+    align-items: start;
+  }
+  .principles li > :global(svg) {
+    color: var(--neel-600);
+    margin-top: 0.15rem;
+  }
+  .principles h3 {
+    font-size: var(--fs-md);
+  }
+  .principles p {
+    margin-top: 0.25rem;
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .principles a {
+    color: var(--primary);
+  }
+  .readers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 0.6rem;
+  }
+  .readers a {
+    height: 100%;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    color: inherit;
+    text-decoration: none;
+  }
+  .readers a:hover {
+    border-color: var(--neel-300);
+    background: var(--canvas);
+  }
+  .readers :global(svg) {
+    color: var(--neel-600);
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+  .readers a > span {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  @media (max-width: 640px) {
+    .author {
+      grid-template-columns: 9rem 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+  }
+  @media (max-width: 420px) {
+    .author {
+      grid-template-columns: 1fr;
+    }
+    .portrait {
+      width: 11rem;
+    }
+  }
+</style>

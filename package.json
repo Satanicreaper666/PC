@@ -1,0 +1,37 @@
+{
+  "name": "peoplecraft-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PeopleCraft: the free HR library for India. Guides, templates, calculators and a glossary.",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && pagefind --site dist --output-subdir pagefind",
+    "preview": "astro preview",
+    "check:links": "node scripts/check-links.mjs dist",
+    "test": "node --test src/lib/calc/*.test.ts src/lib/analytics/*.test.ts src/lib/orgchart/*.test.ts src/lib/mailmerge/*.test.ts",
+    "assets": "node scripts/make-assets.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^8.1.2",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/anek-latin": "^5.3.0",
+    "astro": "^7.4.5",
+    "docx": "^9.15.1",
+    "marked": "^15.0.12",
+    "papaparse": "^5.7.0",
+    "pptxgenjs": "^4.0.1",
+    "read-excel-file": "^9.3.14",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/papaparse": "^5.5.2",
+    "@types/three": "^0.187.0",
+    "pagefind": "^1.6.0",
+    "typescript": "^5.9.3"
+  }
+}

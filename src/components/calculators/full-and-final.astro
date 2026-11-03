@@ -1,0 +1,270 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import DateIn from "../calc/DateIn.astro";
+import AsAt from "./parts/AsAt.astro";
+import { SEPARATION_LABELS } from "../../lib/calc/full-and-final";
+import { WEEKLY_OFF_LABELS } from "../../lib/calc/working-days";
+import { stat } from "../../data/statutory";
+
+const supervisorLimit = stat("osh.supervisorWageLimit").display;
+---
+
+<CalcShell id="full-and-final" resultLabel="Full and final settlement" inputsLabel="Exit details" bars>
+  <Fragment slot="inputs">
+    <Pick name="exit" label="How is employment ending?" style="select" options={Object.entries(SEPARATION_LABELS).map(([value, label]) => ({ value, label }))} />
+    <Pick
+      name="type"
+      label="Type of employment"
+      options={[
+        { value: "permanent", label: "Permanent" },
+        { value: "fixed_term", label: "Fixed-term" }
+      ]}
+    />
+    <div class="two">
+      <DateIn name="doj" label="Date of joining" value="2019-04-01" />
+      <DateIn name="lwd" label="Last working day" value="2026-12-04" />
+    </div>
+
+    <p class="group">Final month's salary</p>
+    <Num name="gross" label="Monthly gross salary" prefix="₹" value="93,000" help="Fixed monthly pay before deductions." />
+    <Pick
+      name="basis"
+      label="Part-month salary is worked on"
+      options={[
+        { value: "calendar", label: "Days in the month" },
+        { value: "30", label: "30 days" },
+        { value: "26", label: "26 days" }
+      ]}
+      help="Use your payroll's usual basis."
+    />
+    <Num name="paid" label="Payable days in the last month (optional)" suffix="days" placeholder="From the dates" help="Leave blank to count from the 1st (or the joining date) to the last working day. Take off any unpaid leave." />
+
+    <p class="group">Leave and gratuity</p>
+    <Num
+      name="wages"
+      label="Monthly wages for gratuity and leave"
+      prefix="₹"
+      value="60,000"
+      help="Basic pay, dearness allowance and other pay the Labour Codes count as wages. Leave out HRA, conveyance, overtime and commission, unless together they exceed half of total pay; then add the excess."
+    />
+    <div class="two">
+      <Num name="leave" label="Unused leave to encash" suffix="days" value="18" />
+      <Pick
+        name="ldiv"
+        label="A day's wages is"
+        options={[
+          { value: "26", label: "÷ 26" },
+          { value: "30", label: "÷ 30" }
+        ]}
+      />
+    </div>
+    <Pick
+      name="worker"
+      label="Is the employee a 'worker' under the OSH Code?"
+      options={[
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" }
+      ]}
+      help={`Not a worker: managerial or administrative staff, and supervisors earning more than ${supervisorLimit}. It changes when leave must be paid.`}
+    />
+
+    <p class="group">Other amounts</p>
+    <Num name="lieu" label="Notice pay the employer pays in lieu (optional)" prefix="₹" placeholder="0" />
+    <Num name="dues" label="Other dues (optional)" prefix="₹" placeholder="0" help="Bonus, incentives, reimbursements or arrears that are due." />
+    <Num name="recovery" label="Notice shortfall to recover (optional)" prefix="₹" placeholder="0" help="Work this out as the contract says; the components and the number of days in a month differ between contracts." />
+    <Num name="loans" label="Loans and advances to recover (optional)" prefix="₹" value="10,000" />
+    <Num name="other" label="Other recoveries (optional)" prefix="₹" placeholder="0" help="For example the agreed value of assets not returned." />
+
+    <p class="group">Working days, for the due dates</p>
+    <Pick name="off" label="Weekly offs" style="select" value="sat_sun" options={Object.entries(WEEKLY_OFF_LABELS).map(([value, label]) => ({ value, label }))} />
+    <div class="field">
+      <label class="field-label" for="f-ff-holidays">Holidays after the last day (optional)</label>
+      <textarea class="control" id="f-ff-holidays" name="holidays" rows="2" placeholder="For example 25 Dec 2026" aria-describedby="f-ff-holidays-help"></textarea>
+      <span class="field-help" id="f-ff-holidays-help">One date per line. Holidays move the two-working-day deadline.</span>
+    </div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="net">₹0</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+<AsAt
+  ids={["wages.separationPayDays", "leave.exitPaymentWorkingDays", "leave.retirementPaymentMonths", "gratuity.daysPerYear", "gratuity.divisor", "gratuity.minYears", "gratuity.fixedTermMinYears", "gratuity.ceiling", "gratuity.paymentDays", "osh.supervisorWageLimit"]}
+/>
+
+<script>
+  import { bindCalculator, inr, num, type CalcStep } from "../../scripts/calc-kit";
+  import { computeFnf, SEPARATION_LABELS } from "../../lib/calc/full-and-final";
+  import type { PayBasis, SeparationType } from "../../lib/calc/full-and-final";
+  import { gratuityRules } from "../../lib/calc/gratuity";
+  import type { EmploymentType } from "../../lib/calc/gratuity";
+  import { addMonthsClamped, longDate, parseHolidays, parseISO, shortDate, WEEKLY_OFF_LABELS } from "../../lib/calc/working-days";
+  import type { WeeklyOff } from "../../lib/calc/working-days";
+  import { stat, statNum } from "../../data/statutory";
+
+  const caveat = stat("wages.separationPayDays").note ?? "";
+  const gr = gratuityRules();
+  const codesFrom = stat("wages.halfRule").from ?? "2025-11-21";
+  const nearMissDays = statNum("gratuity.continuousServiceDays");
+  const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
+  bindCalculator("full-and-final", (v) => {
+    const separation = v.str("exit", "resignation") as SeparationType;
+    const paidRaw = v.raw("paid").replace(/[,\s]/g, "");
+    const r = computeFnf({
+      separation,
+      employment: v.str("type", "permanent") as EmploymentType,
+      worker: v.str("worker", "yes") === "yes",
+      doj: v.str("doj"),
+      lwd: v.str("lwd"),
+      monthlyGross: v.num("gross"),
+      paidDays: paidRaw === "" ? null : v.num("paid"),
+      payBasis: v.str("basis", "calendar") as PayBasis,
+      wages: v.num("wages"),
+      leaveDays: v.num("leave"),
+      leaveDivisor: v.str("ldiv", "26") === "30" ? 30 : 26,
+      noticePayInLieu: v.num("lieu"),
+      otherDues: v.num("dues"),
+      noticeRecovery: v.num("recovery"),
+      loans: v.num("loans"),
+      otherRecoveries: v.num("other"),
+      weeklyOff: v.str("off", "sat_sun") as WeeklyOff,
+      holidays: parseHolidays(v.raw("holidays")).dates
+    });
+    if (r.status !== "ok") return { outputs: { net: "₹0", sub: "" }, message: r.message };
+
+    const g = r.gratuity;
+    const gratuityNote =
+      g.status !== "ok" ? "Not worked out: see the gratuity calculator" : g.eligible ? `${g.countedYears} years counted` : `${g.service.years} completed years; ${g.minYears} needed`;
+    const negative = r.net < 0;
+    const lines = [
+      { label: "Salary for the last month", value: inr(r.salary.amount), note: `${num(r.salary.days, 1)} of ${r.salary.divisor} days${r.salary.defaulted ? ", from the dates" : ""}` },
+      { label: "Leave encashment", value: inr(r.leave.amount), note: `${num(v.num("leave"), 1)} days at ${inr(Math.round(r.leave.dailyRate))} a day` },
+      { label: "Gratuity", value: inr(r.gratuityAmount), note: gratuityNote },
+      ...(v.num("lieu") > 0 ? [{ label: "Notice pay in lieu", value: inr(v.num("lieu")) }] : []),
+      ...(v.num("dues") > 0 ? [{ label: "Other dues", value: inr(v.num("dues")) }] : []),
+      { label: "Total dues", value: inr(r.dues), strong: true },
+      ...(v.num("recovery") > 0 ? [{ label: "Notice shortfall recovery", value: `− ${inr(v.num("recovery"))}`, tone: "bad" as const }] : []),
+      ...(v.num("loans") > 0 ? [{ label: "Loans and advances", value: `− ${inr(v.num("loans"))}`, tone: "bad" as const }] : []),
+      ...(v.num("other") > 0 ? [{ label: "Other recoveries", value: `− ${inr(v.num("other"))}`, tone: "bad" as const }] : []),
+      ...(r.recoveries > 0 ? [{ label: "Total recoveries", value: `− ${inr(r.recoveries)}` }] : []),
+      { label: negative ? "Employee owes" : "Net payable", value: inr(Math.abs(r.net)), strong: true },
+      { label: "Pay wages by", value: r.due.wages.date ? longDate(r.due.wages.date) : "Normal pay date", note: r.due.wages.rule },
+      { label: "Pay leave encashment by", value: r.due.leave.date ? longDate(r.due.leave.date) : "With final wages", note: r.due.leave.rule },
+      ...(r.gratuityAmount > 0 ? [{ label: "Pay gratuity by", value: longDate(r.due.gratuity.date!), note: r.due.gratuity.rule }] : [])
+    ];
+    const notes = [
+      caveat,
+      ...(r.due.wages.date ? [] : [`${SEPARATION_LABELS[separation]}: ${r.due.wages.text}.`]),
+      ...(g.status === "not-covered" && g.message ? [g.message] : []),
+      "Income tax (TDS) on the settlement is not worked out here.",
+      "PF withdrawal or transfer is a claim the employee makes to EPFO; it is not part of the employer's settlement."
+    ];
+
+    // How this was worked out, step by step, with the numbers used.
+    const lwd = v.str("lwd");
+    const off = v.str("off", "sat_sun") as WeeklyOff;
+    const holidaysTyped = parseHolidays(v.raw("holidays")).dates.length;
+    const skipNote = `Skips ${WEEKLY_OFF_LABELS[off] ?? "weekly offs"}${holidaysTyped ? " and the holidays listed" : ""}`;
+    const plus = (xs: number[]) => xs.filter((n) => n > 0).map((n) => inr(n)).join(" + ") || "₹0";
+    const working: CalcStep[] = [
+      {
+        label: "Salary for the last month",
+        formula: `${inr(v.num("gross"))} ÷ ${r.salary.divisor} × ${num(r.salary.days, 1)} days`,
+        result: inr(r.salary.amount),
+        note: r.salary.defaulted ? "Payable days counted from the dates" : undefined
+      },
+      { label: "Leave encashment", formula: `${inr(v.num("wages"))} ÷ ${v.str("ldiv", "26") === "30" ? 30 : 26} × ${num(v.num("leave"), 1)} days`, result: inr(r.leave.amount) },
+      g.status === "ok" && g.eligible && r.gratuityAmount > 0
+        ? {
+            label: "Gratuity",
+            formula: `${inr(v.num("wages"))} × ${gr.daysPerYear} ÷ ${gr.divisor} × ${plural(g.countedYears, "year")}${g.capped ? `, capped at ${inr(gr.ceiling)}` : ""}`,
+            result: inr(r.gratuityAmount)
+          }
+        : { label: "Gratuity", formula: "", result: "₹0", note: gratuityNote },
+      { label: "Total dues", formula: plus([r.salary.amount, r.leave.amount, r.gratuityAmount, v.num("lieu"), v.num("dues")]), result: inr(r.dues) },
+      ...(r.recoveries > 0
+        ? [
+            [v.num("recovery"), v.num("loans"), v.num("other")].filter((n) => n > 0).length > 1
+              ? { label: "Total recoveries", formula: plus([v.num("recovery"), v.num("loans"), v.num("other")]), result: inr(r.recoveries) }
+              : { label: "Total recoveries", formula: "", result: inr(r.recoveries), note: v.num("loans") > 0 ? "Loans and advances" : v.num("recovery") > 0 ? "Notice shortfall" : "Other recoveries" }
+          ]
+        : []),
+      { label: negative ? "Employee owes" : "Net payable", formula: `${inr(r.dues)} − ${inr(r.recoveries)}`, result: inr(Math.abs(r.net)) },
+      ...(r.due.wages.date
+        ? [{ label: "Pay wages by", formula: `${shortDate(lwd)} + ${stat("wages.separationPayDays").display}`, result: longDate(r.due.wages.date), note: skipNote }]
+        : []),
+      ...(r.due.leave.date
+        ? [
+            separation === "superannuation" || separation === "death"
+              ? { label: "Pay leave encashment by", formula: `${shortDate(lwd)} + ${statNum("leave.retirementPaymentMonths")} months`, result: longDate(r.due.leave.date) }
+              : { label: "Pay leave encashment by", formula: `${shortDate(lwd)} + ${plural(statNum("leave.exitPaymentWorkingDays"), "working day")}`, result: longDate(r.due.leave.date), note: skipNote }
+          ]
+        : []),
+      ...(r.gratuityAmount > 0 && r.due.gratuity.date ? [{ label: "Pay gratuity by", formula: `${shortDate(lwd)} + ${gr.paymentDays} days`, result: longDate(r.due.gratuity.date) }] : [])
+    ];
+
+    // Unusual inputs, using rules the page and the inputs' own definitions state.
+    const warnings: string[] = [];
+    const gross = v.num("gross");
+    const wages = v.num("wages");
+    if (gross > 0 && wages > gross)
+      warnings.push(`Wages for gratuity and leave (${inr(wages)}) are more than the monthly gross salary (${inr(gross)}). Wages are part of gross pay, so check the two figures.`);
+    if (v.num("lieu") > 0 && v.num("recovery") > 0)
+      warnings.push(
+        "Notice pay in lieu and a notice shortfall recovery are both entered. Usually only one applies: the employer pays in lieu when it ends the notice early, and recovers a shortfall when the employee leaves before serving it."
+      );
+    if (paidRaw !== "" && v.num("paid") > r.salary.divisor)
+      warnings.push(`${num(v.num("paid"), 1)} payable days is more than the ${r.salary.divisor} the pay basis allows for the month, so ${r.salary.divisor} are used.`);
+    if (g.status === "ok" && !g.eligible && separation !== "death" && v.str("type", "permanent") === "permanent" && g.service.years === g.minYears - 1) {
+      const extra = parseISO(lwd)! - parseISO(addMonthsClamped(v.str("doj"), 12 * g.service.years).date)! + 1;
+      if (extra >= nearMissDays)
+        warnings.push(
+          `${plural(g.service.years, "year")} and ${plural(extra, "day")} of service: just short of ${g.minYears} completed years, so no gratuity is included. Courts differed on near-misses like ${g.service.years} years and ${nearMissDays} days under the old law, and the point is not settled. Check the case with HR.`
+        );
+    }
+    if (lwd < codesFrom)
+      warnings.push(`The last working day is before ${shortDate(codesFrom)}, when the Labour Codes came into force. The amounts and due dates here follow the Codes; the earlier Acts applied before then.`);
+
+    return {
+      working,
+      warnings,
+      outputs: {
+        net: negative ? `− ${inr(Math.abs(r.net))}` : inr(r.net),
+        sub: r.due.wages.date ? `Pay wages by ${longDate(r.due.wages.date)}, within ${stat("wages.separationPayDays").display} of the last working day.` : r.due.wages.text + "."
+      },
+      lines,
+      bars: [
+        { label: "Salary", value: r.salary.amount, display: inr(r.salary.amount) },
+        { label: "Leave", value: r.leave.amount, display: inr(r.leave.amount) },
+        { label: "Gratuity", value: r.gratuityAmount, display: inr(r.gratuityAmount) },
+        { label: "Recoveries", value: r.recoveries, display: `− ${inr(r.recoveries)}` }
+      ],
+      notes
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  .group {
+    margin-top: 0.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-sm);
+    font-weight: 680;
+    color: var(--neel-800);
+  }
+  @media (max-width: 420px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,189 @@
+---
+/** Competencies for one JD, grouped by type, with the level needed shown as text and a three-step scale. */
+import { COMPETENCY_LEVELS, competencyRank } from "./jd-template";
+
+interface Props {
+  items: { name: string; type: "Technical" | "Behavioural"; level: string }[];
+}
+const { items } = Astro.props;
+const groups = (["Technical", "Behavioural"] as const)
+  .map((t) => ({ label: t === "Technical" ? "Technical skills" : "Behaviours", list: items.filter((c) => c.type === t) }))
+  .filter((g) => g.list.length > 0);
+const steps = [1, 2, 3];
+---
+
+{
+  items.length > 0 && (
+    <section class="jd-comp" id="competencies" aria-labelledby="comp-title">
+      <h2 id="comp-title">Competencies</h2>
+      <p class="intro">
+        What the role needs, and at what level. Use them to choose interview questions and to score every candidate against the same bar.
+      </p>
+      <div class="table-wrap" role="region" tabindex="0" aria-label="Competencies (scrolls sideways on small screens)">
+        <table class="comp">
+          <caption class="visually-hidden">Competencies for this role and the level needed for each</caption>
+          <thead>
+            <tr>
+              <th scope="col">Competency</th>
+              <th scope="col">Level needed</th>
+            </tr>
+          </thead>
+          {groups.map((g) => (
+            <tbody>
+              <tr class="grp">
+                <th scope="colgroup" colspan="2">
+                  {g.label}
+                </th>
+              </tr>
+              {g.list.map((c) => {
+                const rank = competencyRank(c.level);
+                return (
+                  <tr>
+                    <th scope="row">{c.name}</th>
+                    <td>
+                      <span class="lvl">
+                        <span class="pips" aria-hidden="true">
+                          {steps.map((n) => (
+                            <i class:list={[n <= rank && "on"]} />
+                          ))}
+                        </span>
+                        {c.level}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          ))}
+        </table>
+      </div>
+      <dl class="key">
+        {COMPETENCY_LEVELS.map((l, i) => (
+          <div>
+            <dt>
+              <span class="pips" aria-hidden="true">
+                {steps.map((n) => (
+                  <i class:list={[n <= i + 1 && "on"]} />
+                ))}
+              </span>
+              {l.name}
+            </dt>
+            <dd>{l.meaning}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
+<style>
+  .jd-comp {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+  h2 {
+    font-size: var(--fs-xl);
+  }
+  .intro {
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+  .comp {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+  }
+  thead th {
+    text-align: left;
+    font-weight: 620;
+    color: var(--ink-2);
+    background: var(--canvas);
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  thead th:last-child {
+    width: 13.5rem;
+  }
+  .grp th {
+    text-align: left;
+    padding: 0.85rem 0.9rem 0.35rem;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--neel-700);
+    border-bottom: 1px solid var(--line);
+  }
+  tbody th[scope="row"] {
+    text-align: left;
+    font-weight: 560;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  td {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  tbody:last-of-type tr:last-child > * {
+    border-bottom: 0;
+  }
+  .lvl {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+  .pips {
+    display: inline-flex;
+    gap: 3px;
+  }
+  .pips i {
+    width: 0.85rem;
+    height: 0.5rem;
+    border-radius: 2px;
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1.5px var(--neel-400);
+  }
+  .pips i.on {
+    background: var(--neel-600);
+    box-shadow: none;
+  }
+  .key {
+    margin: 0;
+    display: grid;
+    gap: 0.35rem 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .key dt {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 620;
+    color: var(--ink);
+  }
+  .key dd {
+    margin: 0.1rem 0 0;
+  }
+  @media (max-width: 480px) {
+    thead th:last-child {
+      width: auto;
+    }
+    tbody th[scope="row"],
+    td,
+    thead th {
+      padding-inline: 0.65rem;
+    }
+  }
+  @media print {
+    .pips i {
+      box-shadow: inset 0 0 0 1px #000;
+    }
+    .pips i.on {
+      background: #000;
+    }
+  }
+</style>

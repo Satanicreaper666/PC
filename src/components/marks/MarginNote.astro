@@ -1,0 +1,48 @@
+---
+/**
+ * A short handwritten note in the margin, with a pen arrow pointing at what it's about.
+ * Keep it under six words. `point` says where the arrow goes from the note.
+ */
+interface Props {
+  point?: "left" | "right" | "down" | "up";
+  class?: string;
+}
+const { point = "left", class: cls } = Astro.props;
+const arrows = {
+  left: "M54 8C40 4 22 6 8 18m0 0 1-8m-1 8 8-1",
+  right: "M6 8c14-4 32-2 46 10m0 0-1-8m1 8-8-1",
+  down: "M30 4c-10 8-12 20-6 32m0 0-6-5m6 5 5-6",
+  up: "M30 36c-10-8-12-20-6-32m0 0-6 5m6-5 5 6"
+};
+---
+
+<span class:list={["margin-note", `point-${point}`, cls]} data-mark>
+  <svg class="pen" viewBox="0 0 60 40" aria-hidden="true">
+    <path class="pen-stroke" pathLength="1" d={arrows[point]} />
+  </svg>
+  <span class="hand"><slot /></span>
+</span>
+
+<style>
+  .margin-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 1.35rem;
+  }
+  .margin-note .pen {
+    width: 2.6rem;
+    height: 1.8rem;
+    stroke-width: 2;
+  }
+  .point-right {
+    flex-direction: row-reverse;
+  }
+  .point-down,
+  .point-up {
+    flex-direction: column;
+  }
+  .point-down {
+    flex-direction: column-reverse;
+  }
+</style>

@@ -1,0 +1,165 @@
+---
+title: Common TDS mistakes and what triggers notices
+description: >-
+  The salary TDS errors payroll makes most often, how the tax department spots them through TRACES and AIS, and how to handle a short-deduction or late-payment default.
+book: tds
+chapter: 9
+stage: pay
+audiences: [hr, founders]
+checked: 2026-11-02
+summary:
+  - "Most salary TDS problems come from a handful of habits: no Form 122 from joiners, unproven claims, wrong PANs and out-of-date perquisite values."
+  - "TRACES checks every quarterly statement and shows defaults such as short deduction, late payment and PAN errors, with a justification report that explains each one."
+  - "Fix data errors with a correction statement; pay real shortfalls with interest, then correct the statement."
+  - "A short self-audit every quarter catches most problems before the department or an employee does."
+sources:
+  - title: "Income-tax Act, 2025, section 392 (what can and can't reduce salary TDS)"
+    url: "https://www.incometaxindia.gov.in/w/section-392-6"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 398: Consequences of failure to deduct or pay"
+    url: "https://www.incometaxindia.gov.in/w/section-398-6"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 156: Rebate"
+    url: "https://www.incometaxindia.gov.in/w/section-156-88"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 202: New tax regime"
+    url: "https://www.incometaxindia.gov.in/w/section-202-76"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 205: Evidence of claims (Form 124)"
+    url: "https://www.incometaxindia.gov.in/w/rule-205-1"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 15: Valuation of perquisites"
+    url: "https://www.incometaxindia.gov.in/w/rule-15-23"
+    publisher: "Income Tax Department"
+  - title: "Form No. 138 FAQs (processing by CPC-TDS, corrections)"
+    url: "https://www.incometaxindia.gov.in/documents/d/guest/form-138-faqs"
+    publisher: "Income Tax Department"
+  - title: "Form No. 122 FAQs"
+    url: "https://www.incometaxindia.gov.in/documents/d/guest/form-122-faqs"
+    publisher: "Income Tax Department"
+  - title: "Form No. 130 FAQs (section 157 relief in Part C)"
+    url: "https://www.incometaxindia.gov.in/documents/d/guest/form-130-faqs"
+    publisher: "Income Tax Department"
+related:
+  - handbooks/tds/10-compliance-checklists
+  - handbooks/tds/08-key-dates-and-penalties
+  - handbooks/tds/04-investment-declarations
+  - toolkit/hr-compliance-audit-checklist
+  - handbooks/labour-law/09-compliance-checklists
+  - glossary/tds
+faq:
+  - q: "What is a short deduction default on TRACES?"
+    a: "It means the TDS reported for a payee is less than what the processing system expected, often because a PAN is missing or wrong, or a lower rate was applied without basis. Download the justification report to see the cause, then correct the statement or pay the shortfall with interest."
+  - q: "How do I correct a wrong PAN in a TDS statement?"
+    a: "File a correction statement for that quarter once the original has been processed. The department's FAQ allows corrections within two years from the end of the tax year in which the statement was due."
+  - q: "My salary arrears pushed me into a higher slab. Is there any relief?"
+    a: "Yes. Section 157 of the Income-tax Act, 2025 gives relief when arrears or advance salary are taxed in one year. You can ask your employer to take it into account and claim it when you file your return."
+  - q: "Can my employer reduce TDS for my share-trading or business loss?"
+    a: "No. Under section 392(4)(b), salary TDS can be reduced only for a loss from house property (old regime only) and for tax already deducted or collected on your other income."
+keywords: [tds short deduction notice traces, tds default justification report, common tds mistakes payroll, correction statement wrong pan tds, section 157 relief arrears]
+draft: false
+---
+
+<Snapshot
+  who="Everyone who runs or reviews payroll."
+  level="Intermediate"
+  risks={[
+    "Defaults on TRACES (the department's portal for tax deducted at source, or TDS) that nobody looks at until a demand arrives.",
+    "Employees who can't get credit for tax because of an error in their permanent account number (PAN).",
+    "A pattern of unproven house rent allowance (HRA) claims that turns one query into a wider review."
+  ]}
+  mistakes={[
+    "Fixing defaults by paying without finding the cause.",
+    "Leaving correction statements for year-end.",
+    "Keeping no record of the proofs behind each claim allowed."
+  ]}
+  exposure="Interest at 1% or 1.5% a month on every shortfall (section 398), late fees, and the time spent answering demands and employees' complaints."
+/>
+
+## The ten mistakes payroll makes most
+
+| Mistake | What goes wrong | How to prevent it |
+| --- | --- | --- |
+| Not asking joiners for Form 122 | Each employer taxes a part-year salary alone; the employee faces a bill at filing | Ask every joiner who had an earlier employer this year, and explain why it helps them |
+| Applying the old regime by default | Wrong TDS for anyone who didn't ask for it | The new regime is the default under section 202; use the old regime only on the employee's request |
+| Allowing HRA without the landlord's PAN | Claims don't meet rule 205 when the year's rent is above ₹1 lakh | Hold the exemption until the name, address, PAN and any relationship are given |
+| Using 1962 perquisite values | Car, gift, meal and loan values are too low, so TDS falls short | Update payroll to rule 15 of the 2026 Rules |
+| Projecting a full year for a leaver | Wrong TDS in the final settlement | Recompute on actual earnings with you plus the full and final (F&F) settlement items |
+| Deducting TDS within the ₹12 lakh rebate | Residents lose take-home pay they are entitled to all year | Apply the section 156 rebate and marginal relief in the projection |
+| Wrong or missing PAN | Credit goes to the wrong person or nobody; higher TDS rates can apply | Validate PANs at joining and before each quarterly statement |
+| Late Form 138 or Form 130 | Late fees, and certificates that arrive after employees need them | File the last quarter's statement by mid-May |
+| Arrears paid without mentioning relief | The employee pays more tax than necessary | Tell them about section 157 relief and take it into account if they ask |
+| Declarations with no proofs | A large deduction in March | Set a proof deadline in January or February and recompute straight after |
+
+## Where to focus your checks
+
+Not every mistake costs the same. The grid below is our view from common payroll practice, not an official ranking. Start with the top-right box.
+
+<Figure title="Salary TDS errors by how often they happen and what they cost" caption="Rows show the cost when it goes wrong; columns show how often we see it. Top right is where to check first." wide>
+  <Matrix
+    xLabel="How often it happens"
+    yLabel="Cost"
+    rows={["High", "Lower"]}
+    cols={["Less common", "Common"]}
+    cells={[
+      [
+        { title: "Deducted, not deposited", note: "Interest at 1.5% a month; prosecution possible", tone: "bad" },
+        { title: "Missing Form 122, wrong PAN", note: "Employees lose credit or face a tax bill", tone: "bad" }
+      ],
+      [
+        { title: "Old perquisite values", note: "Shortfall on a few employees" },
+        { title: "Late proofs, March catch-up", note: "Cash-flow pain for employees", tone: "accent" }
+      ]
+    ]}
+  />
+</Figure>
+
+## How problems come to light
+
+The department doesn't need an audit to find most TDS errors. They show up in three places:
+
+- **TRACES**, after the Centralised Processing Cell (CPC-TDS) processes each quarterly statement. It reports short deduction, short payment, interest on late deduction or payment, late filing fees and PAN errors as defaults, with a justification report for each.
+- **Employees' tax returns**, which are matched with the TDS credited against their PAN and the salary in their Annual Information Statement (AIS). A mismatch becomes a question to the employee, who then comes to you.
+- **Information from other sources** shown in AIS, such as rent, interest and investments, which can contradict claims allowed in payroll.
+
+### Handling a default
+
+<Figure title="What to do when TRACES shows a default" caption="Read the steps in order. Find the cause before paying anything: many defaults are data errors that a correction statement clears." wide>
+  <Flow
+    steps={[
+      { who: "Finance", title: "Default appears on TRACES", detail: "After the statement is processed" },
+      { who: "Finance", title: "Download the justification report", detail: "Shows each default by payee" },
+      { who: "Payroll", title: "Find the cause", detail: "PAN, challan, short deduction or late payment" }
+    ]}
+    outcomes={[
+      { title: "Data error", detail: "File a correction statement", tone: "good" },
+      { title: "Real shortfall", detail: "Pay the tax and interest, then correct", tone: "bad" }
+    ]}
+  />
+</Figure>
+
+<Callout type="warning">
+Don't pay a demand just to make it go away. A wrong PAN or an unmatched challan will produce the same default next quarter, and the employee still won't get credit.
+</Callout>
+
+## Myths and facts
+
+| What people say | What is actually true |
+| --- | --- |
+| "Employees can claim HRA in the new regime." | No. HRA is fully taxable in the new regime. |
+| "Every joiner must give Form 122." | It is optional for the employee, but ask every joiner who had another employer earlier in the tax year. |
+| "Only a house property loss can reduce salary TDS." | True for the old regime, under section 392(4)(b). In the new regime not even that loss can be set against salary. |
+| "Nobody earning up to ₹12 lakh pays tax." | ₹12 lakh is the limit for taxable income for residents in the new regime; with the standard deduction that is about ₹12.75 lakh of taxable salary. Non-residents don't get the rebate. |
+| "Section 392 is just section 192 renumbered." | The method is the same, but forms, section numbers, perquisite values and the HRA city list all changed with the 2025 Act and the 2026 Rules. |
+
+## A quarterly self-audit
+
+<Steps
+  items={[
+    { title: "Reconcile three numbers", body: "TDS in payroll, TDS in challans and TDS in the quarterly statement should match for every employee." },
+    { title: "Check TRACES", body: "Look for defaults and processing errors on the last statement, and clear them before the next one is due." },
+    { title: "Test ten employees by hand", body: "Pick joiners, leavers, old-regime employees and anyone with perquisites. Recompute their tax from scratch." },
+    { title: "Look at the evidence", body: "For old-regime claims allowed so far, confirm the Form 124 proofs are on file." },
+    { title: "Write down what you found", body: "Note each error, its cause and the fix, so the same mistake isn't made next quarter." }
+  ]}
+/>

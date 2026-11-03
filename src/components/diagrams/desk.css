@@ -1,0 +1,71 @@
+/*
+  Stationery shared by the diagrams: index cards and sticky notes on a careful reader's desk.
+  See docs/ART-DIRECTION.md, "Marks and stationery". One light, from the top left, so shadows
+  fall down and to the right. Classes start with dk- so they never meet a page's own.
+
+  dk-card              an index card: white paper with a crisp cast shadow
+  dk-card dk-index     …with the red header rule of a ruled index card
+  dk-sticky dk-yellow  a sticky note: something to act on or notice
+  dk-sticky dk-pink    a warning, a risk, or "stop"
+  dk-sticky dk-green   good practice, or "go ahead"
+*/
+.dk-card {
+  position: relative;
+  border-radius: 3px;
+  background-color: var(--paper);
+  box-shadow:
+    0 0 0 1px rgb(17 20 58 / 0.09),
+    1.5px 2px 0 rgb(17 20 58 / 0.07),
+    4px 12px 22px -14px rgb(17 20 58 / 0.3);
+}
+/* The red rule printed across the top of a ruled index card. */
+.dk-index {
+  background-image: linear-gradient(rgb(214 69 80 / 0.5), rgb(214 69 80 / 0.5));
+  background-size: 100% 1px;
+  background-position: 0 var(--dk-rule, 0.42rem);
+  background-repeat: no-repeat;
+}
+.dk-sticky {
+  --note: #fff3a6;
+  --note-edge: #f2df6f;
+  position: relative;
+  border-radius: 2px 2px 3px 14px / 2px 2px 3px 6px;
+  background:
+    linear-gradient(170deg, rgb(255 255 255 / 0.35), transparent 40%),
+    var(--note);
+  color: var(--ink);
+  transform: rotate(var(--dk-tilt, -0.5deg));
+  /* Lifted at the bottom corner, the way a sticky note curls. */
+  box-shadow:
+    0 1px 1px rgb(17 20 58 / 0.08),
+    3px 8px 14px -6px rgb(17 20 58 / 0.28),
+    inset 0 -2px 0 var(--note-edge);
+}
+.dk-pink {
+  --note: #ffd9e8;
+  --note-edge: #f7b7d1;
+}
+.dk-green {
+  --note: #d6f5dc;
+  --note-edge: #ade6ba;
+}
+@media (forced-colors: active) {
+  .dk-card,
+  .dk-sticky {
+    border: 1px solid CanvasText;
+  }
+}
+/* Printed without colour: paper becomes a thin outline, and a sticky note a heavier one. */
+@media print {
+  .dk-card,
+  .dk-sticky {
+    box-shadow: none !important;
+    background: #fff !important;
+    border: 1px solid #9a9a9a;
+  }
+  /* Only the note's tilt goes; a card may be positioned with a transform of its own. */
+  .dk-sticky {
+    transform: none !important;
+    border: 2px solid #333;
+  }
+}

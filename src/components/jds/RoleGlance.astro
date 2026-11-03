@@ -1,0 +1,634 @@
+---
+/**
+ * The right half of a JD page header: the role drawn as a small diagram, from
+ * the entry's own data. Flat on the header band, no card around it.
+ *  (a) where the role sits on the level ladder, each rung a link to that level;
+ *  (b) the experience range on a 0 to 25 year scale;
+ *  (c) the competency mix as a woven bar, technical against behavioural;
+ *  (d) the interview kit, linked.
+ * Below 64rem it shrinks to the ladder and one line. The blank template shows
+ * the six parts of a good JD instead. Hidden in print.
+ */
+import type { Jd } from "../../lib/library";
+import LevelLadder from "./LevelLadder.astro";
+import { COMPETENCY_LEVELS, competencyRank, isBlankJd, jdParts, yearRange } from "./jd-template";
+
+type Level = Jd["data"]["level"];
+interface Props {
+  entry: Jd;
+  /** JDs at each level across the library, for the ladder's links. */
+  counts: Record<Level, number>;
+}
+const { entry, counts } = Astro.props;
+const d = entry.data;
+const blank = isBlankJd(entry);
+
+// (b) Experience on a fixed scale, so pages compare with each other.
+const SCALE = 25;
+const years = yearRange(d.experience);
+const at = (y: number) => `${((Math.min(y, SCALE) / SCALE) * 100).toFixed(2)}%`;
+
+// (c) Competency mix.
+const tech = d.competencies.filter((c) => c.type === "Technical");
+const beh = d.competencies.filter((c) => c.type === "Behavioural");
+const byLevel = [...COMPETENCY_LEVELS]
+  .reverse()
+  .map((l) => ({ name: l.name, rank: competencyRank(l.name), n: d.competencies.filter((c) => c.level === l.name).length }))
+  .filter((l) => l.n > 0);
+const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+
+// (d) Interview kit.
+const qs = d.interview.length;
+const qText = `${qs} interview ${qs === 1 ? "question" : "questions"}`;
+
+const parts = blank ? jdParts(entry.body) : [];
+const ladderLabel = `Level of this role: ${d.level}. Each rung opens the JDs at that level.`;
+---
+
+<div class:list={["role-glance", blank && "is-blank"]} data-print="hide" data-pagefind-ignore>
+  <h2 class="visually-hidden">{blank ? "The six parts of a job description" : `${d.title} at a glance`}</h2>
+  {
+    blank ? (
+      <>
+        <figure class="anatomy">
+          <figcaption class="glance-label">Six parts, in the order to write them</figcaption>
+          <div class="sheet-wrap">
+            <svg class="fold" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M0.75 0.75V21.5a1.75 1.75 0 0 0 1.75 1.75H23.25Z" />
+            </svg>
+          <ol class="sheet">
+            {parts.map((p, i) => (
+              <li class:list={["part", `part-${i + 1}`]}>
+                <span class="knot" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <span class="p-name">{p}</span>
+                <span class="p-lines" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </li>
+            ))}
+          </ol>
+          </div>
+        </figure>
+        <p class="kit-line">
+          <span class="knots" aria-hidden="true">
+            {d.interview.map((_, i) => (
+              <i>{i + 1}</i>
+            ))}
+          </span>
+          <a href="#interview-kit">{qText}</a>
+          <span class="muted">for any role</span>
+        </p>
+      </>
+    ) : (
+      <>
+        <div class="lad">
+          <p class="lad-head glance-label" aria-hidden="true">
+            <span>Level</span>
+            <span>JDs</span>
+          </p>
+          <LevelLadder counts={counts} current={d.level} label={ladderLabel} hash="#find" compact />
+        </div>
+        <dl class="facts">
+          <div class="fact">
+            <dt class="glance-label">Experience</dt>
+            <dd>
+              <span class="big">{d.experience}</span>
+              {years && (
+                <span class="years" aria-hidden="true" style={`--a:${at(years[0])};--b:${at(years[1])}`}>
+                  <span class="yr-track" />
+                  {[0, 5, 10, 15, 20, 25].map((t) => (
+                    <span class="yr-tick" style={`--t:${at(t)}`} />
+                  ))}
+                  <span class="yr-range" />
+                  <span class="yr-lab yr-0">0</span>
+                  <span class="yr-lab yr-max">{SCALE} years</span>
+                </span>
+              )}
+            </dd>
+          </div>
+          {d.competencies.length > 0 && (
+            <div class="fact">
+              <dt class="glance-label">Competency mix</dt>
+              <dd>
+                <span class="mix-row">
+                  <span class="weave" aria-hidden="true">
+                    {tech.map(() => (
+                      <i class="w-t" />
+                    ))}
+                    {beh.map(() => (
+                      <i class="w-b" />
+                    ))}
+                  </span>
+                  <span class="mix">
+                    <span class="key-t">{tech.length} technical</span>
+                    <span class="visually-hidden">, </span>
+                    <span class="key-b">{beh.length} behavioural</span>
+                    <span class="visually-hidden">. </span>
+                  </span>
+                </span>
+                <span class="lvls">
+                  {byLevel.map((l, i) => (
+                    <span class="lv">
+                      <span class="pips" aria-hidden="true">
+                        {[1, 2, 3].map((p) => (
+                          <i class:list={[p <= l.rank && "on"]} />
+                        ))}
+                      </span>
+                      {l.n} {lower(l.name)}
+                      {i < byLevel.length - 1 && <span class="visually-hidden">, </span>}
+                    </span>
+                  ))}
+                </span>
+              </dd>
+            </div>
+          )}
+          {qs > 0 && (
+            <div class="fact">
+              <dt class="glance-label">Interview kit</dt>
+              <dd class="kit">
+                <span class="knots" aria-hidden="true">
+                  {d.interview.map((_, i) => (
+                    <i>{i + 1}</i>
+                  ))}
+                </span>
+                <a href="#interview-kit">{qText}</a>
+              </dd>
+            </div>
+          )}
+        </dl>
+        <p class="one-line">
+          Typically {d.experience}
+          {qs > 0 && (
+            <>
+              <span aria-hidden="true"> · </span>
+              <a href="#interview-kit">{qText}</a>
+            </>
+          )}
+        </p>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .role-glance {
+    --ground: var(--canvas);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem 2rem;
+    align-items: start;
+  }
+  .lad {
+    display: grid;
+    gap: 0.5rem;
+  }
+  /* column heads over the ladder and over its counts */
+  .lad-head {
+    display: grid;
+    grid-template-columns: 5.6rem 3rem auto;
+  }
+  .lad-head span:first-child {
+    grid-column: 2;
+    text-align: center;
+  }
+  .lad-head span:last-child {
+    padding-left: 0.55rem;
+    color: var(--ink-3);
+    font-weight: 560;
+  }
+
+  /* (b), (c), (d): the facts column */
+  .facts {
+    margin: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .fact dd {
+    margin: 0.3rem 0 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .big {
+    font-size: var(--fs-md);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Experience: the range on a 0 to 25 year thread */
+  .years {
+    position: relative;
+    display: block;
+    height: 1.75rem;
+    margin-inline: 0.2rem;
+  }
+  .yr-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0.45rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--neel-200);
+  }
+  .yr-tick {
+    position: absolute;
+    left: var(--t);
+    top: 0.3rem;
+    width: 1px;
+    height: 0.5rem;
+    margin-left: -0.5px;
+    background: var(--neel-300);
+  }
+  .yr-range {
+    position: absolute;
+    left: var(--a);
+    width: max(8px, calc(var(--b) - var(--a)));
+    top: calc(0.45rem - 3px);
+    height: 8px;
+    border-radius: 99px;
+    background: var(--neel-600);
+    box-shadow:
+      0 0 0 2px var(--ground);
+  }
+  .yr-lab {
+    position: absolute;
+    top: 0.85rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .yr-0 {
+    left: 0;
+  }
+  .yr-max {
+    right: 0;
+  }
+
+  /* Competency mix: one warp thread per competency, woven through by one weft */
+  .mix-row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .weave {
+    position: relative;
+    flex: none;
+    display: flex;
+    gap: 4px;
+    height: 1.6rem;
+    padding-inline: 0.35rem;
+  }
+  .weave::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 5px;
+    margin-top: -2.5px;
+    border-radius: 99px;
+    background: var(--neel-300);
+    z-index: 1;
+    box-shadow:
+      0 -2px 0 var(--ground),
+      0 2px 0 var(--ground);
+  }
+  .weave i {
+    position: relative;
+    width: 0.62rem;
+    border-radius: 2px;
+  }
+  /* odd threads lie over the weft, even ones under it */
+  .weave i:nth-child(odd) {
+    z-index: 2;
+    box-shadow:
+      -2px 0 0 var(--ground),
+      2px 0 0 var(--ground);
+  }
+  .w-t {
+    background: var(--neel-600);
+  }
+  .w-b {
+    background: var(--paper);
+    border: 1.5px solid var(--neel-600);
+  }
+  .mix {
+    display: grid;
+    gap: 0.1rem;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  .key-t,
+  .key-b {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .key-t::before,
+  .key-b::before {
+    content: "";
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .key-t::before {
+    background: var(--neel-600);
+  }
+  .key-b::before {
+    background: var(--paper);
+    border: 1.5px solid var(--neel-600);
+  }
+  .lvls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.85rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .lv {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .pips {
+    display: inline-flex;
+    gap: 2px;
+  }
+  .pips i {
+    width: 0.6rem;
+    height: 0.4rem;
+    border-radius: 1.5px;
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1.25px var(--neel-400);
+  }
+  .pips i.on {
+    background: var(--neel-600);
+    box-shadow: none;
+  }
+
+  /* Interview kit: numbered knots on a thread, as in the kit itself */
+  .fact dd.kit,
+  .kit-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.7rem;
+  }
+  .knots {
+    position: relative;
+    display: inline-flex;
+    gap: 0.4rem;
+    padding-inline: 0.3rem;
+  }
+  .knots::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 3px;
+    margin-top: -1.5px;
+    border-radius: 99px;
+    background: var(--neel-200);
+  }
+  .knots i {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 50%;
+    border: 2px solid var(--neel-700);
+    background: var(--paper);
+    color: var(--neel-800);
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .kit a,
+  .kit-line a,
+  .one-line a {
+    white-space: nowrap;
+    color: var(--primary);
+    font-weight: 620;
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  .kit a:hover,
+  .kit-line a:hover,
+  .one-line a:hover {
+    text-decoration-color: currentColor;
+  }
+  .kit a {
+    font-size: var(--fs-sm);
+  }
+
+  .one-line {
+    display: none;
+  }
+
+  /* The blank template: a drawn JD with its six parts */
+  .is-blank {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+    gap: 1rem;
+  }
+  .anatomy {
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+    width: min(100%, 22rem);
+  }
+  .sheet-wrap {
+    --fold: 1.5rem;
+    position: relative;
+  }
+  .fold {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--fold);
+    height: var(--fold);
+    overflow: visible;
+    z-index: 1;
+  }
+  .fold path {
+    fill: var(--neel-100);
+    stroke: var(--neel-600);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+  .sheet {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 1.1rem 1.25rem 1.2rem;
+    display: grid;
+    gap: 0.7rem;
+    background: var(--paper);
+    border: 1.5px solid var(--neel-600);
+    border-radius: 4px;
+    clip-path: polygon(0 0, calc(100% - var(--fold)) 0, 100% var(--fold), 100% 100%, 0 100%);
+  }
+  .part {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.65rem;
+    row-gap: 0.3rem;
+    align-items: center;
+  }
+  .knot {
+    display: grid;
+    place-items: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 50%;
+    border: 2px solid var(--neel-700);
+    background: var(--paper);
+    color: var(--neel-800);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .part-1 .knot {
+    background: var(--haldi-400);
+    border-color: var(--haldi-700);
+    color: var(--neel-950);
+  }
+  .p-name {
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .p-lines {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+  }
+  .p-lines i {
+    height: 4px;
+    border-radius: 99px;
+    background: var(--neel-100);
+  }
+  /* each part's text has its own shape */
+  .part-1 .p-lines i:nth-child(1) {
+    width: 92%;
+  }
+  .part-1 .p-lines i:nth-child(2) {
+    width: 64%;
+  }
+  .part-1 .p-lines i:nth-child(3) {
+    display: none;
+  }
+  .part-2 .p-lines i,
+  .part-3 .p-lines i {
+    width: 70%;
+  }
+  .part-2 .p-lines i:nth-child(2) {
+    width: 82%;
+  }
+  .part-3 .p-lines i:nth-child(3) {
+    display: none;
+  }
+  .part-2 .p-lines,
+  .part-3 .p-lines {
+    flex-direction: column;
+    padding-left: 0.1rem;
+  }
+  .part-2 .p-lines i::before,
+  .part-3 .p-lines i::before {
+    content: none;
+  }
+  /* optional, so drawn dashed */
+  .part-4 .p-lines i {
+    width: 40%;
+    background: repeating-linear-gradient(90deg, var(--neel-200) 0 7px, transparent 7px 11px);
+    border-radius: 0;
+  }
+  .part-4 .p-lines i:nth-child(3) {
+    display: none;
+  }
+  .part-5 .p-lines i {
+    width: 28%;
+  }
+  .part-6 .p-lines i:nth-child(1) {
+    width: 60%;
+  }
+  .part-6 .p-lines i:nth-child(2) {
+    width: 3.2rem;
+    height: 0.8rem;
+    border-radius: 4px;
+    background: var(--neel-200);
+  }
+  .part-6 .p-lines i:nth-child(3) {
+    display: none;
+  }
+  .kit-line {
+    font-size: var(--fs-sm);
+  }
+  .kit-line .muted {
+    color: var(--ink-2);
+  }
+
+  /* Phones and tablets: the ladder and one line */
+  @media (max-width: 63.99rem) {
+    .role-glance {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.6rem;
+      max-width: 30rem;
+    }
+    .lad-head {
+      display: none;
+    }
+    .facts {
+      display: none;
+    }
+    .one-line {
+      display: block;
+      font-size: var(--fs-sm);
+      color: var(--ink-2);
+      line-height: 1.5;
+    }
+    .is-blank {
+      max-width: none;
+    }
+    .anatomy {
+      width: 100%;
+    }
+    .sheet {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.55rem 1rem;
+      padding: 0.85rem 1rem;
+    }
+    .p-lines {
+      display: none !important;
+    }
+    .p-name {
+      font-size: var(--fs-xs);
+    }
+    .kit-line .knots {
+      display: none;
+    }
+  }
+  @media (max-width: 26rem) {
+    .sheet {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

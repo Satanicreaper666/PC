@@ -1,0 +1,719 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/ui/Icon.astro";
+import Loom from "../components/home/Loom.astro";
+import PaperHero from "../components/home/PaperHero.astro";
+import Checked from "../components/content/Checked.astro";
+import ItemCard from "../components/ui/ItemCard.astro";
+import BookCover from "../components/ui/BookCover.astro";
+import Scene from "../components/art/Scene.astro";
+import PenTick from "../components/marks/PenTick.astro";
+import PenUnderline from "../components/marks/PenUnderline.astro";
+import MarginNote from "../components/marks/MarginNote.astro";
+import { PATHS } from "../data/paths";
+import { STAGES, STAGE_INFO, AUDIENCES, AUDIENCE_INFO, TOOL_KIND_INFO } from "../data/taxonomy";
+import { BOOKS, BOOK_IDS } from "../data/books";
+import { CONTACT } from "../data/contact";
+import { allChapters, allTools, allTerms, roleJds, chapterUrl, toolUrl, toolFacts, bookUrl, jdUrl, readingMinutes, resolveRefs } from "../lib/library";
+
+const [chapters, tools, terms, jds] = await Promise.all([allChapters(), allTools(), allTerms(), roleJds()]);
+// Tools that work on the reader's own spreadsheet, entirely in the browser.
+const apps = ["people-analytics", "org-chart-builder", "mail-merge"].map((id) => tools.find((t) => t.id === id)).filter(Boolean) as typeof tools;
+// JD library: functions with the most roles, for quick links.
+const jdFunctions = Object.entries(
+  jds.reduce<Record<string, number>>((acc, j) => ((acc[j.data.function] = (acc[j.data.function] ?? 0) + 1), acc), {})
+)
+  .filter(([f]) => f !== "Any")
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 8);
+const plural = (n: number, word: string) => `${new Intl.NumberFormat("en-IN").format(n)} ${word}${n === 1 ? "" : "s"}`;
+
+// Loom data: stages × formats
+const cols = [
+  { id: "chapters", label: "Handbook chapters", icon: "book" },
+  { id: "calculators", label: "Calculators and tools", icon: "calculator" },
+  { id: "documents", label: "Letters, forms and policies", icon: "file-text" },
+  { id: "practice", label: "Checklists, surveys and plans", icon: "checklist" }
+];
+const colOf = (kind: string) => (kind === "calculator" || kind === "app" ? 1 : ["letter", "form", "policy"].includes(kind) ? 2 : 3);
+const rows = STAGES.map((s) => ({ id: s, label: STAGE_INFO[s].label, blurb: STAGE_INFO[s].blurb, icon: STAGE_INFO[s].icon }));
+const cells = STAGES.map((s) => {
+  const row = cols.map(() => ({ count: 0, items: [] as { title: string; href: string }[] }));
+  for (const c of chapters) {
+    const st = c.data.stage ?? BOOKS[c.data.book].stage;
+    if (st === s) {
+      row[0].count++;
+      row[0].items.push({ title: c.data.title, href: chapterUrl(c) });
+    }
+  }
+  for (const t of tools) {
+    if (t.data.stage !== s) continue;
+    const ci = colOf(t.data.kind);
+    row[ci].count++;
+    row[ci].items.push({ title: t.data.title, href: toolUrl(t) });
+  }
+  return row;
+});
+
+const popularIds = [
+  "take-home-salary-calculator",
+  "gratuity-calculator",
+  "full-and-final-settlement-calculator",
+  "notice-period-calculator",
+  "resignation-letter",
+  "leave-policy"
+];
+const popular = popularIds.map((id) => tools.find((t) => t.id === id)).filter(Boolean) as typeof tools;
+const quick = [
+  { label: "Gratuity", href: "/toolkit/gratuity-calculator/" },
+  { label: "Take-home salary", href: "/toolkit/take-home-salary-calculator/" },
+  { label: "Full and final", href: "/toolkit/full-and-final-settlement-calculator/" },
+  { label: "Notice period", href: "/toolkit/notice-period-calculator/" },
+  { label: "POSH", href: "/handbooks/labour-law/posh-compliance/" }
+];
+const pathSize = Object.fromEntries(
+  await Promise.all(
+    AUDIENCES.map(async (a) => {
+      const steps = PATHS[a].groups.length;
+      const pages = (await Promise.all(PATHS[a].groups.map((g) => resolveRefs(g.refs)))).reduce((n, l) => n + l.length, 0);
+      return [a, { steps, pages }] as const;
+    })
+  )
+);
+const latestCheck = [...chapters.map((c) => c.data.checked), ...tools.map((t) => t.data.checked)].sort((a, b) => b.getTime() - a.getTime())[0] ?? new Date();
+const bookStats = BOOK_IDS.map((id) => {
+  const list = chapters.filter((c) => c.data.book === id);
+  return { id, count: list.length, minutes: list.reduce((a, c) => a + readingMinutes(c.body), 0), first: list[0] };
+});
+---
+
+<BaseLayout
+  title="Home"
+  fullTitle="PeopleCraft: free HR handbooks, calculators and templates for India"
+  description="Free, plain-English HR library for India: labour law and TDS handbooks, gratuity, salary and F&F calculators, letters and checklists. Checked against current law. No sign-up."
+>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <h1 class="display hero-title">Free HR handbooks, tools and templates for India</h1>
+        <p class="lede">
+          Labour law, salary tax, hiring and HR practice, explained in plain English and <mark class="hl hl-green" data-mark data-mark-delay="300">checked against current law</mark>. {plural(chapters.length, "chapter")}, {plural(tools.length, "tool")} that work in your browser, and {plural(terms.length, "term")} in the glossary. <mark class="hl" data-mark data-mark-delay="900">No sign-up, no tracking.</mark>
+        </p>
+        <form class="hero-search" action="/search/" method="get" role="search">
+          <label class="visually-hidden" for="hero-q">Search the library</label>
+          <Icon name="search" size={22} />
+          <input id="hero-q" name="q" type="search" placeholder="Try “gratuity”, “notice period” or “POSH”" autocomplete="off" />
+          <button class="btn" type="submit">Search</button>
+        </form>
+        <ul class="quick" aria-label="Popular">
+          {
+            quick.map((q) => (
+              <li>
+                <a href={q.href} class:list={["hl", q.href.includes("/handbooks/") ? "hl-pink" : "hl-green"]}>
+                  {q.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <PaperHero class="hero-art" />
+    </div>
+  </section>
+
+  <!-- The loom -->
+  <section class="section" aria-labelledby="loom-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="loom-title">Find anything by <mark class="hl" data-mark>stage of working life</mark></h2>
+        <p class="lede">Each thread is a stage, from hiring to leading a team. Where it crosses a format, the knot shows what the library holds. Pick one to see the list.</p>
+      </div>
+      <Loom rows={rows} cols={cols} cells={cells} start={[3, 1]} />
+    </div>
+  </section>
+
+  <!-- Start here -->
+  <section class="section band" aria-labelledby="start-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="start-title">Start <mark class="hl hl-green" data-mark>where you are</mark></h2>
+        <p class="lede">Four reading paths, written for what each reader needs first.</p>
+      </div>
+      <ul class="aud" data-reveal-group>
+        {
+          AUDIENCES.map((a) => (
+            <li data-reveal>
+              <a class="aud-card" href={AUDIENCE_INFO[a].path}>
+                <span class="aud-art" aria-hidden="true">
+                  <Scene name={a} />
+                </span>
+                <span class="aud-t">{AUDIENCE_INFO[a].label}</span>
+                <span class="aud-d">{AUDIENCE_INFO[a].blurb}</span>
+                <span class="aud-m">
+                  {pathSize[a].steps} steps, {pathSize[a].pages} pages
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Handbooks -->
+  <section class="section" aria-labelledby="books-title">
+    <div class="wrap">
+      <div class="sec-head row">
+        <div>
+          <h2 id="books-title">Four handbooks, <mark class="hl hl-blue" data-mark>one chapter at a time</mark></h2>
+          <p class="lede">Each chapter opens with what's at stake, explains the rules with diagrams, and lists its sources.</p>
+        </div>
+        <a class="btn btn-secondary" href="/handbooks/">All handbooks</a>
+      </div>
+      <ul class="books" data-reveal-group>
+        {
+          bookStats.map((b, i) => {
+            const book = BOOKS[b.id];
+            return (
+              <li data-reveal>
+                <a class="book" href={bookUrl(b.id)} style={`--i:${i}`}>
+                  <BookCover id={b.id} size="md" note={`${b.count} chapters${b.minutes ? `, about ${Math.round(b.minutes / 5) * 5 || b.minutes} min` : ""}`} />
+                  <span class="book-d">{book.subtitle}</span>
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Popular tools -->
+  {
+    popular.length > 0 && (
+      <section class="section band" aria-labelledby="tools-title">
+        <div class="wrap">
+          <div class="sec-head row">
+            <div>
+              <h2 id="tools-title">Start with <mark class="hl hl-green" data-mark>these tools</mark></h2>
+              <p class="lede">They run in your browser. What you type is never uploaded.</p>
+            </div>
+            <a class="btn btn-secondary" href="/toolkit/">
+              All {tools.length} tools
+            </a>
+          </div>
+          <ul class="tools" data-reveal-group>
+            {popular.map((t) => (
+              <li data-reveal>
+                <ItemCard href={toolUrl(t)} art={t.data.kind} kind={TOOL_KIND_INFO[t.data.kind].label} title={t.data.title} description={t.data.description} meta={toolFacts(t)} />
+              </li>
+            ))}
+          </ul>
+          {apps.length > 0 && (
+            <div class="apps">
+              <h3 class="apps-h">
+                <Icon name="lock" size={18} />
+                Bring your own spreadsheet
+              </h3>
+              <p class="small muted">These read a CSV or Excel file inside your browser. The file is never uploaded.</p>
+              <ul class="tools">
+                {apps.map((t) => (
+                  <li>
+                    <ItemCard href={toolUrl(t)} art="app" kind={TOOL_KIND_INFO[t.data.kind].label} title={t.data.title} description={t.data.description} meta={toolFacts(t)} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- JD library -->
+  {
+    jds.length > 0 && (
+      <section class="section" aria-labelledby="jd-title">
+        <div class="wrap jd-band">
+          <div>
+            <h2 id="jd-title">{jds.length} job descriptions, ready to adapt</h2>
+            <p class="lede">
+              Fill in your company's details and download a JD as Word. Each one comes with interview questions and what a strong answer looks like.
+            </p>
+            <div class="jd-cta">
+              <a class="btn" href="/jd-library/">
+                Browse the JD library
+              </a>
+              <a class="btn btn-secondary" href={jdUrl("blank-job-description")}>
+                Start from a blank JD
+              </a>
+            </div>
+          </div>
+          <ul class="jd-fns" aria-label="Popular job families">
+            {jdFunctions.map(([f, n]) => (
+              <li>
+                <a href={`/jd-library/?function=${encodeURIComponent(f)}`} class="jd-fn">
+                  <span>{f}</span>
+                  <span class="jd-n">{n}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Trust -->
+  <section class="section" aria-labelledby="trust-title">
+    <div class="wrap trust">
+      <div>
+        <h2 id="trust-title">How we keep it <PenUnderline>accurate</PenUnderline></h2>
+        <p class="lede">Rules change. Every page that states the law says when it was last checked and against what.</p>
+        <div class="trust-stamp"><Checked date={latestCheck} /></div>
+      </div>
+      <ul class="commit">
+        <li>
+          <PenTick />
+          <div>
+            <p class="ct">Official sources first</p>
+            <p class="cd">Acts, rules, gazette notifications and government portals, listed at the end of every legal page.</p>
+          </div>
+        </li>
+        <li>
+          <PenTick />
+          <div>
+            <p class="ct">Checked on a schedule</p>
+            <p class="cd">Reviewed every quarter and whenever a law or rule changes. The date on the stamp is the last check.</p>
+          </div>
+        </li>
+        <li>
+          <PenTick />
+          <div>
+            <p class="ct">Nothing leaves your browser</p>
+            <p class="cd">No accounts, no cookies, no tracking. Calculators, templates and the analytics tool work on your device.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Glossary + contact -->
+  <section class="section band closing" aria-labelledby="close-title">
+    <div class="wrap close-grid">
+      <div>
+        <h2 id="close-title">From CTC to comp-off, in one line each</h2>
+        <p class="close-lede">The glossary explains {plural(terms.length, "workplace term")} in plain words and links each to the chapter or tool that goes deeper.</p>
+        <a class="btn btn-accent" href="/glossary/">Open the glossary</a>
+      </div>
+      <div class="contact">
+        <p class="close-k">Spotted something out of date?</p>
+        <p class="close-lede">Corrections make the library better for everyone. Send the page link and what changed.</p>
+        <div class="contact-btns">
+          {
+            CONTACT.whatsapp && (
+              <a class="btn btn-secondary" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent("Hi PeopleCraft, I'd like to suggest a correction on this page: ")}`} rel="noopener" target="_blank">
+                <Icon name="message" size={18} /> WhatsApp us
+              </a>
+            )
+          }
+          {
+            CONTACT.linkedin && (
+              <a class="btn btn-secondary" href={CONTACT.linkedin} rel="noopener" target="_blank">
+                <Icon name="external-link" size={18} /> LinkedIn
+              </a>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Hero */
+  .hero {
+    padding-block: clamp(2.5rem, 2rem + 3vw, 5rem) clamp(3rem, 2rem + 4vw, 6rem);
+    background:
+      radial-gradient(60rem 30rem at 85% -10%, rgb(221 225 247 / 0.7), transparent 60%),
+      var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(2rem, 4vw, 4.5rem);
+    align-items: center;
+  }
+  .hero-title {
+    font-size: var(--fs-3xl);
+    max-width: 17ch;
+  }
+  .hero-copy .lede {
+    margin-top: 1.25rem;
+    max-width: 52ch;
+  }
+  .hero-search {
+    margin-top: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: 36rem;
+    padding: 0.4rem 0.4rem 0.4rem 1rem;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 14px;
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+    transition: border-color 150ms, box-shadow 150ms;
+  }
+  .hero-search:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgb(59 68 166 / 0.15);
+  }
+  .hero-search :global(svg) {
+    color: var(--ink-3);
+  }
+  .hero-search input {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.75rem;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: var(--fs-md);
+  }
+  /* Popular searches, already highlighted: green for a tool you can use, pink for a compliance topic. */
+  .quick {
+    list-style: none;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.3rem 1.1rem;
+  }
+  .quick::before {
+    content: "Popular:";
+    font-family: var(--hand);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--pen-ink);
+  }
+  .quick a {
+    color: var(--ink);
+    font-size: var(--fs-base);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .quick a:hover {
+    color: var(--primary);
+    --hl-w: 100%;
+  }
+
+  /* Collage of real pages */
+  .hero :global(.hero-art) {
+    max-width: 36rem;
+    justify-self: end;
+  }
+
+  /* Sections */
+  .sec-head {
+    display: grid;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+  }
+  .sec-head h2 {
+    font-size: clamp(1.9rem, 1.4rem + 1.9vw, 2.9rem);
+    line-height: 1.08;
+    font-stretch: 106%;
+    letter-spacing: -0.02em;
+    max-width: 22ch;
+  }
+  .sec-head.row {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 1rem 2rem;
+  }
+
+  /* Audiences */
+  .aud,
+  .books,
+  .tools {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  .aud {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .aud-card {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 0.45rem;
+    padding: 0.6rem 0.6rem 1.1rem;
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    text-decoration: none;
+    color: inherit;
+    box-shadow:
+      0 0 0 1px rgb(17 20 58 / 0.08),
+      1px 1.5px 0 rgb(17 20 58 / 0.07);
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease);
+  }
+  .aud-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 1px rgb(59 68 166 / 0.3),
+      3px 10px 22px -10px rgb(17 20 58 / 0.32);
+  }
+  /* The scene sits on its own sheet inside the card: radius = card radius minus the padding. */
+  .aud-art {
+    display: block;
+    margin-bottom: 0.45rem;
+    border-radius: calc(var(--r-xl) - 0.6rem);
+    background: var(--neel-50);
+    overflow: hidden;
+  }
+  .aud-t,
+  .aud-d,
+  .aud-m {
+    padding-inline: 0.65rem;
+  }
+  .aud-t {
+    font-weight: 700;
+    font-size: var(--fs-md);
+    line-height: 1.2;
+  }
+  .aud-card:hover .aud-t {
+    color: var(--primary);
+  }
+  .aud-d {
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+  .aud-m {
+    margin-top: 0.3rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+
+  /* Books */
+  .books {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .books {
+    gap: 2rem 1.5rem;
+  }
+  .book {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+    text-decoration: none;
+    color: inherit;
+  }
+  .book :global(.cover) {
+    transition: transform 260ms var(--ease-out);
+  }
+  .book:hover :global(.cover) {
+    transform: translateY(-5px) rotate(-1.2deg);
+  }
+  .book-d {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    line-height: 1.45;
+    padding-right: 0.5rem;
+  }
+  .book:hover .book-d {
+    color: var(--ink);
+  }
+
+  /* Tools */
+  .tools {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.4rem 1rem;
+  }
+  .apps {
+    margin-top: 2.25rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .apps-h {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--fs-md);
+  }
+  .apps .tools {
+    margin-top: 0.5rem;
+  }
+  .jd-band {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: center;
+  }
+  .jd-cta {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .jd-fns {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .jd-fn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--r);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .jd-fn:hover {
+    border-color: var(--neel-300);
+    background: var(--canvas);
+  }
+  .jd-n {
+    min-width: 1.8rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: var(--neel-50);
+    color: var(--neel-700);
+    font-size: var(--fs-xs);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 860px) {
+    .jd-band {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Trust */
+  .trust {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 3rem;
+    align-items: start;
+  }
+  .trust h2 {
+    font-size: clamp(1.9rem, 1.4rem + 1.9vw, 2.9rem);
+    font-stretch: 106%;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+  }
+  .trust .lede {
+    margin-top: 0.75rem;
+  }
+  .trust-stamp {
+    margin-top: 1.5rem;
+  }
+  .commit {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+    border-top: 2px solid var(--neel-700);
+  }
+  .commit li {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    gap: 0.75rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .commit :global(.pen) {
+    width: 1.9rem;
+    height: 1.9rem;
+    margin-top: -0.1rem;
+    stroke-width: 2.6;
+  }
+  .ct {
+    font-weight: 650;
+  }
+  .cd {
+    margin-top: 0.2rem;
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+
+  /* Closing band */
+  .closing {
+    border-top: 1px solid var(--line);
+  }
+  .close-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+  .closing h2 {
+    font-size: var(--fs-xl);
+    font-stretch: 106%;
+    letter-spacing: -0.015em;
+  }
+  .close-k {
+    font-weight: 650;
+    font-size: var(--fs-lg);
+  }
+  .close-lede {
+    margin: 0.6rem 0 1.25rem;
+    color: var(--ink-2);
+    max-width: 46ch;
+  }
+  .contact-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  @media (max-width: 1080px) {
+    .aud,
+    .books {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 900px) {
+    .hero-grid,
+    .trust,
+    .close-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero :global(.hero-art) {
+      justify-self: center;
+      max-width: 28rem;
+    }
+    .tools {
+      grid-template-columns: 1fr 1fr;
+    }
+    .sec-head.row {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .aud,
+    .books,
+    .tools {
+      grid-template-columns: 1fr;
+    }
+    .book {
+      min-height: 0;
+    }
+  }
+</style>

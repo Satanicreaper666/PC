@@ -1,0 +1,137 @@
+---
+title: Org chart builder
+description: Turn an employee list in CSV or Excel into an org chart with span of control, levels and data checks. Download it as PowerPoint, PNG or SVG. Nothing is uploaded.
+kind: app
+calculator: org-chart-builder
+glance:
+  inputs: ["Name", "Manager's ID or name", "Employee ID", "Job title", "Department"]
+  output: "Org chart and span of control"
+  formula: "Contributors per manager = individual contributors ÷ managers"
+stage: lead
+audiences: [hr, founders]
+order: 20
+checked: 2026-11-02
+useWhen: You have an employee list with each person's manager and want an org chart, or want to check reporting lines and spans of control before a reorganisation.
+tips:
+  - "Use the manager's <strong>employee ID</strong> rather than their name. IDs are unique; two people called Rahul Sharma are not."
+  - "Fix what the data checks list in your HR system as well as in the file, so the next export is right too."
+  - "Read span of control alongside the work. Fifteen people doing similar support work may need less of a manager's time than six senior specialists."
+  - "The PowerPoint and image files name people and their managers. Share them only with the people who need them, as you would any personnel record."
+sources:
+  - title: "Government notifies the Digital Personal Data Protection Rules, 2025"
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2190014&reg=3&lang=2
+    publisher: Press Information Bureau, 14 November 2025
+related:
+  - toolkit/people-analytics
+  - toolkit/headcount-planning-model
+  - handbooks/hr-professional/04-people-analytics-and-data-literacy
+  - handbooks/hr-professional/07-hr-business-partnering
+  - toolkit/mail-merge
+  - glossary/span-of-control
+  - glossary/succession-plan
+faq:
+  - q: Is my employee data uploaded anywhere?
+    a: No. Your browser reads the file, draws the chart and makes the PowerPoint, PNG and SVG files on your own device. Nothing is sent to PeopleCraft or anyone else, and nothing is saved unless you tick "Keep this list in this browser", which you can undo at any time.
+  - q: What columns does my file need?
+    a: Each person's name, and who they report to, as the manager's employee ID (best) or the manager's name. An employee ID column is needed if managers are given by ID. Job title, department and location are optional and add detail to the chart and the breakdowns. CSV and Excel (.xlsx) files both work.
+  - q: How big an organisation can it draw?
+    a: Thousands of people. Above 150 people, teams below the third level start collapsed so the chart stays readable; open any team with one click or from the list. A very large chart is scaled down in the PNG, so use the SVG for full detail. The PowerPoint file has up to 150 team slides; for more, show one part of the organisation at a time.
+  - q: What is a good span of control?
+    a: There is no single right number. It depends on how alike the work is, how experienced the team is and how much else the manager does. The tool flags managers outside a range you set, starting at fewer than 3 or more than 10 direct reports, so you can change it to fit your organisation.
+  - q: What does "single point of failure" mean here?
+    a: The only person in a department who manages anyone, with at least five of the department's people in their reporting line (you can change the five). If they left, no one else in the department would be leading its people. Use it as a prompt for succession planning, not a judgement on the person.
+keywords:
+  - org chart maker
+  - org chart from excel
+  - organisation chart template
+  - span of control
+  - reporting structure chart
+  - org chart powerpoint
+draft: false
+---
+
+## How it works
+
+The builder reads one row per person and links each person to their manager. It matches managers by employee ID first, then by name, and checks the result before it draws anything.
+
+<Figure title="From an employee list to an org chart" caption="Read left to right: each step runs on your device, and the data checks explain anything the chart had to work around.">
+  <Flow
+    steps={[
+      { title: "Load your list", detail: "CSV or Excel, one row per person" },
+      { title: "Check the columns", detail: "Matched by heading; change any that are wrong" },
+      { title: "Link the reporting lines", detail: "Manager IDs first, then names; loops and duplicates are flagged" },
+      { title: "Read the chart and figures", detail: "Search, open and close teams, then download" }
+    ]}
+  />
+</Figure>
+
+### What the figures mean
+
+- **Levels** count down from the top of the chart to the deepest person. The head of the organisation is level 1.
+- **Managers** are people with at least one direct report. Everyone else is an **individual contributor**, whatever their title.
+- **Span of control** is the number of people who report directly to a manager. The tool shows the median and the average, and lists managers outside the range you choose.
+
+<Formula
+  result={{ value: "Individual contributors per manager" }}
+  parts={[{ value: "Individual contributors", label: "people with no direct reports" }, { op: "÷" }, { value: "Managers", label: "people with at least one" }]}
+  example="Example from the sample data: 48 individual contributors ÷ 14 managers = 3.4"
+/>
+
+A **single point of failure** here is the only person in a department who manages anyone, with at least five of the department's people in their reporting line. You can change the five. **Managers with one direct report** are listed too, because a level with one person under it is often worth a second look.
+
+None of these figures is good or bad on its own. A wide span can work well for similar, well-defined work, and a narrow one can be right for a new team or senior specialists. The tool shows what the structure is so you can ask why.
+
+## How to prepare your file
+
+<Steps
+  items={[
+    { title: "Export the employee list", body: "From your HR system or payroll: one row per person on the rolls, with one header row. Excel (.xlsx) and CSV both work. Leave out people who have left." },
+    { title: "Keep the columns the chart needs", body: "Name and the manager's employee ID (or name) are enough. Add employee ID, job title, department and location for a fuller chart. Leave out pay, PAN, Aadhaar, addresses and dates of birth: the chart doesn't use them." },
+    { title: "Give the head of the organisation no manager", body: "Leave their manager blank, or give their own ID; both work. Anyone else with a blank manager appears at the top of a separate chart." },
+    { title: "Load it and read the data checks", body: "Check each column match, then read the data checks under the chart. Fix the rows they list and load the file again." }
+  ]}
+/>
+
+The tool recognises the usual headings from Indian HR systems and spreadsheets, so you rarely need to rename anything. You can also start from the blank template in the tool.
+
+| Column | Used for | Headings it recognises |
+| --- | --- | --- |
+| Name (required) | The name on each box | Name, Employee Name, Full Name |
+| Employee ID | Linking people to their manager, finding duplicates | Employee ID, Emp Code, ECode, Staff ID |
+| Manager's employee ID | Who each person reports to | Reporting Manager ID, Manager Code, RM Code, Reports To |
+| Manager's name | Who each person reports to, if there are no IDs | Reporting Manager Name, Manager Name, Reports To |
+| Job title | The line under each name | Designation, Job Title, Position, Role |
+| Department | Colours, the department breakdown, single points of failure | Department, Dept, Function, Business Unit |
+| Location | The location breakdown | Location, Work Location, Branch, City |
+
+A column headed just "Reporting Manager" or "Reports To" is read as IDs or names depending on what it holds. Values such as "Asha Rao (E102)" or "E102 - Asha Rao" are matched on the ID.
+
+### What the data checks look for
+
+| Check | What the chart does |
+| --- | --- |
+| Reporting loop, such as A reports to B and B reports to A | Breaks the loop at the person who comes first in the file and shows them at the top |
+| Employee ID used more than once | Places reports under the first row with that ID |
+| Manager not found in the file | Shows the person at the top of a separate chart |
+| Manager's name matches more than one person | Shows the person at the top of a separate chart; use IDs instead |
+| More than one person with no manager | Shows each of them at the top, side by side |
+| Listed as their own manager | Treats them as having no manager, as many HR systems record the head of the organisation |
+
+## Your data stays on your device
+
+<Callout type="note" title="What happens to your file">
+  <ul>
+    <li>Your browser reads the file, draws the chart and makes every download on your device. The file is never uploaded to PeopleCraft or anyone else.</li>
+    <li>Nothing is stored unless you tick <strong>Keep this list in this browser</strong>. That keeps one copy in this browser's local storage on this device; untick the box or choose <strong>Delete it</strong> to remove it.</li>
+    <li>Reload or close the page without ticking it, and the list is gone.</li>
+  </ul>
+</Callout>
+
+Employee records are personal data under the Digital Personal Data Protection Act, 2023. Its Rules were notified in November 2025, and most of the duties they place on organisations apply after an 18-month phase-in. Working on your own device means the file doesn't pass to another service. Treat the chart and its downloads as confidential all the same: they name people and who they report to.
+
+## Reading the chart well
+
+- **Start with the data checks.** A missing or wrong manager puts someone at the top of a separate chart and changes every figure above them.
+- **Compare like with like.** A sales team of 12 field executives and a team of 12 engineers make different demands on a manager. Look at spans within a function before comparing across functions.
+- **Look at managers with one report.** Each one adds a level between the work and the decision. Some are deliberate, such as a new team being built; others are left over from a reorganisation.
+- **Use it for succession conversations.** A single point of failure is a prompt to ask who could step in, not a verdict. The [stay interview guide](/toolkit/stay-interview-guide/) and [people analytics dashboard](/toolkit/people-analytics/) help with the next questions.

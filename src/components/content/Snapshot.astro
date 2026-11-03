@@ -1,0 +1,190 @@
+---
+import Icon from "../ui/Icon.astro";
+import StickyNote from "../marks/StickyNote.astro";
+import PenCross from "../marks/PenCross.astro";
+import PenTick from "../marks/PenTick.astro";
+/**
+ * The executive snapshot that opens a handbook chapter (from the original
+ * PeopleCraft handbooks): who must read it, the biggest risks, the most
+ * common mistakes, the exposure, and what to focus on by role.
+ * <Snapshot who="HR executives, payroll teams" risks={[…]} mistakes={[…]}
+ *   exposure="₹50,000 to ₹5 lakh per lapse" roles={[{ role: "HR executive", focus: "…" }]} />
+ */
+interface Props {
+  who?: string;
+  risks?: string[];
+  mistakes?: string[];
+  exposure?: string;
+  roles?: { role: string; focus: string }[];
+  level?: "Basic" | "Intermediate" | "Advanced";
+}
+const { who, risks = [], mistakes = [], exposure, roles = [], level } = Astro.props;
+---
+
+<section class="snap" aria-label="Chapter snapshot" data-no-terms>
+  <div class="top">
+    {
+      who && (
+        <p class="who">
+          <Icon name="people" size={17} />
+          <span>
+            <strong>Who should read this:</strong> {who}
+          </span>
+        </p>
+      )
+    }
+    {level && <span class="chip">Level: {level}</span>}
+  </div>
+  {
+    (risks.length > 0 || mistakes.length > 0) && (
+      <div class="cols">
+        {risks.length > 0 && (
+          <StickyNote color="pink" title="Biggest risks" tilt={-0.8} class="col">
+            <ul class="marked">
+              {risks.map((r) => (
+                <li>
+                  <span class="dot" aria-hidden="true" />
+                  <span set:html={r} />
+                </li>
+              ))}
+            </ul>
+          </StickyNote>
+        )}
+        {mistakes.length > 0 && (
+          <StickyNote color="yellow" title="Common mistakes" tilt={0.7} class="col">
+            <ul class="marked">
+              {mistakes.map((m) => (
+                <li>
+                  <PenCross label="Mistake:" />
+                  <span set:html={m} />
+                </li>
+              ))}
+            </ul>
+          </StickyNote>
+        )}
+      </div>
+    )
+  }
+  {
+    exposure && (
+      <p class="exposure">
+        <Icon name="scale" size={17} />
+        <span>
+          <strong class="hl hl-pink" data-mark>What getting it wrong can cost:</strong> {exposure}
+        </span>
+      </p>
+    )
+  }
+  {
+    roles.length > 0 && (
+      <details class="roles">
+        <summary>What to focus on in your role</summary>
+        <dl>
+          {roles.map((r) => (
+            <div>
+              <dt>
+                <PenTick />
+                {r.role}
+              </dt>
+              <dd set:html={r.focus} />
+            </div>
+          ))}
+        </dl>
+      </details>
+    )
+  }
+</section>
+
+<style>
+  .snap {
+    display: grid;
+    gap: 1.4rem;
+    padding: 0.25rem 0;
+  }
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    align-items: center;
+  }
+  .who,
+  .exposure {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+  .who :global(svg),
+  .exposure :global(svg) {
+    margin-top: 0.15rem;
+    color: var(--ink-3);
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 0.6rem;
+  }
+  .marked {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+    font-size: var(--fs-sm);
+    line-height: 1.45;
+  }
+  .marked li {
+    display: grid;
+    grid-template-columns: 1.15rem minmax(0, 1fr);
+    gap: 0.45rem;
+    align-items: start;
+  }
+  .marked :global(.pen) {
+    margin-top: 0.1rem;
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+  .dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    margin: 0.4rem 0 0 0.25rem;
+    border-radius: 50%;
+    background: var(--pen-red);
+    box-shadow: 0 0 0 2px rgb(200 50 60 / 0.18);
+  }
+  .exposure {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+  }
+  .roles summary {
+    cursor: pointer;
+    font-weight: 620;
+    font-size: var(--fs-sm);
+    color: var(--primary);
+  }
+  dl {
+    margin: 0.6rem 0 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 650;
+    font-size: var(--fs-sm);
+  }
+  dd {
+    margin: 0.1rem 0 0;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  @media (max-width: 640px) {
+    .cols {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

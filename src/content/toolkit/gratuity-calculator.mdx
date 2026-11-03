@@ -1,0 +1,127 @@
+---
+title: Gratuity calculator
+description: Work out gratuity under the Code on Social Security, 2020 from last drawn wages and service dates, including the one-year rule for fixed-term staff.
+kind: calculator
+calculator: gratuity
+glance:
+  inputs: ["Last drawn wages", "Date of joining", "Last working day", "Type of employment", "Exit reason"]
+  output: "Gratuity payable"
+  formula: "Gratuity = last drawn wages × 15 ÷ 26 × years counted"
+stage: exit
+audiences: [employees, hr, founders]
+order: 16
+checked: 2026-11-02
+useWhen: Someone is resigning, retiring or leaving after several years, or a fixed-term contract has ended, and you need the gratuity figure for the full and final settlement.
+tips:
+  - "Use <strong>wages as the Labour Codes define them</strong>: basic pay, dearness allowance and other pay not on the exclusion list. HRA, conveyance, overtime and commission are left out unless together they exceed half of total pay."
+  - "Count service from the joining date in the appointment letter. Probation counts."
+  - "Gratuity is due within <strong>30 days</strong> of the last working day. Pay it with the full and final settlement so it is not forgotten."
+sources:
+  - title: The Code on Social Security, 2020, sections 53, 54 and 56 (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/16823/1/aA2020-36.pdf
+    publisher: Ministry of Law and Justice
+  - title: The Industrial Relations Code, 2020, section 2(o) on fixed-term employment (India Code)
+    url: https://www.indiacode.nic.in/bitstream/123456789/22040/1/aa202035.pdf
+    publisher: Ministry of Law and Justice
+  - title: Government makes the four Labour Codes effective (21 November 2025)
+    url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2192463
+    publisher: Press Information Bureau
+  - title: Labour Ministry FAQs on the Labour Codes, 30 December 2025 (summary)
+    url: https://www.scconline.com/blog/post/2026/01/03/labour-ministry-issued-faqs-on-the-labour-codes/
+    publisher: SCC Online
+  - title: Ministry FAQs on the four Labour Codes, including the additional FAQs of 16 March 2026 (summary)
+    url: https://www.scconline.com/blog/post/2026/04/26/ministry-faqs-four-labour-codes-india-2026/
+    publisher: SCC Online
+related: [toolkit/full-and-final-settlement-calculator, toolkit/notice-period-calculator, toolkit/leave-encashment-calculator, handbooks/labour-law/04-social-security-and-benefits, handbooks/labour-law/05-contracts-and-fixed-term-employment, glossary/gratuity, glossary/full-and-final-settlement]
+faq:
+  - q: How is gratuity calculated in India?
+    a: Gratuity is last drawn monthly wages × 15 ÷ 26 × years of service, where a final part-year of more than six months counts as a full year. The total is capped at ₹20 lakh.
+  - q: Do fixed-term employees get gratuity after one year?
+    a: Yes. Under the Industrial Relations Code, a fixed-term employee who has served one year under the contract is eligible, and gratuity is paid in proportion to the service. A contract shorter than a year does not qualify.
+  - q: Is gratuity paid if I leave after 4 years and 8 months?
+    a: The Code asks for five years of continuous service, so 4 years and 8 months does not qualify on resignation. Courts differed on near-misses under the old law and the point is not settled under the Code, so check your case with HR.
+  - q: Which salary is used for gratuity under the new Labour Codes?
+    a: Last drawn wages as the Codes define them, which is basic pay, dearness allowance and other pay not on the exclusion list. If HRA, conveyance and similar allowances exceed half of total pay, the excess is added back.
+  - q: How soon must the employer pay gratuity?
+    a: Within 30 days of it becoming payable. Late payment carries simple interest.
+keywords: [gratuity calculator, gratuity formula 15/26, gratuity eligibility 5 years, gratuity for fixed term employees, gratuity under new labour code, gratuity limit 20 lakh]
+---
+
+## How the amount is worked out
+
+<Figure title="The gratuity formula" caption="Read left to right. The final part-year counts as a full year only when it is more than six months.">
+  <Formula
+    result={{ value: "Gratuity", label: "up to ₹20 lakh" }}
+    parts={[{ value: "Last drawn wages", label: "monthly, as the Codes define wages" }, { op: "×" }, { value: "15", label: "days' wages a year" }, { op: "÷" }, { value: "26", label: "working days in a month" }, { op: "×" }, { value: "Years counted", label: "part-year over 6 months counts" }]}
+    example="Example: ₹60,000 × 15 ÷ 26 × 8 years = ₹2,76,923, for service from 1 April 2019 to 31 October 2026 (7 years and 7 months, so 8 years are counted)."
+  />
+</Figure>
+
+Each completed year of service earns <Fact id="gratuity.daysPerYear" /> of wages. A month's wages are divided by <Fact id="gratuity.divisor" /> to get a day's wages, because the law treats a month as 26 working days. The total cannot exceed <Fact id="gratuity.ceiling" />, the ceiling the Central Government has notified.
+
+The rounding rule only affects the amount. Someone who leaves after 4 years and 11 months has not completed five years, so nothing is payable on resignation, even though the final 11 months would count as a year in the formula.
+
+## Who gets gratuity
+
+<Figure title="Is gratuity payable?" caption="Start at the top and follow the answers. Death and disablement remove the service condition altogether.">
+  <DecisionTree
+    node={{
+      q: "Did employment end because of death or disablement?",
+      yes: { result: "Payable, whatever the length of service", detail: "Paid to the nominee or legal heirs on death", tone: "good" },
+      no: {
+        q: "Was it a fixed-term contract that ended on expiry?",
+        yes: {
+          q: "At least 1 year of service under the contract?",
+          yes: { result: "Payable, in proportion to service", tone: "good" },
+          no: { result: "Not payable", tone: "bad" }
+        },
+        no: {
+          q: "At least 5 completed years of continuous service?",
+          yes: { result: "Payable", detail: "Resignation, retirement or termination", tone: "good" },
+          no: { result: "Not payable on resignation or termination", tone: "bad" }
+        }
+      }
+    }}
+  />
+</Figure>
+
+<Callout type="law" title="What the Code says">
+The Code on Social Security, 2020 (section 53) makes gratuity payable after <Fact id="gratuity.minYears" /> of continuous service on superannuation, retirement, resignation, death, disablement or the end of a fixed-term contract. The Industrial Relations Code defines fixed-term employment and makes a fixed-term employee eligible after <Fact id="gratuity.fixedTermMinYears" /> of service under the contract.
+</Callout>
+
+### What counts as continuous service
+
+Service stays continuous through breaks for sickness, accident, leave, a lay-off, a strike, a lock-out or a stoppage of work that is not the employee's fault. A year in which the employee was not continuously employed can still count if they actually worked <Fact id="gratuity.continuousServiceDays" /> in the 12 months before the date that matters.
+
+## What counts as wages
+
+Under the Labour Codes, "wages" means basic pay, dearness allowance and retaining allowance, plus any other pay that is not on the exclusion list. A special allowance usually counts. HRA, conveyance, overtime, commission and statutory bonus are excluded, but if those excluded items add up to more than <Fact id="wages.halfRule" /> of total pay, the excess is added back to wages. The [take-home salary calculator](/toolkit/take-home-salary-calculator/) runs that check for a salary structure.
+
+<Callout type="tip">
+The Labour Ministry's FAQs say the new definition applies from 21 November 2025. For someone who joined earlier, the amount is still worked out on the last drawn wages under the new definition.
+</Callout>
+
+## When it must be paid
+
+<Figure title="From joining to payment" caption="Read left to right. The bracket shows the service needed in most cases." wide>
+  <Timeline
+    items={[
+      { when: "Day 1", label: "Joins" },
+      { when: "5 years", label: "Gratuity becomes payable on exit", accent: true, note: "1 year for fixed-term staff" },
+      { when: "Exit", label: "Last working day" },
+      { when: "+30 days", label: "Latest date to pay" }
+    ]}
+    spans={[{ from: 0, to: 1, label: "Minimum continuous service" }, { from: 2, to: 3, label: "Payment window" }]}
+  />
+</Figure>
+
+The employer must pay within <Fact id="gratuity.paymentDays" /> of gratuity becoming payable. Late payment carries simple interest. The Code lets an employer forfeit gratuity in limited cases: up to the loss caused, where employment ends for wilful damage to the employer's property, and wholly or partly, where it ends for riotous or violent conduct or an offence involving moral turpitude.
+
+## What this calculator leaves out
+
+- **Near-misses.** The calculator follows the Code's text: five completed years. It does not treat 4 years and 240 days as five years.
+- **Seasonal and piece-rated work, and working journalists.** These have their own rules.
+- **A fixed-term contract that ends early.** How gratuity applies is not settled.
+- **Income tax.** Gratuity up to a limit can be tax-free, but the Income-tax Act, 2025 provision still needs confirming. See the TDS handbook chapter on [joiners and leavers](/handbooks/tds/joiners-leavers-and-transfers/) and ask a tax adviser.
+
+Contracts, awards and company policies can pay more than the law requires. They cannot pay less.

@@ -1,0 +1,264 @@
+---
+/**
+ * Where a chapter sits in its book: the book's cloth, then every chapter as a
+ * knot on one thread. The current chapter is the turmeric knot; every knot is
+ * a link. Under it, the chapters either side, by name.
+ *
+ * Knots before the current one are filled, until the reader has read a chapter of
+ * this book: then the knots show what was actually read (src/scripts/desk.ts keeps
+ * that in this browser), and the current knot gets a pen tick once it is read.
+ */
+import BookCover from "./BookCover.astro";
+import PenTick from "../marks/PenTick.astro";
+import { BOOKS, type BookId } from "../../data/books";
+interface Props {
+  book: BookId;
+  bookHref: string;
+  chapters: { n: number; title: string; href: string }[];
+  current: number;
+}
+const { book, bookHref, chapters, current } = Astro.props;
+const b = BOOKS[book];
+const i = chapters.findIndex((c) => c.n === current);
+const prev = chapters[i - 1];
+const next = chapters[i + 1];
+const done = chapters.length > 1 ? Math.round((i / (chapters.length - 1)) * 100) : 0;
+---
+
+<aside class="bt" aria-label="Where this chapter sits in the book" data-book-thread>
+  <div class="head">
+    <BookCover id={book} size="sm" class="sw" />
+    <div>
+      <a class="book" href={bookHref}>{b.title}</a>
+      <p class="of">Chapter {current} of {chapters.length}<span class="read-count" data-thread-count hidden></span></p>
+    </div>
+  </div>
+  <ol class="thread" style={`--n:${chapters.length};--done:${done}%`}>
+    {
+      chapters.map((c) => (
+        <li class:list={{ cur: c.n === current, read: c.n < current }} data-thread-chapter={c.href}>
+          <a href={c.href} aria-label={`Chapter ${c.n}: ${c.title}`} aria-current={c.n === current ? "page" : undefined}>
+            <span class="knot" aria-hidden="true">{c.n === current ? c.n : ""}</span>
+          </a>
+          {c.n === current && <PenTick class="read-tick" />}
+        </li>
+      ))
+    }
+  </ol>
+  <dl class="near">
+    {
+      prev && (
+        <div>
+          <dt>Before</dt>
+          <dd>
+            <a href={prev.href}>{prev.title}</a>
+          </dd>
+        </div>
+      )
+    }
+    {
+      next && (
+        <div>
+          <dt>Next</dt>
+          <dd>
+            <a href={next.href}>{next.title}</a>
+          </dd>
+        </div>
+      )
+    }
+  </dl>
+</aside>
+
+<script>
+  import { getRead, DESK_CHANGE } from "../../scripts/desk";
+
+  // Show what was really read, once the reader has read something in this book.
+  function paint(root: HTMLElement) {
+    const read = getRead();
+    const items = Array.from(root.querySelectorAll<HTMLElement>("[data-thread-chapter]"));
+    const isRead = items.map((li) => !!read[li.dataset.threadChapter ?? ""]);
+    const n = isRead.filter(Boolean).length;
+    if (!n) return;
+    root.classList.add("real");
+    items.forEach((li, i) => {
+      li.classList.toggle("read", isRead[i]);
+      const a = li.querySelector("a");
+      if (a) {
+        const label = (a.dataset.label ??= a.getAttribute("aria-label") ?? "");
+        a.setAttribute("aria-label", isRead[i] ? `${label} (read)` : label);
+      }
+    });
+    // The thread is dark between two chapters that are both read.
+    const last = items.length - 1;
+    const at = (i: number) => `${last ? (i / last) * 100 : 0}%`;
+    const stops = isRead.slice(0, -1).map((r, i) => `${r && isRead[i + 1] ? "var(--neel-500)" : "var(--neel-200)"} ${at(i)} ${at(i + 1)}`);
+    root.querySelector<HTMLElement>(".thread")?.style.setProperty("--thread", stops.length ? `linear-gradient(90deg, ${stops.join(", ")})` : "var(--neel-200)");
+    const count = root.querySelector<HTMLElement>("[data-thread-count]");
+    if (count) {
+      count.textContent = ` · ${n} read`;
+      count.hidden = false;
+    }
+  }
+  const threads = document.querySelectorAll<HTMLElement>("[data-book-thread]");
+  threads.forEach(paint);
+  window.addEventListener(DESK_CHANGE, (e) => {
+    const what = (e as CustomEvent<{ what?: string }>).detail?.what;
+    if (what === "read" || what === "all") threads.forEach(paint);
+  });
+</script>
+
+<style>
+  .bt {
+    display: grid;
+    gap: 1.1rem;
+  }
+  .head {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: center;
+  }
+  .head :global(.sw) {
+    width: 2.6rem;
+  }
+  .book {
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    line-height: 1.25;
+  }
+  .book:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .of {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  /* One weft thread with a knot per chapter. */
+  .thread {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    align-items: center;
+    height: 2.6rem;
+  }
+  .thread::before {
+    content: "";
+    position: absolute;
+    left: calc(50% / var(--n));
+    right: calc(50% / var(--n));
+    top: calc(50% - 3px);
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--neel-500) 0 var(--done, 0%), var(--neel-200) var(--done, 0%));
+  }
+  .thread li {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+  .thread a {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 2.4rem;
+    text-decoration: none;
+    border-radius: 999px;
+  }
+  .knot {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    border: 2px solid var(--neel-600);
+    background: var(--paper);
+    box-shadow: 0 0 0 3px var(--canvas);
+    transition: transform 160ms var(--ease-out), background-color 160ms;
+  }
+  .read .knot {
+    background: var(--neel-500);
+    border-color: var(--neel-500);
+  }
+  /* Real reading state: the thread follows what was read, not where this chapter sits. */
+  .real .thread::before {
+    background: var(--thread, var(--neel-200));
+  }
+  .read-count {
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  /* The current chapter, once read: a blue pen tick beside its knot. */
+  .bt :global(.read-tick) {
+    display: none;
+    position: absolute;
+    top: -0.2rem;
+    left: calc(50% + 0.75rem);
+    width: 1.1rem;
+    height: 1.1rem;
+    pointer-events: none;
+  }
+  .cur.read :global(.read-tick) {
+    display: block;
+  }
+  .cur.read .knot {
+    background: var(--accent);
+    border-color: var(--haldi-700);
+  }
+  .cur .knot {
+    width: 2.1rem;
+    height: 2.1rem;
+    display: grid;
+    place-items: center;
+    background: var(--accent);
+    border-color: var(--haldi-700);
+    color: var(--neel-950);
+    font-weight: 750;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+    box-shadow:
+      0 0 0 3px var(--canvas),
+      1.5px 2.5px 0 3px rgb(17 20 58 / 0.1);
+  }
+  .thread a:hover .knot {
+    transform: scale(1.25);
+  }
+  .cur a:hover .knot {
+    transform: none;
+  }
+  .near {
+    margin: 0;
+    display: grid;
+    gap: 0.45rem;
+    font-size: var(--fs-sm);
+  }
+  .near div {
+    display: grid;
+    grid-template-columns: 3.6rem minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+  .near dt {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-3);
+  }
+  .near dd {
+    margin: 0;
+  }
+  .near a {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+    line-height: 1.3;
+  }
+  .near a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

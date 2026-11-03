@@ -1,0 +1,108 @@
+---
+/**
+ * A ready-to-adapt message (email, announcement or reply) inside a plan page,
+ * with a "Copy message" button. Placeholders are written in [square brackets].
+ *
+ * <Message label="Layoffs: message to all employees" subject="An important update about our team">
+ *   Team,
+ *
+ *   I want to share difficult news…
+ * </Message>
+ *
+ * Owned by the comply/exit/lead toolkit pages. Uses only global tokens and button classes.
+ */
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  /** Accessible name for the message, e.g. "Layoffs: message to all employees". */
+  label: string;
+  /** Optional email subject line, shown first. */
+  subject?: string;
+}
+const { label, subject } = Astro.props;
+---
+
+<section class="msg" aria-label={label} data-msg>
+  <div class="msg-body" data-msg-text>
+    {subject && <p class="msg-subject"><strong>Subject:</strong> {subject}</p>}
+    <slot />
+  </div>
+  <div class="msg-actions" data-print="hide">
+    <button class="btn btn-secondary btn-sm" type="button" data-msg-copy>
+      <Icon name="copy" size={16} /><span data-label>Copy message</span>
+    </button>
+    <span class="visually-hidden" role="status" aria-live="polite" data-msg-status></span>
+  </div>
+</section>
+
+<script>
+  for (const box of document.querySelectorAll<HTMLElement>("[data-msg]")) {
+    const btn = box.querySelector<HTMLButtonElement>("[data-msg-copy]");
+    const text = box.querySelector<HTMLElement>("[data-msg-text]");
+    const status = box.querySelector<HTMLElement>("[data-msg-status]");
+    const label = btn?.querySelector<HTMLElement>("[data-label]");
+    btn?.addEventListener("click", async () => {
+      if (!text) return;
+      const content = text.innerText.replace(/\n{3,}/g, "\n\n").trim();
+      let message = "Copied";
+      try {
+        await navigator.clipboard.writeText(content);
+      } catch {
+        // Clipboard blocked: select the text so the reader can copy it themselves.
+        const range = document.createRange();
+        range.selectNodeContents(text);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        message = "Text selected. Press Ctrl+C or Cmd+C to copy";
+      }
+      if (status) status.textContent = message;
+      if (label) {
+        label.textContent = message === "Copied" ? "Copied" : "Selected";
+        setTimeout(() => (label.textContent = "Copy message"), 1800);
+      }
+    });
+  }
+</script>
+
+<style>
+  .msg {
+    margin: 1rem 0 1.5rem;
+    padding: 1rem 1.25rem 1rem;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--r-lg) var(--r-lg) 0;
+    background: var(--paper);
+  }
+  .msg-body {
+    font-size: var(--fs-base);
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .msg-body :global(> * + *) {
+    margin-top: 0.8em;
+  }
+  .msg-body :global(ul) {
+    padding-left: 1.3em;
+  }
+  .msg-body :global(li + li) {
+    margin-top: 0.3em;
+  }
+  .msg-subject {
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .msg-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+  @media print {
+    .msg {
+      break-inside: avoid-page;
+      border-right: 0;
+      border-top: 0;
+      border-bottom: 0;
+    }
+  }
+</style>

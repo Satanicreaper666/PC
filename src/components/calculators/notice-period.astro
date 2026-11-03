@@ -1,0 +1,127 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import DateIn from "../calc/DateIn.astro";
+import AsAt from "./parts/AsAt.astro";
+---
+
+<CalcShell id="notice-period" resultLabel="Last working day">
+  <Fragment slot="inputs">
+    <DateIn name="resigned" label="Date the resignation was given" value="2026-11-02" />
+    <div class="two">
+      <Num name="n" label="Notice period" value="30" help="As written in the appointment letter or contract." />
+      <Pick
+        name="unit"
+        label="Counted in"
+        options={[
+          { value: "days", label: "Days" },
+          { value: "months", label: "Months" }
+        ]}
+      />
+    </div>
+    <Pick
+      name="convention"
+      label="Notice starts"
+      options={[
+        { value: "next_day", label: "The day after" },
+        { value: "includes", label: "On the day it is given" }
+      ]}
+      help="Notice is usually counted from the day after it is given. Check the wording of your contract."
+    />
+    <div class="two">
+      <Num name="buyout" label="Days bought out (optional)" suffix="days" placeholder="0" help="Notice paid for instead of served." />
+      <Num name="waived" label="Days waived (optional)" suffix="days" placeholder="0" help="Notice the employer lets go." />
+    </div>
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="lwd">—</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+<AsAt ids={["notice.retrenchmentNoticeMonths", "wages.separationPayDays"]} note="No law sets a general resignation notice period for private-sector employees. The contract, standing orders or a state Shops and Establishments Act decides it." />
+
+<script>
+  import { bindCalculator, type CalcStep } from "../../scripts/calc-kit";
+  import { computeNotice } from "../../lib/calc/notice-period";
+  import type { NoticeConvention, NoticeUnit } from "../../lib/calc/notice-period";
+  import { longDate, parseISO, shortDate, weekdayName } from "../../lib/calc/working-days";
+
+  bindCalculator("notice-period", (v) => {
+    const unit = v.str("unit", "days") as NoticeUnit;
+    const n = v.num("n");
+    const r = computeNotice({
+      resignationDate: v.str("resigned"),
+      n,
+      unit,
+      convention: v.str("convention", "next_day") as NoticeConvention,
+      buyoutDays: v.num("buyout"),
+      waivedDays: v.num("waived")
+    });
+    if (r.status !== "ok") return { outputs: { lwd: "—", sub: "" }, message: r.message };
+    const wd = weekdayName(r.lwd);
+    const notes = [
+      "Weekends and holidays inside the notice period count as notice, unless the contract says otherwise.",
+      "Whether leave can be set off against notice, and how a buy-out is priced, depend on the contract and policy."
+    ];
+    if (wd === "Saturday" || wd === "Sunday") notes.unshift(`The last day falls on a ${wd}. Agree the handover and exit formalities for the working day before.`);
+    if (r.clamped) notes.unshift("The notice ends in a shorter month, so it ends on that month's last day.");
+
+    const given = v.str("resigned");
+    const includes = v.str("convention", "next_day") === "includes";
+    const buyout = Math.max(0, Math.floor(v.num("buyout")));
+    const waived = Math.max(0, Math.floor(v.num("waived")));
+    const unitText = unit === "months" ? (n === 1 ? "month" : "months") : n === 1 ? "day" : "days";
+    const working: CalcStep[] = [
+      { label: "Notice starts", formula: includes ? `${shortDate(given)}, the day it is given` : `${shortDate(given)} + 1 day`, result: longDate(r.starts) },
+      {
+        label: "Notice ends",
+        formula: unit === "months" ? `${shortDate(given)} + ${n} ${unitText}${includes ? " − 1 day" : ""}` : `${shortDate(given)} + ${includes ? `${n} − 1` : n} days`,
+        result: longDate(r.fullLwd),
+        note: r.clamped ? "The month is shorter, so it ends on the month's last day" : undefined
+      },
+      ...(buyout + waived > 0
+        ? [
+            { label: "Brought forward", formula: `${buyout} days bought out + ${waived} days waived`, result: `${buyout + waived} days`, note: r.shortenedBy < buyout + waived ? `Only ${r.shortenedBy} days can come off: the last day cannot be before the resignation date` : undefined },
+            { label: "Last working day", formula: `${shortDate(r.fullLwd)} − ${r.shortenedBy} days`, result: longDate(r.lwd) }
+          ]
+        : []),
+      { label: "Days of notice served", formula: `${shortDate(r.starts)} to ${shortDate(r.lwd)}, both days counted`, result: `${r.servedDays} days` }
+    ];
+    const fullDays = parseISO(r.fullLwd)! - parseISO(given)!;
+    const warnings =
+      buyout + waived > 0 && buyout + waived >= fullDays
+        ? [`${buyout + waived} days bought out and waived cover the whole notice of ${fullDays} days, so the last working day is the date the resignation was given.`]
+        : [];
+    return {
+      working,
+      warnings,
+      outputs: {
+        lwd: longDate(r.lwd),
+        sub: `${n} ${unit === "months" ? (n === 1 ? "month" : "months") : n === 1 ? "day" : "days"} of notice${r.shortenedBy ? `, shortened by ${r.shortenedBy} days` : ""}.`
+      },
+      lines: [
+        { label: "Notice starts", value: longDate(r.starts) },
+        { label: "Notice ends", value: longDate(r.fullLwd), note: "Before any buy-out or waiver" },
+        ...(r.shortenedBy ? [{ label: "Brought forward by", value: `${r.shortenedBy} days`, note: "Buy-out and waiver" }] : []),
+        { label: "Last working day", value: longDate(r.lwd), strong: true },
+        { label: "Days of notice served", value: `${r.servedDays} days` }
+      ],
+      notes
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  @media (max-width: 420px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

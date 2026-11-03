@@ -1,0 +1,49 @@
+---
+/**
+ * A paper-cut scene (docs/ART-DIRECTION.md, "Scenes"): one HR moment as a
+ * small paper diorama, 16:9. Fills the width of its container and keeps its
+ * own aspect ratio.
+ *
+ *   <Scene name="recruit" label="Optional description of the moment" class="..." />
+ *
+ * Decorative unless `label` is given; then it is an image with that label.
+ * Names (13): recruit onboard grow pay exit lead · hr founders employees
+ * students · not-found no-results · about. An unknown name draws not-found.
+ */
+import { sceneSvg, SCENE_W, SCENE_H } from "./lib/scenes.ts";
+interface Props {
+  name: string;
+  label?: string;
+  class?: string;
+}
+const { name, label, class: cls } = Astro.props;
+---
+
+<svg
+  class:list={["scene", cls]}
+  viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  role={label ? "img" : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : "true"}
+  set:html={sceneSvg(name)}
+/>
+
+<style>
+  .scene {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+  .scene :global(.p1) {
+    filter: var(--paper-1);
+  }
+  .scene :global(.p2) {
+    filter: var(--paper-2);
+  }
+  .scene :global(.p3) {
+    filter: var(--paper-3);
+  }
+</style>

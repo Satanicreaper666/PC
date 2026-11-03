@@ -1,0 +1,54 @@
+---
+/**
+ * The desk's pushpin, drawn to match the line icons in src/lib/icons.ts
+ * (24px grid, 1.75px stroke, round caps, currentColor). Decorative.
+ * Its head fills with turmeric when the thing is pinned: inside a button with
+ * aria-pressed="true", or inside anything with the class "is-pinned".
+ */
+interface Props {
+  size?: number;
+  class?: string;
+}
+const { size = 18, class: cls } = Astro.props;
+---
+
+<svg
+  class:list={["pin-icon", cls]}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+>
+  <g transform="translate(-1 1) rotate(40 12 12)">
+    <path class="pin-head" d="M10 3h4v5.5l3.5 4h-11l3.5-4z"></path>
+    <path d="M8 3h8M12 12.5V22"></path>
+  </g>
+</svg>
+
+<style>
+  .pin-icon {
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .pin-head {
+    fill: transparent;
+    transition: fill 160ms var(--ease);
+  }
+  :global([aria-pressed="true"]) .pin-head,
+  :global(.is-pinned) .pin-head {
+    fill: var(--accent);
+  }
+  @media (forced-colors: active) {
+    :global([aria-pressed="true"]) .pin-head,
+    :global(.is-pinned) .pin-head {
+      fill: CanvasText;
+    }
+  }
+</style>

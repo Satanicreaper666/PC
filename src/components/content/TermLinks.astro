@@ -1,0 +1,17 @@
+---
+/**
+ * Wraps rendered chapter content and links the first mention of each glossary term
+ * to its definition (lib/term-links.ts), and draws task-list boxes in pen. Build-time
+ * only: the output is plain HTML.
+ */
+import { allTerms } from "../../lib/library";
+import { buildMatchers, linkTerms } from "../../lib/term-links";
+const terms = await allTerms();
+const matchers = buildMatchers(terms.map((t) => ({ id: t.id, term: t.data.term, short: t.data.short, aliases: t.data.aliases })));
+const html = await Astro.slots.render("default");
+/** "- [ ] item" lists: a pen-drawn box instead of a disabled, unlabelled checkbox (global.css, .task-box). */
+const boxes = (h: string) =>
+  h.replace(/(<li class="task-list-item">)\s*<input\b([^>]*)>/g, (_, li: string, attrs: string) => `${li}<span class="task-box${/\bchecked\b/.test(attrs) ? " is-done" : ""}" aria-hidden="true"></span>`);
+---
+
+<Fragment set:html={linkTerms(boxes(html), matchers)} />

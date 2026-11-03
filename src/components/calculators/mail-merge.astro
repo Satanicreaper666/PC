@@ -1,0 +1,697 @@
+---
+/**
+ * Mail merge: one of the site's letters (or a bulk-friendly form), a list
+ * of people as CSV or Excel, and one letter per row as a Word file, a
+ * printout or text to copy. The letters come from the toolkit collection at
+ * build time, rendered exactly as on their own pages (src/lib/template.ts).
+ * Behaviour: src/components/mailmerge/app.ts. Logic and tests: src/lib/mailmerge/.
+ */
+import { getCollection } from "astro:content";
+import Icon from "../ui/Icon.astro";
+import { buildLibrary, GROUP_LABEL, jsonForScript, type TemplateGroup } from "../../lib/mailmerge/library.ts";
+
+const entries = await getCollection("toolkit", (e) => import.meta.env.DEV || !e.data.draft);
+const library = buildLibrary(entries.map((e) => ({ id: e.id, body: e.body, data: e.data })));
+const groups = (Object.keys(GROUP_LABEL) as TemplateGroup[])
+  .map((g) => ({ label: GROUP_LABEL[g], items: library.filter((t) => t.group === g) }))
+  .filter((g) => g.items.length);
+const first = library.find((t) => t.id === "offer-letter") ?? library[0];
+---
+
+<div class="mm" data-mm>
+  <p class="visually-hidden" aria-live="polite" data-announce></p>
+  <script is:inline type="application/json" data-mm-library set:html={jsonForScript(library)} />
+
+  <section class="mm-step mm-start" aria-labelledby="mm-pick-title">
+    <div class="mm-start-main">
+      <div class="mm-block">
+        <p class="mm-stepno">Step 1 of 4</p>
+        <h2 class="mm-h" id="mm-pick-title">Choose the letter</h2>
+        <div class="field mm-pick">
+          <label class="field-label" for="mm-template">Letter or form</label>
+          <select class="control" id="mm-template" data-template aria-describedby="mm-template-about">
+            {
+              groups.map((g) => (
+                <optgroup label={g.label}>
+                  {g.items.map((t) => (
+                    <option value={t.id} selected={t.id === first?.id}>
+                      {t.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ))
+            }
+          </select>
+          <p class="field-help" id="mm-template-about" data-template-about></p>
+        </div>
+        <div class="mm-row-actions">
+          <button class="btn btn-secondary btn-sm" type="button" data-csv><Icon name="download" size={16} /> Download a CSV template for this letter</button>
+          <a class="mm-linkbtn" href={`/toolkit/${first?.id}/`} data-template-link><Icon name="edit" size={16} /> <span data-template-link-text>Fill in one letter instead</span></a>
+        </div>
+      </div>
+
+      <div class="mm-block">
+        <p class="mm-stepno">Step 2 of 4</p>
+        <h2 class="mm-h" id="mm-load-title">Add your list</h2>
+        <div class="mm-drop" data-drop>
+          <span class="mm-drop-icon"><Icon name="upload" size={24} /></span>
+          <p class="mm-drop-title">Drop a CSV or Excel file here</p>
+          <p class="mm-drop-sub">One row per letter, with a header row. Use the template or your own column names; you match them next.</p>
+          <div class="mm-drop-actions">
+            <button class="btn" type="button" data-pick><Icon name="file-text" size={18} /> Choose a file</button>
+            <button class="btn btn-secondary" type="button" data-sample><Icon name="sparkle" size={18} /> Try with sample data</button>
+          </div>
+          <input type="file" accept=".csv,.txt,.xlsx,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" data-file hidden />
+          <p class="mm-busy" data-busy hidden>Reading the file…</p>
+          <p class="mm-error" role="alert" data-load-error hidden></p>
+        </div>
+      </div>
+    </div>
+    <aside class="mm-privacy" aria-labelledby="mm-privacy-title">
+      <p class="mm-privacy-title" id="mm-privacy-title"><Icon name="lock" size={18} /> Your list stays on this device</p>
+      <ul>
+        <li>Your browser reads the file and fills in the letters. Nothing is uploaded to PeopleCraft or anyone else.</li>
+        <li>Nothing is saved. Reload or close the page and the list is gone.</li>
+        <li>The Word file and printout are made on your device too.</li>
+      </ul>
+      <p class="mm-privacy-links">
+        <a class="mm-linkbtn" href="#how-to-prepare-your-list"><Icon name="checklist" size={16} /> How to prepare your list</a>
+      </p>
+    </aside>
+  </section>
+
+  <section class="mm-step mm-map" data-step="map" aria-labelledby="mm-map-title" hidden>
+    <div>
+      <p class="mm-stepno">Step 3 of 4</p>
+      <h2 class="mm-h" id="mm-map-title" tabindex="-1">Match the columns</h2>
+      <p class="mm-lede" data-map-summary></p>
+    </div>
+    <div class="mm-map-options">
+      <div class="field" data-sheet-wrap hidden>
+        <label class="field-label" for="mm-sheet">Sheet with the list</label>
+        <select class="control" id="mm-sheet" data-sheet></select>
+      </div>
+      <div class="field" data-dateorder-wrap>
+        <label class="field-label" for="mm-dateorder">Dates like 03/04/2026 are</label>
+        <select class="control" id="mm-dateorder" data-dateorder aria-describedby="mm-dateorder-help">
+          <option value="dmy">Day first: 3 April 2026 (usual in India)</option>
+          <option value="mdy">Month first: 4 March 2026</option>
+        </select>
+        <span class="field-help" id="mm-dateorder-help" data-dateorder-help>Dates written as 2026-04-03 or 3-Apr-2026 are read correctly either way.</span>
+      </div>
+    </div>
+    <p class="mm-warn" data-map-warn hidden></p>
+    <div class="mm-map-table">
+      <div class="mm-map-row mm-map-head" aria-hidden="true">
+        <span>Detail in the letter</span><span>Where it comes from</span><span>What the letters will show</span>
+      </div>
+      <div data-map-rows></div>
+    </div>
+  </section>
+
+  <section class="mm-step mm-out" data-step="out" aria-labelledby="mm-out-title" hidden>
+    <div class="mm-out-head">
+      <div>
+        <p class="mm-stepno">Step 4 of 4</p>
+        <h2 class="mm-h" id="mm-out-title" tabindex="-1">Check, preview and download</h2>
+        <p class="mm-source" data-source></p>
+      </div>
+      <button class="btn btn-ghost btn-sm" type="button" data-restart><Icon name="upload" size={16} /> Use another file</button>
+    </div>
+    <p class="mm-summary" role="status" data-summary></p>
+
+    <div class="mm-checks" data-checks-wrap hidden>
+      <h3 class="mm-h3" id="mm-checks-title">Rows that need a look</h3>
+      <div class="mm-table" data-checks></div>
+    </div>
+
+    <div class="mm-output">
+      <label class="mm-include" data-include-wrap hidden>
+        <input type="checkbox" data-include />
+        <span>Include rows that need fixing, with a blank line where a detail is missing</span>
+      </label>
+      <div class="mm-row-actions">
+        <button class="btn" type="button" data-docx><Icon name="word" size={18} /><span data-label>Download all as one Word file</span></button>
+        <button class="btn btn-secondary" type="button" data-print><Icon name="printer" size={18} /><span data-label>Print all</span></button>
+      </div>
+      <p class="field-help" data-output-note></p>
+    </div>
+
+    <div class="mm-preview">
+      <div class="mm-preview-bar">
+        <h3 class="mm-h3" id="mm-preview-title">Preview</h3>
+        <div class="mm-nav">
+          <button class="btn btn-secondary btn-sm mm-iconbtn" type="button" data-prev aria-label="Previous letter"><Icon name="chevron-left" size={18} /></button>
+          <label class="visually-hidden" for="mm-row">Letter to preview</label>
+          <select class="control mm-rowpick" id="mm-row" data-row></select>
+          <button class="btn btn-secondary btn-sm mm-iconbtn" type="button" data-next aria-label="Next letter"><Icon name="chevron-right" size={18} /></button>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" data-copy><Icon name="copy" size={16} /><span data-label>Copy this letter</span></button>
+      </div>
+      <p class="mm-rowstatus" data-row-status></p>
+      <div class="mm-paper mm-letter" data-preview role="region" aria-labelledby="mm-preview-title"></div>
+      <p class="tiny muted" data-legend><span class="mm-ph-demo">Highlighted</span> text marks a detail with no value in this row.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { mountMailMerge } from "../mailmerge/app";
+  const root = document.querySelector<HTMLElement>("[data-mm]");
+  if (root) mountMailMerge(root);
+</script>
+
+<style is:global>
+  .mm,
+  .mm-map,
+  .mm-out,
+  .mm-block,
+  .mm-preview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mm {
+    display: grid;
+    gap: 2rem;
+  }
+  .mm-step {
+    min-width: 0;
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+  .mm-stepno {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+  .mm-h {
+    font-size: var(--fs-xl);
+    margin-top: 0.15rem;
+  }
+  .mm-h:focus {
+    outline: none;
+  }
+  .mm-h3 {
+    font-size: var(--fs-md);
+    font-weight: 650;
+  }
+  .mm-lede {
+    margin-top: 0.4rem;
+    color: var(--ink-2);
+    max-width: 70ch;
+  }
+  .mm-error,
+  .mm-warn {
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--r);
+    font-size: var(--fs-sm);
+    font-weight: 540;
+  }
+  .mm-error {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .mm-warn {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .mm-busy {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .mm-start {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+    gap: 1.5rem 2rem;
+    align-items: start;
+  }
+  .mm-start-main {
+    display: grid;
+    gap: 2rem;
+    min-width: 0;
+  }
+  .mm-block {
+    display: grid;
+    gap: 0.85rem;
+    min-width: 0;
+  }
+  .mm-pick {
+    max-width: 34rem;
+  }
+  .mm-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+  }
+  .mm-linkbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    color: var(--primary);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgb(59 68 166 / 0.35);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .mm-linkbtn:hover {
+    text-decoration-color: currentColor;
+  }
+  .mm-drop {
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+    padding: 2rem 1.25rem 1.75rem;
+    text-align: center;
+    border: 2px dashed var(--line-strong);
+    border-radius: var(--r-xl);
+    background: var(--canvas);
+    transition: border-color 150ms, background-color 150ms;
+  }
+  .mm-drop.is-over {
+    border-color: var(--primary);
+    background: var(--neel-50);
+  }
+  .mm-drop-icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--primary);
+  }
+  .mm-drop-title {
+    font-weight: 650;
+    font-size: var(--fs-md);
+  }
+  .mm-drop-sub {
+    max-width: 48ch;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .mm-drop-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+  .mm-privacy {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.25rem 1.25rem 1.1rem;
+    border-radius: var(--r-xl);
+    background: var(--good-soft);
+    border: 1px solid color-mix(in srgb, var(--good) 25%, transparent);
+  }
+  .mm-privacy-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 650;
+    color: var(--good);
+  }
+  .mm-privacy ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.35rem;
+    font-size: var(--fs-sm);
+  }
+  .mm-privacy-links {
+    padding-top: 0.6rem;
+    border-top: 1px solid color-mix(in srgb, var(--good) 20%, transparent);
+  }
+
+  /* Step 3 */
+  .mm-map {
+    display: grid;
+    gap: 1.1rem;
+  }
+  .mm-map-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem 1.5rem;
+    max-width: 48rem;
+  }
+  .mm-map-table {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .mm-map-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1.2fr);
+    gap: 0.5rem 1.25rem;
+    align-items: start;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .mm-map-head {
+    padding-block: 0.55rem;
+    background: var(--canvas);
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .mm-map-group {
+    padding: 0.55rem 1rem;
+    background: var(--canvas);
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-2);
+  }
+  .mm-map-more > summary {
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--primary);
+    border-bottom: 1px solid var(--line);
+  }
+  [data-map-rows] > :last-child,
+  .mm-map-more:last-child > :last-child {
+    border-bottom: 0;
+  }
+  .mm-map-field {
+    display: grid;
+    gap: 0.15rem;
+    padding-top: 0.45rem;
+  }
+  .mm-map-field label {
+    font-weight: 620;
+    font-size: var(--fs-sm);
+  }
+  .mm-req {
+    margin-left: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 620;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    vertical-align: 1px;
+  }
+  .mm-map-src {
+    display: grid;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+  .mm-map-row .control {
+    min-width: 0;
+    min-height: 2.5rem;
+    padding-block: 0.4rem;
+    font-size: var(--fs-sm);
+  }
+  .mm-map-row textarea.control {
+    min-height: 4rem;
+  }
+  .mm-fixed {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .mm-fixed .field-help {
+    margin: 0;
+  }
+  .mm-ex {
+    padding-top: 0.5rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .mm-ex.is-bad {
+    color: var(--bad);
+    font-weight: 560;
+  }
+  .mm-ex.is-quiet {
+    color: var(--ink-3);
+  }
+
+  /* Step 4 */
+  .mm-out {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .mm-out-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 0.75rem 1.5rem;
+  }
+  .mm-source {
+    margin-top: 0.25rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .mm-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.6rem;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border-radius: var(--r-lg);
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    font-size: var(--fs-sm);
+  }
+  .mm-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .mm-pill-ready {
+    color: var(--good);
+    background: var(--good-soft);
+  }
+  .mm-pill-check {
+    color: var(--warn);
+    background: var(--warn-soft);
+  }
+  .mm-pill-fix {
+    color: var(--bad);
+    background: var(--bad-soft);
+  }
+  .mm-checks {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .mm-table {
+    overflow: auto;
+    max-height: 22rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .mm-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+  }
+  .mm-table caption {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+  }
+  .mm-table th,
+  .mm-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid var(--line);
+  }
+  .mm-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--canvas);
+    color: var(--ink-2);
+    font-weight: 620;
+    font-size: var(--fs-xs);
+  }
+  .mm-table td ul {
+    margin: 0;
+    padding-left: 1rem;
+  }
+  .mm-table .mm-linkbtn {
+    font-size: inherit;
+    text-align: left;
+  }
+  .mm-output {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--paper);
+  }
+  .mm-include {
+    display: flex;
+    gap: 0.55rem;
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    cursor: pointer;
+  }
+  .mm-include input {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+  }
+  .mm-preview {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+  .mm-preview-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+  }
+  .mm-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
+  .mm-rowpick.control {
+    min-height: 2.25rem;
+    padding-block: 0.3rem;
+    font-size: var(--fs-sm);
+    min-width: 0;
+  }
+  .mm-iconbtn {
+    padding-inline: 0.5rem;
+    flex-shrink: 0;
+  }
+  .mm-rowstatus {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .mm-rowstatus .mm-pill {
+    margin-right: 0.4rem;
+  }
+  .mm-paper {
+    min-width: 0;
+    overflow-x: auto;
+    padding: clamp(1.25rem, 4vw, 3rem);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* The letter itself, on screen and in print (same rules as the single-letter pages). */
+  .mm-letter {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+  .mm-letter > * + * {
+    margin-top: 0.85em;
+  }
+  .mm-letter h2 {
+    font-size: 1.15rem;
+    margin-top: 1.4em;
+  }
+  .mm-letter h3 {
+    font-size: 1rem;
+    margin-top: 1.2em;
+  }
+  .mm-letter ul,
+  .mm-letter ol {
+    padding-left: 1.3rem;
+  }
+  .mm-letter table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .mm-letter th,
+  .mm-letter td {
+    border: 1px solid var(--line-strong);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  .mm-letter .ph:not(.filled),
+  .mm-ph-demo {
+    background: var(--haldi-100);
+    border-radius: 3px;
+    padding: 0 0.2em;
+    box-shadow: inset 0 -1.5px 0 var(--haldi-400);
+  }
+  .mm-letter .ph.unknown {
+    background: var(--bad-soft);
+    color: var(--bad);
+  }
+  .mm-print-root {
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    .mm-start {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 760px) {
+    .mm-map-head {
+      display: none;
+    }
+    .mm-map-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.35rem;
+    }
+    .mm-map-field,
+    .mm-ex {
+      padding-top: 0;
+    }
+  }
+  @media (max-width: 480px) {
+    .mm-drop {
+      padding: 1.5rem 1rem;
+    }
+    .mm-drop-actions .btn {
+      width: 100%;
+    }
+    .mm-preview-bar > .btn {
+      width: 100%;
+    }
+  }
+  @media print {
+    html.mm-printing body > :not(.mm-print-root) {
+      display: none !important;
+    }
+    html.mm-printing .mm-print-root {
+      display: block;
+    }
+    .mm-print-letter {
+      break-after: page;
+      font-size: 11pt;
+    }
+    .mm-print-letter:last-child {
+      break-after: auto;
+    }
+    .mm-print-letter .ph {
+      background: none !important;
+      box-shadow: none !important;
+    }
+  }
+</style>

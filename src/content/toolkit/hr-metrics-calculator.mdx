@@ -1,0 +1,107 @@
+---
+title: HR metrics calculator (20 formulas)
+description: Calculate 20 everyday HR metrics, from attrition and time to fill to eNPS, absenteeism and compa-ratio, with every formula shown. Works in your browser.
+kind: calculator
+calculator: hr-metrics-calculator
+glance:
+  inputs: ["Average headcount", "Months covered", "Leavers", "Hiring figures", "Survey counts"]
+  output: "20 HR metrics"
+  formula: "Attrition rate = leavers ÷ average headcount × 100"
+stage: pay
+audiences: [hr, founders, students]
+order: 72
+checked: 2026-11-02
+useWhen: You need a correctly defined figure for a report, a review meeting or a dashboard, and want to show how it was worked out.
+tips:
+  - "Write down the definition you use for each metric and keep it the same every period. A change of definition looks like a change in performance."
+  - "Use <strong>average headcount</strong> for rates, not the year-end figure."
+  - "Small numbers swing: in a 20-person team, one leaver moves the attrition rate by 5 percentage points."
+sources:
+  - title: Measuring your Net Promoter Score
+    url: https://www.netpromotersystem.com/about/measuring-your-net-promoter-score/
+    publisher: Bain & Company
+  - title: "Glossary: Gender pay gap (GPG)"
+    url: https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Gender_pay_gap_(GPG)
+    publisher: Eurostat
+related:
+  - toolkit/cost-per-hire-calculator
+  - toolkit/attrition-cost-calculator
+  - toolkit/pay-equity-analyzer
+  - toolkit/salary-band-designer
+  - toolkit/engagement-pulse-survey
+  - toolkit/people-analytics
+  - handbooks/hr-professional/04-people-analytics-and-data-literacy
+  - handbooks/recruitment/09-metrics-mistakes-and-checklists
+faq:
+  - q: How do you calculate attrition rate?
+    a: Divide the number of people who left in the period by the average headcount for the period, then multiply by 100. For a shorter period, multiply by 12 ÷ the number of months to get a yearly figure.
+  - q: What is the difference between time to fill and time to hire?
+    a: Time to fill counts the days from opening a job to an accepted offer. Time to hire usually counts from when the chosen candidate applied or was first contacted to the accepted offer. Use one consistently and say which.
+  - q: How is eNPS calculated?
+    a: Ask how likely people are to recommend the organisation as a place to work, on a 0–10 scale. eNPS is the percentage who score 9 or 10 minus the percentage who score 0 to 6, giving a score between −100 and +100.
+  - q: What is a good attrition rate in India?
+    a: It varies widely by industry, role and city, and published figures use different definitions. Compare against your own history and, if you use an outside survey, check that it defines attrition the same way you do.
+  - q: How do you calculate the gender pay gap?
+    a: Take men's average pay minus women's average pay, divide by men's average pay and multiply by 100. This unadjusted figure mixes differences in roles and levels; the pay equity analyser also compares like with like.
+keywords: [hr metrics calculator, hr metrics formulas, attrition rate formula, enps calculation, absenteeism rate formula, time to fill vs time to hire, hr kpis]
+draft: false
+---
+
+## How the main rates are worked out
+
+Most HR rates divide a count of events by the people who could have had them. For attrition that is average headcount, which smooths out joiners and leavers during the period.
+
+<Figure title="Attrition rate" caption="The same pattern works for voluntary attrition: use resignations instead of all leavers.">
+  <Formula
+    result={{ value: "Attrition rate", label: "% for the period" }}
+    parts={[{ value: "Leavers", label: "everyone who left in the period" }, { op: "÷" }, { value: "Average headcount", label: "monthly headcounts added ÷ months" }, { op: "×" }, { value: "100" }]}
+    example="Example: 36 leavers ÷ 200 average headcount × 100 = 18% for the year. For a quarter, 9 ÷ 200 × 100 = 4.5%, which is about 18% a year."
+  />
+</Figure>
+
+Hiring speed is measured over two overlapping stretches. Time to fill shows how long a seat stays open; time to hire shows how quickly you move once you have found the person.
+
+<Figure title="Time to fill and time to hire" caption="Example timeline for one role. The joining date, usually after the notice period, is not part of either measure." wide>
+  <Timeline
+    items={[
+      { when: "Day 0", label: "Job opened" },
+      { when: "Day 12", label: "Chosen candidate applies" },
+      { when: "Day 40", label: "Offer accepted", accent: true },
+      { when: "Day 85", label: "Joins" }
+    ]}
+    spans={[
+      { from: 0, to: 2, label: "Time to fill: 40 days" },
+      { from: 1, to: 2, label: "Time to hire: 28 days" },
+      { from: 2, to: 3, label: "Notice period" }
+    ]}
+  />
+</Figure>
+
+Net promoter scores split a 0–10 answer into three groups, then subtract one share from another.
+
+<Figure title="eNPS from 170 survey answers" caption="35.3% promoters minus 23.5% detractors gives an eNPS of +11.8, shown as +12. Passives count in the total but not in the score." wide>
+  <Breakdown
+    total="170 answers (example)"
+    parts={[
+      { label: "Detractors (0–6)", value: 40, display: "40" },
+      { label: "Passives (7–8)", value: 70, display: "70" },
+      { label: "Promoters (9–10)", value: 60, display: "60" }
+    ]}
+  />
+</Figure>
+
+## Keep each definition steady
+
+| Metric | Decide once and write it down |
+| --- | --- |
+| Attrition rate | Who counts: interns, trainees, fixed-term and contract staff |
+| Absenteeism rate | Count only unplanned absence; approved leave is not absence |
+| Time to fill | The start: requisition approved, or job posted |
+| Cost per hire | Include internal costs such as recruiters' time; see the [cost per hire calculator](/toolkit/cost-per-hire-calculator/) |
+| Quality of hire | Pick one measure, such as the share of new hires meeting expectations at their first review |
+| Gender pay gap | Mean or median, and annual or hourly pay; the [pay equity analyser](/toolkit/pay-equity-analyzer/) shows both and compares like with like |
+| POSH inquiries on time | Count inquiries completed in the period. The time limit comes from the POSH Act; the [POSH compliance chapter](/handbooks/labour-law/posh-compliance/) explains it |
+
+<Callout type="tip" title="Set your own targets">
+  This page gives no benchmarks on purpose: published figures rarely use the same definitions as you. Compare each metric with your own past periods and between teams. Where a law sets the standard, such as filing returns on time, the target is 100%.
+</Callout>

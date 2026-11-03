@@ -1,0 +1,255 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import BookCover from "../../components/ui/BookCover.astro";
+import { BOOKS, BOOK_IDS } from "../../data/books";
+import { audienceList } from "../../data/taxonomy";
+import { allChapters, chapterUrl, bookUrl, readingMinutes, breadcrumbLd } from "../../lib/library";
+
+const chapters = await allChapters();
+/* Which book answers which need: the header's way in. */
+const needs: { need: string; books: (keyof typeof BOOKS)[] }[] = [
+  { need: "Pay people right and stay compliant", books: ["labour-law", "tds"] },
+  { need: "Know your rights at work", books: ["labour-law"] },
+  { need: "Hire well, from the JD to day 90", books: ["recruitment"] },
+  { need: "Grow your HR judgement and career", books: ["hr-professional"] }
+];
+const trail = [
+  { name: "Library", href: "/" },
+  { name: "Handbooks", href: "/handbooks/" }
+];
+const ld = [
+  breadcrumbLd(Astro.site, trail),
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "PeopleCraft handbooks",
+    description: "Four free HR handbooks for India: labour law, TDS on salary, recruitment and the HR profession.",
+    hasPart: BOOK_IDS.map((id) => ({ "@type": "Book", name: BOOKS[id].title, url: new URL(bookUrl(id), Astro.site).toString() }))
+  }
+];
+---
+
+<BaseLayout title="Handbooks" description="Four free HR handbooks for India: the Labour Codes, TDS on salary, recruitment, and the skills and career path of HR professionals. Chapter by chapter, with diagrams and sources." jsonLd={ld} image="/og/handbooks.png">
+  <PageHero title="Handbooks" lede="Four books, written chapter by chapter. Each chapter starts with what's at stake, explains the rules with diagrams and ends with its sources." trail={trail}>
+    <div slot="aside" class="needs">
+      <p class="glance-label">Which book answers what</p>
+      <ul>
+        {
+          needs.map((n) => (
+            <li>
+              <span class="need">{n.need}</span>
+              <span class="arrow" aria-hidden="true" />
+              <span class="bks">
+                {n.books.map((id) => (
+                  <a href={`#b-${id}`} class="bk">
+                    <BookCover id={id} size="sm" class="sw" />
+                    <span>{BOOKS[id].short}</span>
+                  </a>
+                ))}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </PageHero>
+  <div class="wrap section shelf" data-pagefind-ignore>
+    {
+      BOOK_IDS.map((id) => {
+        const b = BOOKS[id];
+        const list = chapters.filter((c) => c.data.book === id);
+        const mins = list.reduce((a, c) => a + readingMinutes(c.body), 0);
+        return (
+          <section class="book" aria-labelledby={`b-${id}`}>
+            <a class="cover-link" href={bookUrl(id)} tabindex="-1" aria-hidden="true">
+              <BookCover id={id} size="md" note={`${list.length} chapters${mins ? `, about ${mins} min` : ""}`} />
+            </a>
+            <div class="about">
+              <h2 class="bt" id={`b-${id}`}>
+                <a href={bookUrl(id)}>{b.title}</a>
+              </h2>
+              <p class="sub">{b.subtitle}</p>
+              <p class="desc">{b.description}</p>
+              <p class="for">For {audienceList(b.audiences)}</p>
+              {list.length > 0 ? (
+                <ol class="toc">
+                  {list.map((c) => (
+                    <li>
+                      <a href={chapterUrl(c)}>
+                        <span class="n">{c.data.chapter}</span>
+                        <span>{c.data.title}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p class="muted small">Chapters are being checked against current law and will appear here.</p>
+              )}
+            </div>
+          </section>
+        );
+      })
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .needs ul {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+  }
+  .needs li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1.75rem auto;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .needs li:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  .need {
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  /* A thread from the need to the book. */
+  .arrow {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--neel-200);
+    position: relative;
+  }
+  .arrow::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--neel-600);
+    transform: translateY(-50%);
+  }
+  .bks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+  .bk {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.6rem 0.25rem 0.3rem;
+    border-radius: 8px;
+    background: var(--paper);
+    box-shadow: 0 0 0 1px rgb(17 20 58 / 0.08), 1px 1.5px 0 rgb(17 20 58 / 0.07);
+    color: var(--ink);
+    font-size: var(--fs-sm);
+    font-weight: 650;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .bk:hover {
+    color: var(--primary);
+    box-shadow: 0 0 0 1px rgb(59 68 166 / 0.3), 2px 3px 0 rgb(17 20 58 / 0.06);
+  }
+  .bk :global(.sw) {
+    width: 1.35rem;
+  }
+  .shelf {
+    display: grid;
+    gap: 3.5rem;
+  }
+  .book {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .cover-link {
+    display: block;
+    border-radius: 6px 14px 14px 6px;
+    transition: transform 240ms var(--ease-out);
+  }
+  .cover-link:hover {
+    transform: translateY(-4px) rotate(-1deg);
+  }
+  .cover-link:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+  .bt {
+    font-size: var(--fs-xl);
+    line-height: 1.1;
+  }
+  .bt a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .bt a:hover {
+    color: var(--primary);
+  }
+  .sub {
+    margin-top: 0.5rem;
+    font-size: var(--fs-md);
+    font-weight: 600;
+  }
+  .desc {
+    margin-top: 0.4rem;
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+  .for {
+    margin-top: 0.5rem;
+    font-size: var(--fs-sm);
+    color: var(--ink-3);
+  }
+  .toc {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2rem;
+  }
+  .toc li {
+    break-inside: avoid;
+  }
+  .toc a {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr;
+    gap: 0.4rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 560;
+    line-height: 1.35;
+  }
+  .toc a:hover {
+    color: var(--primary);
+  }
+  .n {
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 860px) {
+    .book {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+    .cover-link {
+      max-width: 11rem;
+    }
+    .toc {
+      columns: 1;
+    }
+  }
+</style>

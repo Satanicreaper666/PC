@@ -1,0 +1,294 @@
+---
+import Icon from "../ui/Icon.astro";
+import { renderChecklist } from "../../lib/template";
+import type { Tool } from "../../lib/library";
+interface Props {
+  entry: Tool;
+}
+const { entry } = Astro.props;
+const html = renderChecklist(entry.body ?? "");
+---
+
+<div class="cl" data-checklist={entry.id} data-title={entry.data.title}>
+  <div class="cl-bar" data-print="hide">
+    <div class="progress" aria-hidden="true"><span data-cl-bar></span></div>
+    <p class="count" data-cl-count role="status" aria-live="polite"></p>
+    <div class="cl-actions">
+      <button class="btn btn-secondary btn-sm" type="button" data-cl-plan><Icon name="calendar" size={16} /> <span data-label>Add owners and dates</span></button>
+      <button class="btn btn-secondary btn-sm" type="button" data-cl-csv><Icon name="download" size={16} /> Download as CSV</button>
+      <button class="btn btn-secondary btn-sm" type="button" data-print-page><Icon name="printer" size={16} /> Print</button>
+      <button class="btn btn-ghost btn-sm" type="button" data-cl-reset><Icon name="refresh" size={16} /> Untick all</button>
+    </div>
+    <p class="cl-status" data-cl-status role="status" aria-live="polite"></p>
+  </div>
+  <p class="print-head" data-cl-print-head></p>
+  <div class="cl-body" data-cl-body set:html={html} />
+  <p class="tiny muted" data-print="hide">Ticks, owners and due dates are saved in this browser only, so you can come back to the list.</p>
+</div>
+
+<script>
+  import "../../scripts/checklist-tool";
+</script>
+
+<style>
+  .cl {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 50rem;
+  }
+  .cl-bar {
+    position: sticky;
+    top: calc(var(--header-h) + 0.5rem);
+    z-index: 2;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.6rem 1rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: rgb(255 255 255 / 0.96);
+    backdrop-filter: blur(8px);
+  }
+  .progress {
+    grid-column: 1 / -1;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--neel-100);
+    overflow: hidden;
+  }
+  .progress span {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: var(--neel-600);
+    transition: width 300ms var(--ease-out);
+  }
+  .count {
+    font-weight: 620;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .cl-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.4rem;
+  }
+  .cl.planning [data-cl-plan] {
+    --btn-bg: var(--neel-50);
+    --btn-bd: var(--neel-300);
+  }
+  .cl-status {
+    grid-column: 1 / -1;
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .cl-status:empty {
+    display: none;
+  }
+  .print-head {
+    display: none;
+  }
+  .cl-body :global(h2) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    font-size: var(--fs-lg);
+    margin-top: 1.75rem;
+  }
+  .cl-body :global(h2:first-child) {
+    margin-top: 0;
+  }
+  /* Each section's own progress: a short bar and "3 of 9". */
+  .cl-body :global(.sec-prog) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+  .cl-body :global(.sec-bar) {
+    width: 4.5rem;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--neel-100);
+    overflow: hidden;
+  }
+  .cl-body :global(.sec-bar i) {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--neel-600);
+    transition: width 300ms var(--ease-out);
+  }
+  .cl-body :global(.sec-prog .pen) {
+    display: none;
+  }
+  .cl-body :global(.sec-prog.complete) {
+    color: var(--pen-ink);
+  }
+  .cl-body :global(.sec-prog.complete .pen) {
+    display: inline-block;
+  }
+  .cl-body :global(ul) {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .cl-body :global(li.task) {
+    border-radius: var(--r);
+    border: 1px solid var(--line);
+    transition:
+      background-color 150ms,
+      border-color 150ms;
+  }
+  .cl-body :global(li.task:hover) {
+    border-color: var(--neel-300);
+  }
+  .cl-body :global(.task-main) {
+    display: grid;
+    grid-template-columns: 1.2rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.6rem 0.8rem;
+    cursor: pointer;
+    line-height: 1.45;
+  }
+  .cl-body :global(input[type="checkbox"]) {
+    flex-shrink: 0;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-top: 0.15rem;
+    accent-color: var(--pen-ink);
+  }
+  /* Done: struck through in pen, the way a paper checklist is worked down. */
+  .cl-body :global(li.task:has(input:checked)) {
+    background: color-mix(in srgb, var(--hl-green) 28%, var(--paper));
+    border-color: color-mix(in srgb, var(--good) 22%, transparent);
+    color: var(--ink-2);
+  }
+  .cl-body :global(li.task:has(input:checked) .tx) {
+    text-decoration: line-through;
+    text-decoration-color: rgb(47 63 176 / 0.75);
+    text-decoration-thickness: 2px;
+    text-decoration-skip-ink: none;
+  }
+  /* Owner and due date: small inline inputs under the item, only when the reader asks for them. */
+  .cl-body :global(.task-plan) {
+    display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1rem;
+    padding: 0 0.8rem 0.65rem 2.75rem;
+  }
+  .cl.planning :global(.task-plan) {
+    display: flex;
+  }
+  .cl-body :global(.mini) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-xs);
+    font-weight: 620;
+    color: var(--ink-2);
+  }
+  .cl-body :global(.mini .control) {
+    width: 10.5rem;
+    min-height: 2.1rem;
+    padding: 0.2rem 0.55rem;
+    font-size: var(--fs-sm);
+  }
+  .cl-body :global(.mini input[type="date"]) {
+    width: 9.75rem;
+  }
+  .cl-body :global(.task-meta) {
+    margin-top: -0.2rem;
+    padding: 0 0.8rem 0.6rem 2.75rem;
+    font-size: var(--fs-xs);
+    font-weight: 560;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+  .cl-body :global(.task-meta:empty),
+  .cl.planning :global(.task-meta) {
+    display: none;
+  }
+  .cl-body :global(.od-tag) {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+  }
+  .cl-body :global(.task-meta .hl) {
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .cl-body :global(p) {
+    margin-top: 0.5rem;
+    color: var(--ink-2);
+  }
+  @media (max-width: 720px) {
+    .cl-bar {
+      position: static;
+      grid-template-columns: 1fr;
+    }
+    .cl-actions {
+      justify-content: flex-start;
+    }
+    .cl-body :global(.task-plan),
+    .cl-body :global(.task-meta) {
+      padding-left: 0.8rem;
+    }
+    .cl-body :global(.mini) {
+      flex: 1 1 9rem;
+    }
+    .cl-body :global(.mini > span) {
+      min-width: 2.75rem;
+    }
+    .cl-body :global(.mini .control),
+    .cl-body :global(.mini input[type="date"]) {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+  @media print {
+    .print-head {
+      display: block;
+      font-size: 10pt;
+      color: #333;
+    }
+    .cl-body :global(h2) {
+      font-size: 13pt;
+      margin-top: 1rem;
+      break-after: avoid;
+    }
+    .cl-body :global(.sec-bar) {
+      display: none;
+    }
+    .cl-body :global(li.task) {
+      border: 0;
+      background: none !important;
+      break-inside: avoid;
+    }
+    .cl-body :global(.task-main) {
+      padding: 0.15rem 0;
+    }
+    .cl-body :global(input[type="checkbox"]) {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .cl :global(.task-plan) {
+      display: none !important;
+    }
+    .cl :global(.task-meta:not(:empty)) {
+      display: block !important;
+      padding: 0 0 0.25rem 1.95rem;
+    }
+  }
+</style>

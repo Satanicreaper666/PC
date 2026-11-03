@@ -1,0 +1,220 @@
+---
+title: CTC design and perquisites
+description: >-
+  How a CTC becomes taxable salary, what the Labour Codes' 50% wage rule really does to TDS, and the 2026 values for cars, housing, meals, gifts and loans.
+book: tds
+chapter: 3
+stage: pay
+audiences: [hr, founders, employees]
+checked: 2026-11-02
+summary:
+  - "CTC is not taxable salary. The employer's PF contribution and a gratuity provision are part of CTC but aren't taxed each month."
+  - "The Labour Codes don't require basic pay to be half of CTC. They add excluded allowances back into 'wages' when those allowances exceed half of total pay."
+  - "Under the new regime, splitting pay between basic and allowances doesn't change the tax. It changes PF, gratuity and, in the old regime, the HRA exemption."
+  - "The Income-tax Rules, 2026 raised several perquisite values: a company car is now ₹5,000 or ₹7,000 a month, meals are free of tax up to ₹200, and gifts up to ₹15,000 a year."
+sources:
+  - title: "Income-tax Rules, 2026, rule 15: Valuation of perquisites"
+    url: "https://www.incometaxindia.gov.in/w/rule-15-23"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 279: HRA exemption limits and cities"
+    url: "https://www.incometaxindia.gov.in/w/rule-279-1"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Rules, 2026, rule 204: Forms 122 and 123"
+    url: "https://www.incometaxindia.gov.in/w/rule-204-1"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 124: Employer contribution to the pension scheme"
+    url: "https://www.incometaxindia.gov.in/w/section-124-98"
+    publisher: "Income Tax Department"
+  - title: "Income-tax Act, 2025, section 392 (tax on perquisites, ESOPs of eligible start-ups)"
+    url: "https://www.incometaxindia.gov.in/w/section-392-6"
+    publisher: "Income Tax Department"
+  - title: "FAQs on Budget 2026 (₹7.5 lakh ceiling on employer contributions, section 17(1)(h))"
+    url: "https://incometaxindia.gov.in/Documents/Budget2026/FAQs-Budget-2026.pdf"
+    publisher: "Income Tax Department"
+  - title: "Code on Wages, 2019 (definition of wages, section 2(y))"
+    url: "https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf"
+    publisher: "Ministry of Law and Justice, India Code"
+  - title: "Cabinet approves EPF wage ceiling of ₹25,000 (16 September 2026)"
+    url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2310811"
+    publisher: "Press Information Bureau"
+  - title: "Draft Income-tax Rules, 2026: perquisite values compared with the 1962 Rules"
+    url: "https://kpmg.com/xx/en/our-insights/gms-flash-alert/2026/flash-alert-2026-051.html"
+    publisher: "KPMG"
+  - title: "Income-tax Rules, 2026: key highlights for employment tax (allowance limits)"
+    url: "https://vialtopartners.com/regional-alerts/india-employment-tax-income-tax-rules-2026-key-highlights-for-personal-and-employment-tax-compliances"
+    publisher: "Vialto Partners"
+related:
+  - toolkit/salary-band-designer
+  - toolkit/take-home-salary-calculator
+  - handbooks/labour-law/02-wages-and-pay
+  - handbooks/labour-law/04-social-security-and-benefits
+  - handbooks/tds/02-salary-tds
+  - toolkit/epf-calculator
+  - glossary/ctc
+  - glossary/perquisite
+faq:
+  - q: "Do the Labour Codes say basic pay must be 50% of CTC?"
+    a: "No. The Codes define \"wages\" as all pay minus a list of exclusions such as HRA and conveyance. If the excluded items add up to more than half of total pay, the excess is counted as wages. There is no rule that basic itself must be 50%."
+  - q: "Does a higher basic pay increase my income tax?"
+    a: "Not under the new regime, where basic and allowances are taxed the same way. A higher basic can raise your PF and gratuity, which lowers take-home pay, and in the old regime it changes the HRA exemption."
+  - q: "How is a company car taxed from April 2026?"
+    a: "If the employer pays the running costs and you also use the car personally, ₹5,000 a month is added to your salary for a car up to 1.6 litres or an electric car, and ₹7,000 for a bigger engine, plus ₹3,000 a month if a chauffeur is provided. A car used only for official work, with the required records, has no taxable value."
+  - q: "Are Diwali gifts from the employer taxable?"
+    a: "Gifts, vouchers and tokens are tax-free if their total value in the tax year is below ₹15,000. If the total reaches ₹15,000 or more, the whole amount is taxable, not just the part above ₹15,000."
+  - q: "Is employer NPS contribution tax-free in the new regime?"
+    a: "Yes, up to 14% of basic pay plus dearness allowance. In the old regime the limit is 10% for non-government employers. Together with PF and superannuation, employer contributions above ₹7.5 lakh a year are taxable."
+keywords: [ctc structure tax saving 2026, perquisite valuation rules 2026, company car perquisite value 2026, labour code 50 percent wages rule salary structure, employer nps contribution 14 percent new regime]
+draft: false
+---
+
+<Snapshot
+  who="HR and compensation teams designing pay structures, payroll processors valuing perquisites, and founders writing offer letters."
+  level="Intermediate"
+  risks={[
+    "Valuing cars, gifts and meals at the old 1962 Rules amounts, so tax deducted at source (TDS) falls short.",
+    "Restructuring pay for the Labour Codes without checking the effect on provident fund (PF), gratuity and take-home pay.",
+    "Calling reimbursements tax-free without the bills and policy that make them so."
+  ]}
+  mistakes={[
+    "Believing the Codes require basic pay to be 50% of CTC.",
+    "Taxing only the part of gifts above the limit instead of the whole amount.",
+    "Offering allowance-heavy structures to employees on the new regime, where they save no tax."
+  ]}
+  exposure="Short deduction on perquisites is treated like any other shortfall: interest at 1% a month (section 398) and a possible penalty equal to the tax not deducted."
+/>
+
+## From CTC to taxable salary
+
+[Cost to company (CTC)](/glossary/#ctc) is what the employer spends on an employee in a year. Taxable salary is narrower. Some parts of CTC are never paid out monthly, and some are paid but not taxed. Getting this difference right is the first step to correct TDS, and to honest offer letters.
+
+<Figure title="One CTC, two kinds of money (Example)" caption="Example structure for a ₹12 lakh CTC. The first three parts are taxable salary. The employer's PF and the gratuity provision are part of CTC but aren't taxed each month." wide>
+  <Breakdown
+    total="₹1,00,000 a month CTC (Example)"
+    parts={[
+      { label: "Basic + DA", value: 50000, display: "₹50,000", note: "Counts as wages for PF and gratuity" },
+      { label: "HRA", value: 20000, display: "₹20,000", note: "Taxable in the new regime; partly exempt in the old" },
+      { label: "Special allowance", value: 25000, display: "₹25,000", note: "Counts as wages under the Labour Codes" },
+      { label: "Employer PF", value: 3000, display: "₹3,000", note: "12% of wages up to the ₹25,000 ceiling" },
+      { label: "Gratuity provision", value: 2000, display: "₹2,000", note: "Paid only on leaving, if eligible" }
+    ]}
+    groups={[{ label: "Taxable salary: ₹95,000", from: 0, to: 2 }]}
+  />
+</Figure>
+
+In this example the taxable salary is ₹11,40,000 a year. Under the new regime, after the ₹75,000 standard deduction, taxable income is ₹10,65,000, which is within the ₹12 lakh rebate, so TDS is nil even though the CTC is ₹12 lakh.
+
+### What isn't taxed each month
+
+- **Employer PF, National Pension System (NPS) and superannuation contributions.** They become taxable only if together they exceed ₹7.5 lakh in a tax year (section 17(1)(h) of the 2025 Act). The employer's NPS contribution is also deductible under section 124, up to 14% of basic pay plus dearness allowance (DA) in the new regime, and 10% in the old regime for non-government employers.
+- **A gratuity provision.** It isn't paid until the employee leaves. When it is paid, it is taxable salary, with an exemption up to the limits in section 19. Check the current exemption limit with your tax adviser before quoting a figure.
+- **Genuine reimbursements of official expenses**, supported by bills and a written policy. Reimbursing personal expenses is taxable salary.
+
+<Callout type="note">
+The Employees' Provident Fund (EPF) wage ceiling rose from ₹15,000 to ₹25,000 a month from 17 September 2026. Employers who contribute only on the ceiling now pay up to ₹3,000 a month each from employer and employee. See the [EPF calculator](/toolkit/epf-calculator/) and [chapter 4 of the labour law handbook](/handbooks/labour-law/social-security-and-benefits/).
+</Callout>
+
+## The Labour Codes and salary structure
+
+From 21 November 2025, the Code on Wages defines "wages" as all pay, allowances and other remuneration, minus a fixed list of exclusions such as HRA, conveyance, overtime, commission and the employer's PF contribution. If those excluded items add up to more than half of total remuneration, the excess is added back into wages. A generic "special allowance" is not on the exclusion list, so it already counts as wages.
+
+The rule does not say basic pay must be 50% of CTC. It changes the base on which PF, gratuity and some other benefits are worked out. The labour law handbook explains it fully in [wages and pay](/handbooks/labour-law/wages-and-pay/).
+
+### What this does to TDS
+
+| If more of the same CTC becomes "wages" | Effect |
+| --- | --- |
+| Income tax under the new regime | No change from the split itself: basic, HRA and special allowance are all taxable |
+| PF contributions | Higher if PF is paid on full wages; no change if paid only on the ₹25,000 ceiling |
+| Gratuity | Higher, because gratuity is a multiple of wages |
+| Taxable salary within a fixed CTC | Slightly lower if more CTC goes into employer PF, which isn't taxed |
+| HRA exemption under the old regime | Can rise or fall: it depends on rent, HRA and basic + DA |
+| Take-home pay | Lower if the employee's own PF contribution rises |
+
+<Callout type="warning">
+"Higher basic means higher TDS" is a common claim and it is wrong for the new regime. Explain restructuring to employees in terms of take-home pay, PF and gratuity, not tax. The [salary band designer](/toolkit/salary-band-designer/) helps you build structures that pass the 50% test.
+</Callout>
+
+## Perquisites: what's taxable and at what value
+
+A perquisite is a benefit in kind, such as a car, a house or a loan. Its taxable value is added to salary for TDS, using the values in rule 15 of the Income-tax Rules, 2026. Several values went up sharply from 1 April 2026, which matters for both TDS and the cost of benefits.
+
+<Figure title="Perquisite values: 1962 Rules and 2026 Rules" caption="Left: values used until 31 March 2026. Right: values from tax year 2026-27 (rule 15). Car and chauffeur figures are per month for a car used partly for personal travel, with the employer paying the running costs." wide>
+  <Compare
+    columns={["Income-tax Rules, 1962", "Income-tax Rules, 2026"]}
+    highlight={1}
+    rows={[
+      { label: "Car up to 1.6 litres, or electric", values: ["₹1,800 a month", "₹5,000 a month"] },
+      { label: "Car above 1.6 litres", values: ["₹2,400 a month", "₹7,000 a month"] },
+      { label: "Chauffeur", values: ["₹900 a month", "₹3,000 a month"] },
+      { label: "Meals at work or through meal vouchers", values: ["Nil up to ₹50 a meal", "Nil up to ₹200 a meal"] },
+      { label: "Gifts, vouchers and tokens", values: ["Nil if below ₹5,000 a year", "Nil if below ₹15,000 a year"] },
+      { label: "Interest-free or cheap loans", values: ["Nil if total loans up to ₹20,000", "Nil if total loans up to ₹2 lakh"] },
+      { label: "Free education for children", values: ["Taxed if over ₹1,000 a month per child", "Taxed if over ₹3,000 a month per child"] }
+    ]}
+  />
+</Figure>
+
+### How each common perquisite is valued in 2026-27
+
+| Perquisite | Taxable value under the 2026 Rules | What HR should do |
+| --- | --- | --- |
+| Car with personal use, employer pays running costs | ₹5,000 a month (up to 1.6 litres or electric) or ₹7,000 (larger), plus ₹3,000 for a chauffeur | Add to salary every month |
+| Car with personal use, employee pays personal running costs | ₹2,000 or ₹3,000 a month, plus ₹3,000 for a chauffeur | Keep evidence of who pays what |
+| Car used only for official work | Nil, if the records the rule requires are kept | Keep the log and documents on file |
+| Employer-owned house | 10% of salary in cities above 40 lakh population (2011 census), 7.5% in cities of 15 to 40 lakh, 5% elsewhere, minus rent the employee pays | Add 10% a year of the furniture's cost if it is furnished |
+| Meals during work hours or paid vouchers usable only at eating places | Nil up to ₹200 a meal | Tax the excess above ₹200 a meal |
+| Gifts, vouchers, tokens | Nil if the year's total is below ₹15,000; otherwise the whole amount | Track the running total for each employee |
+| Interest-free or cheap loans | Interest at the State Bank of India (SBI) rate on the first day of the tax year, on the maximum monthly balance, minus interest the employee pays | Nil if total loans are ₹2 lakh or less, and for medical treatment of diseases the rules specify |
+| ESOPs | Fair market value on the exercise date minus the price paid | Deduct TDS when shares are allotted; eligible start-ups can defer it under section 392(3) |
+
+<Figure title="Does a company car add to taxable salary?" caption="Start at the top. The values are per month for tax year 2026-27 under rule 15; add ₹3,000 a month if a chauffeur is provided.">
+  <DecisionTree
+    node={{
+      q: "Is the car used only for official work, with the records the rules require?",
+      yes: { result: "No taxable value", detail: "Keep the travel log and the employer's certificate.", tone: "good" },
+      no: {
+        q: "Does the employer pay the running and maintenance costs?",
+        yes: { result: "₹5,000 or ₹7,000 a month", detail: "₹5,000 up to 1.6 litres or electric; ₹7,000 for larger engines.", tone: "accent" },
+        no: { result: "₹2,000 or ₹3,000 a month", detail: "When the employee pays the running costs of personal use.", tone: "neutral" }
+      }
+    }}
+  />
+</Figure>
+
+<Callout type="note" title="Meal vouchers and the new regime">
+The 1962 Rules denied the meal exemption to employees on the new regime. Rule 15 of the 2026 Rules sets the ₹200-a-meal limit without that condition. Check that your payroll software applies it to new-regime employees too.
+</Callout>
+
+### Interest-free loans
+
+<Figure title="Taxable value of an interest-free or cheap loan" caption="Work it out each month on the highest balance that month. Nil if the employee's loans from you total ₹2 lakh or less.">
+  <Formula
+    result={{ value: "Monthly perquisite", label: "added to taxable salary" }}
+    parts={[
+      { value: "Highest balance", label: "in the month" },
+      { op: "×" },
+      { value: "SBI rate", label: "on 1 April, same type of loan" },
+      { op: "÷" },
+      { value: "12" },
+      { op: "−" },
+      { value: "Interest paid", label: "by the employee that month" }
+    ]}
+    example="Example: a ₹5,00,000 interest-free loan at an assumed SBI rate of 9% adds ₹5,00,000 × 9% ÷ 12 = ₹3,750 to that month's taxable salary."
+  />
+</Figure>
+
+### The statement of perquisites
+
+Section 392(5)(a) requires the employer to give each employee a statement of perquisites and their values. Under rule 204, it is Form 123 when the employee's salary for the year is more than ₹1,50,000. For lower salaries the details go into Form 130.
+
+## Allowances that only help in the old regime
+
+In the new regime almost every allowance is fully taxable, so structuring pay around allowances saves employees nothing. For employees who choose the old regime, these are the main ones:
+
+- **House rent allowance (HRA).** Exempt up to the least of the HRA received, rent paid minus 10% of salary, and 50% of salary in Mumbai, Delhi, Kolkata, Chennai, Bengaluru, Hyderabad, Pune and Ahmedabad (40% elsewhere). Bengaluru, Hyderabad, Pune and Ahmedabad moved to 50% from 1 April 2026. [Chapter 4](/handbooks/tds/investment-declarations/) has a worked example.
+- **Leave travel allowance (LTA).** Exempt for travel costs within the rules, against evidence on Form 124.
+- **Children's education and hostel allowances.** The 2026 Rules are reported to have raised the exempt limits to ₹3,000 a month per child for education and ₹9,000 a month per child for hostel, for up to two children. Confirm against the notified Rules before you build them into a salary structure.
+
+<Callout type="tip">
+For the new regime, the employer's NPS contribution is the one structuring choice that still saves tax. At 14% of basic + DA, an employee with ₹50,000 a month of basic + DA can have ₹84,000 a year contributed without it adding to taxable income. It is retirement money, locked in under NPS rules, so offer it as a choice and explain that.
+</Callout>
