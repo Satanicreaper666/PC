@@ -1,5 +1,7 @@
 # PeopleCraft 360° audit
 
+> **Update, 3 November 2026:** most findings below have since been fixed on branch `claude/peoplecraft-site-fixes`, and the live Vercel project was checked (Web Analytics is off; the live site matches the audited zip). See [FIX-LOG.md](FIX-LOG.md) for the status of every finding and what is still for the owner.
+
 **Audited:** the uploaded copy `peoplecraft-website-2026-11-03.zip` (Astro 7 source and its built `dist/`), on 3 November 2026.
 **Method:** I built and tested the copy and served it locally. Every one of the 172 built pages was crawled at phone (390 px) and desktop (1,280 px) width with Playwright and axe-core. I ran Lighthouse on 8 key pages, sent 35 real search queries to the site's search, worked calculator cases by hand, tested offline copies, and reviewed the code. The full measurements are in [APPENDIX.md](APPENDIX.md).
 **Not covered:** the live site (the audit environment's network proxy blocked `peoplecraft.vercel.app`), Vercel dashboard settings, Safari, Firefox and real iPhones, a manual screen-reader pass, opening the Word and PowerPoint exports in Office, Google Docs and LibreOffice, stress tests with big files, and a full legal review. See [What was not tested](#what-was-not-tested).
