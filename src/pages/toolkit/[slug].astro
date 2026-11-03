@@ -83,7 +83,7 @@ const ld = [appLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean
           <p class="use-when"><strong>Use it when</strong> {d.useWhen.replace(/^./, (c) => c.toLowerCase())}</p>
           <div class="meta">
             <Checked date={d.checked} sources={d.sources.length} reviewedBy={d.reviewedBy} reviewed={d.reviewed} />
-            <span class="chip"><Icon name="people" size={15} /> For {audienceList(d.audiences)}</span>
+            <span class="chip chip-audience"><Icon name="people" size={15} /> For {audienceList(d.audiences)}</span>
             <span class="chip chip-good"><Icon name="lock" size={15} /> Works in your browser; nothing is uploaded</span>
             <PinButton item={{ href: toolUrl(entry), title: d.title, kind: kind.label, art: d.kind, code: d.code, description: d.description, meta: toolFacts(entry) }} />
           </div>
@@ -184,6 +184,27 @@ const ld = [appLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean
   }
   .content > :global(.wide) {
     grid-column: wide-start / wide-end;
+  }
+  /*
+   * Phones: the tool is what people came for, so its first field should be on the
+   * first screen. The audience chip, "Use it when" and the glance picture repeat
+   * the description, so they give way below 640px.
+   */
+  @media (max-width: 640px) {
+    .head {
+      padding-block: 1.25rem 1.25rem;
+    }
+    .head-inner {
+      gap: 0.6rem;
+    }
+    .use-when,
+    .chip-audience,
+    .hero-split > :global(.glance) {
+      display: none;
+    }
+    .tool-area {
+      padding-block: 1.25rem 1rem;
+    }
   }
   @media print {
     .head {
