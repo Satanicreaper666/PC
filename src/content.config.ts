@@ -226,6 +226,7 @@ const learn = defineCollection({
       minutes: z.number().int().min(5).max(60),
       stage: stage.optional(),
       checked: z.coerce.date(),
+      ...review,
       /** The one sentence to remember. */
       bigIdea: txt,
       /** The opening workplace situation, 2–4 sentences, fictional and Indian. */

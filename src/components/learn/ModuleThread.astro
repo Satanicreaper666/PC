@@ -37,7 +37,7 @@ const prev = at > 0 ? published[at - 1] : undefined;
 const next = at >= 0 ? published[at + 1] : undefined;
 ---
 
-<aside class="mt" aria-label={here ? "Where this module sits in the course" : "The modules of PeopleCraft Learn"} data-module-thread>
+<div role="note" class="mt" aria-label={here ? "Where this module sits in the course" : "The modules of PeopleCraft Learn"} data-module-thread>
   <div class="mt-head">
     <span class="mt-swatch" aria-hidden="true">
       <Weave structure="plain" cols={5} rows={6} cell={20} warp="#3B44A6" weft="#6B76D2" gap="#11143A" accent="#EFAB22" accentCols={[2]} />
@@ -118,7 +118,7 @@ const next = at >= 0 ? published[at + 1] : undefined;
       </dl>
     )
   }
-</aside>
+</div>
 
 <script>
   import { getRead, DESK_CHANGE } from "../../scripts/desk";

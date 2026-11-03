@@ -65,7 +65,7 @@ const ld = [
 ];
 ---
 
-<BaseLayout title="Learn HR" fullTitle="PeopleCraft Learn: a free HR course for India" description={description} jsonLd={ld} image="/og/learn.png" imageAlt="PeopleCraft Learn: learn HR, one module at a time">
+<BaseLayout title="Learn HR" fullTitle="PeopleCraft Learn: a free HR course for India" description={description} jsonLd={ld} image="/og/learn.jpg" imageAlt="PeopleCraft Learn: learn HR, one module at a time">
   <div data-pagefind-body data-pagefind-meta="kind:Course" data-pagefind-filter="section:Learn">
     <PageHero title="Learn HR, one module at a time" lede="A free course built from what XLRI, CIPD and SHRM teach, plus the standard HR books, Indian law and current practice." trail={trail}>
       <div class="cta" data-pagefind-ignore>
@@ -82,7 +82,7 @@ const ld = [
         }
         <a class="btn btn-secondary" href="#where-to-start">Find where to start</a>
       </div>
-      <aside slot="aside" class="brief notepaper" aria-labelledby="brief-t">
+      <div role="note" slot="aside" class="brief notepaper" aria-labelledby="brief-t">
         <p class="brief-t hand" id="brief-t">In short</p>
         <dl>
           <div>
@@ -106,7 +106,7 @@ const ld = [
             </dd>
           </div>
         </dl>
-      </aside>
+      </div>
     </PageHero>
 
     <!-- The course loom -->

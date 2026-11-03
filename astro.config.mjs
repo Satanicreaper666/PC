@@ -9,7 +9,7 @@ import { join } from "node:path";
 const site = process.env.SITE_URL || "https://peoplecraft.vercel.app";
 
 /**
- * Sitemap lastmod: each chapter, tool and JD's "checked" date, read from its file, so
+ * Sitemap lastmod: each chapter, tool, JD and Learn module's "checked" date, read from its file, so
  * search engines can tell which pages changed after a law update. Other pages use the
  * most recent date.
  */
@@ -29,6 +29,10 @@ function lastModByPath() {
   for (const f of dir("src/content/toolkit")) {
     const date = read(join("src/content/toolkit", f.name));
     if (date) map.set(`/toolkit/${f.name.replace(/\.mdx?$/, "")}/`, date);
+  }
+  for (const f of dir("src/content/learn")) {
+    const date = read(join("src/content/learn", f.name));
+    if (date) map.set(`/learn/${f.name.replace(/^(\d{2}-|guide-)/, "").replace(/\.mdx$/, "")}/`, date);
   }
   for (const f of dir("src/content/jds")) {
     const date = read(join("src/content/jds", f.name));

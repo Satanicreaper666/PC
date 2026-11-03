@@ -20,6 +20,9 @@ import Sources from "../../components/content/Sources.astro";
 import Related from "../../components/content/Related.astro";
 import TermLinks from "../../components/content/TermLinks.astro";
 import PinButton from "../../components/desk/PinButton.astro";
+import { AUTHOR } from "../../data/contact";
+import { SITE } from "../../data/site";
+import Share from "../../components/ui/Share.astro";
 import SectionLinks from "../../components/desk/SectionLinks.astro";
 import { mdxComponents } from "../../components/content/mdx";
 import Quiz from "../../components/learn/Quiz.astro";
@@ -148,8 +151,12 @@ const learningLd = {
   dateModified: d.checked.toISOString(),
   keywords: d.keywords.join(", ") || undefined,
   ...(isModule && d.module ? { position: d.module } : {}),
-  author: { "@type": "Organization", name: "PeopleCraft", url: site },
-  publisher: { "@type": "Organization", name: "PeopleCraft", url: site },
+  datePublished: new Date(SITE.published).toISOString(),
+  image: new URL("/og/learn.jpg", Astro.site).toString(),
+  // A named person: readers and search engines weigh who wrote the material.
+  author: { "@type": "Person", name: AUTHOR.name, jobTitle: AUTHOR.role, url: new URL("/about/", Astro.site).toString(), sameAs: [AUTHOR.linkedin] },
+  publisher: { "@id": `${Astro.site}#org` },
+  ...(d.reviewedBy && d.reviewed ? { reviewedBy: { "@type": "Person", name: d.reviewedBy }, lastReviewed: d.reviewed.toISOString() } : {}),
   isPartOf: {
     "@type": "Course",
     name: "PeopleCraft Learn",
@@ -161,10 +168,13 @@ const learningLd = {
   }
 };
 const ld = [learningLd, breadcrumbLd(Astro.site, trail), faqLd(d.faq)].filter(Boolean) as Record<string, unknown>[];
+// Search results cut titles at about 60 characters: add "PeopleCraft Learn" only when it fits.
+const withCourse = `${d.title} — PeopleCraft Learn`;
+const pageTitle = `${withCourse} | PeopleCraft`.length <= 65 ? withCourse : d.title;
 const pinMeta = isModule ? `Module ${d.module}, ${d.minutes} min` : `Guide, ${d.minutes} min`;
 ---
 
-<BaseLayout title={`${d.title} — PeopleCraft Learn`} description={d.description} type="article" jsonLd={ld} modified={d.checked} image="/og/learn.png">
+<BaseLayout title={pageTitle} description={d.description} type="article" jsonLd={ld} modified={d.checked} image="/og/learn.jpg">
   <article
     class:list={["lm", { "is-guide": !isModule }]}
     data-pagefind-body
@@ -193,7 +203,7 @@ const pinMeta = isModule ? `Module ${d.module}, ${d.minutes} min` : `Guide, ${d.
             <p class="big-t"><span class="hl" data-mark>{d.bigIdea}</span></p>
           </div>
           <div class="meta">
-            <Checked date={d.checked} sources={d.sources.length} />
+            <Checked date={d.checked} sources={d.sources.length} reviewedBy={d.reviewedBy} reviewed={d.reviewed} />
             <span class="chip"><Icon name="clock" size={15} /> {d.minutes} min{isModule ? ", with practice" : " read"}</span>
             {
               levelHint && (
@@ -211,6 +221,7 @@ const pinMeta = isModule ? `Module ${d.module}, ${d.minutes} min` : `Guide, ${d.
                 <Icon name="printer" size={16} /> Print
               </button>
               <PinButton item={{ href: url, title: d.title, kind: isModule ? "Learn module" : "Learn guide", art: "learn", description: d.description, meta: pinMeta }} />
+              <Share title={d.title} />
             </span>
             <SectionLinks />
           </div>
@@ -235,7 +246,7 @@ const pinMeta = isModule ? `Module ${d.module}, ${d.minutes} min` : `Guide, ${d.
     </header>
 
     <div class="wrap body">
-      <aside class="side" data-print="hide" data-pagefind-ignore>
+      <div class="side" data-print="hide" data-pagefind-ignore>
         <details class="toc" open data-toc>
           <summary>In this {isModule ? "module" : "guide"}</summary>
           {
@@ -287,7 +298,7 @@ const pinMeta = isModule ? `Module ${d.module}, ${d.minutes} min` : `Guide, ${d.
             }
           </ol>
         </details>
-      </aside>
+      </div>
 
       <div class="article">
         {isModule && d.situation && <Situation text={d.situation} practiseHref={practise ? `#${practise.slug}` : undefined} />}
@@ -354,7 +365,7 @@ const pinMeta = isModule ? `Module ${d.module}, ${d.minutes} min` : `Guide, ${d.
           </section>
 
           <Faq items={d.faq} />
-          <Sources items={d.sources} checked={d.checked} />
+          <Sources items={d.sources} checked={d.checked} reviewedBy={d.reviewedBy} reviewed={d.reviewed} />
           <LearnDisclaimer kind={touchesLaw ? "law" : "general"} />
           <nav class="pager" aria-label={isModule ? "Modules" : "Course"} data-print="hide" data-pagefind-ignore>
             {

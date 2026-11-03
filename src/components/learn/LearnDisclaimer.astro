@@ -17,14 +17,14 @@ const { kind = "general" } = Astro.props;
   kind === "law" ? (
     <Disclaimer kind="law" />
   ) : (
-    <aside class="disclaimer" aria-label="Disclaimer">
+    <div role="note" class="disclaimer" aria-label="Disclaimer">
       <Icon name="info" size={18} />
       <p>
         This is a learning resource: it explains HR ideas and practice in plain words and is not professional or legal advice. Practice
         differs by organisation and sector, and the law changes, so check the official source before you act on a specific case.{" "}
         <a href="/disclaimer/">Read the full disclaimer</a>.
       </p>
-    </aside>
+    </div>
   )
 }
 
