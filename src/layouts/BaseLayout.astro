@@ -84,6 +84,8 @@ const ld = [...(isHome ? [siteLd, orgLd] : []), ...extraLd];
     <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <link rel="alternate" type="application/rss+xml" title="PeopleCraft: what changed" href="/changes/rss.xml" />
+    <slot name="head" />
     <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
 
     <meta property="og:site_name" content="PeopleCraft" />
