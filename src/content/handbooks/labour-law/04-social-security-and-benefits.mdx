@@ -1,16 +1,16 @@
 ---
 title: "Social security: PF, ESI, gratuity and gig workers"
 description: >-
-  EPF on wages up to ₹25,000, ESI at 0.75% and 3.25%, gratuity after five years or one year for fixed-term staff, and what the Social Security Code means for gig workers.
+  EPF on wages up to {{fact:epf.wageCeiling|short}}, ESI at {{fact:esi.employeeRate}} and {{fact:esi.employerRate}}, gratuity after five years or one year for fixed-term staff, and what the Social Security Code means for gig workers.
 book: labour-law
 chapter: 4
 stage: pay
 audiences: [hr, founders, employees]
 checked: 2026-11-02
 summary:
-  - "EPF applies to establishments with 20 or more employees. Employer and employee each pay 12% of wages, and membership is mandatory for wages up to ₹25,000 a month from 17 September 2026."
-  - "ESI covers employees earning up to ₹21,000 a month (₹25,000 for a person with disability): 0.75% from the employee and 3.25% from the employer."
-  - "Gratuity is 15 days' wages for each year of service, payable after five years, or after one year for fixed-term staff. It is capped at ₹20 lakh and due within 30 days."
+  - "EPF applies to establishments with 20 or more employees. Employer and employee each pay 12% of wages, and membership is mandatory for wages up to {{fact:epf.wageCeiling}}."
+  - "ESI covers employees earning up to {{fact:esi.wageCeiling}} ({{fact:esi.wageCeilingPwd|short}} for a person with disability): {{fact:esi.employeeRate}} from the employee and {{fact:esi.employerRate}} from the employer."
+  - "Gratuity is 15 days' wages for each year of service, payable after five years, or after one year for fixed-term staff. It is capped at {{fact:gratuity.ceiling}} and due within 30 days."
   - "Aggregators are to contribute 1–2% of turnover for gig and platform workers once the Centre notifies the scheme and the start date."
 sources:
   - title: "The Code on Social Security, 2020"
@@ -76,18 +76,20 @@ related:
   - glossary/esi
 faq:
   - q: What is the EPF wage ceiling from September 2026?
-    a: ₹25,000 a month, from 17 September 2026. Employees earning up to ₹25,000 must be enrolled; those earning more when they join can stay out unless they and the employer agree to contribute.
+    a: "{{fact:epf.wageCeiling}}. Employees earning up to {{fact:epf.wageCeiling|short}} must be enrolled; those earning more when they join can stay out unless they and the employer agree to contribute."
   - q: Is gratuity payable after one year for fixed-term employees?
     a: Yes. A fixed-term employee who completes at least one year of service under the contract is entitled to gratuity in proportion to service. An 11-month contract does not qualify.
   - q: What is the maximum gratuity limit in 2026?
-    a: ₹20 lakh, the ceiling the Labour Ministry confirmed in its FAQs. The income-tax exemption on gratuity is a separate question; check it with a tax adviser.
+    a: "{{fact:gratuity.ceiling}}, the ceiling the Labour Ministry confirmed in its FAQs. The income-tax exemption on gratuity is a separate question; check it with a tax adviser."
   - q: What is the ESI wage limit in 2026?
-    a: ₹21,000 a month, or ₹25,000 for a person with disability. The employee pays 0.75% and the employer 3.25% of wages.
+    a: "{{fact:esi.wageCeiling}}, or {{fact:esi.wageCeilingPwd|short}} for a person with disability. The employee pays {{fact:esi.employeeRate}} and the employer {{fact:esi.employerRate}} of wages."
   - q: Do gig workers get PF under the new Labour Codes?
     a: Not PF. The Social Security Code lets the Centre set up separate schemes for gig and platform workers, funded partly by aggregators. The schemes and the start date for contributions still had to be notified in the latest updates we checked.
 keywords: [epf wage ceiling 25000, pf contribution rate employer employee, esi contribution rate 2026, gratuity for fixed term employees, gratuity ceiling 20 lakh, gig workers social security code]
 draft: false
 ---
+
+import { fx } from "../../../data/statutory";
 
 <Snapshot
   who="Payroll heads, HR managers, finance teams and founders"
@@ -116,12 +118,12 @@ EPF applies to every establishment with 20 or more employees. Since 29 June 2026
 
 **The wage ceiling** decides who must join. It was ₹15,000 a month until 16 September 2026 and became **₹25,000 a month from 17 September 2026** (notification S.O. 5109(E)). The Union Cabinet approved the change on 16 September 2026.
 
-- Employees earning up to ₹25,000 when they would become members must be enrolled. Employees earning between ₹15,000 and ₹25,000 who were outside PF had to be enrolled from 17 September 2026.
-- Someone earning more than ₹25,000 at that point is an "excluded employee". They can join with the employer's agreement.
+- Employees earning up to <Fact id="epf.wageCeiling" short /> when they would become members must be enrolled. Employees earning between ₹15,000 and ₹25,000 who were outside PF had to be enrolled from 17 September 2026.
+- Someone earning more than <Fact id="epf.wageCeiling" short /> at that point is an "excluded employee". They can join with the employer's agreement.
 - Existing members can't opt out because their pay rises.
 - "Wages" for PF follows the Social Security Code definition, including the 50% add-back in [Wages and pay](/handbooks/labour-law/wages-and-pay/).
 
-<Figure title="Example: PF on wages of ₹25,000 a month" caption="Example for an EPS member, from 17 September 2026, with contributions at the ceiling. The pension share is 8.33% of wages up to the ceiling; the rest of the employer's 12% goes to the provident fund.">
+<Figure title="Example: PF on wages of ₹25,000 a month" caption={`Example for an EPS member, from 17 September 2026, with contributions at the ceiling. The pension share is ${fx("epf.epsRate")} of wages up to the ceiling; the rest of the employer's 12% goes to the provident fund.`}>
   <Breakdown
     total="₹6,250 a month"
     parts={[
@@ -151,9 +153,9 @@ ESI now applies across India, not just in notified areas. It covers establishmen
       q: "Does the establishment have 10 or more employees?",
       detail: "Or has it opted in, or does even one employee do hazardous work?",
       yes: {
-        q: "Are the employee's monthly wages ₹21,000 or less?",
-        detail: "₹25,000 or less for a person with disability.",
-        yes: { result: "Deduct 0.75% and pay 3.25%", detail: "Deposit both by the 15th of the next month.", tone: "good" },
+        q: `Are the employee's monthly wages ${fx("esi.wageCeiling", "short")} or less?`,
+        detail: `${fx("esi.wageCeilingPwd", "short")} or less for a person with disability.`,
+        yes: { result: `Deduct ${fx("esi.employeeRate")} and pay ${fx("esi.employerRate")}`, detail: "Deposit both by the 15th of the next month.", tone: "good" },
         no: { result: "Not covered by ESI", detail: "Group health cover is a common alternative.", tone: "neutral" }
       },
       no: { result: "ESI is voluntary", tone: "neutral" }
@@ -161,7 +163,7 @@ ESI now applies across India, not just in notified areas. It covers establishmen
   />
 </Figure>
 
-- **Rates:** 0.75% of wages from the employee and 3.25% from the employer, each rounded up to the next rupee. Employees with an average daily wage of ₹176 or less pay no employee share; the employer still pays. This figure comes from secondary sources, so confirm it with ESIC.
+- **Rates:** <Fact id="esi.employeeRate" /> of wages from the employee and <Fact id="esi.employerRate" /> from the employer, each rounded up to the next rupee. Employees with an average daily wage of <Fact id="esi.lowWageExemption" short /> or less pay no employee share; the employer still pays. This figure comes from secondary sources, so confirm it with ESIC.
 - **Staying covered:** someone covered at the start of a contribution period stays covered until it ends, even if their pay rises above the ceiling.
 - **Wages:** the Social Security Code definition applies from 21 November 2025, so the 50% add-back can bring someone under the ceiling or raise their contribution.
 
@@ -177,7 +179,7 @@ A year of continuous service generally means 240 days worked in the preceding 12
 
 <Figure title="How gratuity is worked out" caption="Use wages as defined in the Codes. Count each completed year, plus one more if the remaining part is more than six months. The total is capped.">
   <Formula
-    result={{ value: "Gratuity", label: "capped at ₹20 lakh" }}
+    result={{ value: "Gratuity", label: `capped at ${fx("gratuity.ceiling")}` }}
     parts={[{ value: "Last drawn monthly wages" }, { op: "×" }, { value: "15", label: "days' wages" }, { op: "÷" }, { value: "26", label: "working days" }, { op: "×" }, { value: "Years of service", label: "part over 6 months counts" }]}
     example="Example (fixed-term, 1 year 3 months): ₹40,000 × 15 ÷ 26 × 1 = ₹23,077"
   />

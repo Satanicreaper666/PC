@@ -100,7 +100,15 @@ const S = {
     url: "https://www.incometaxindia.gov.in/w/what-is-the-effective-date-of-enhancement-of-limit-of-gratuity-from-rs-10-lakh-to-20-lakh-for-purpose-of-tax-exemption-computation-under-section-10-10-ii-"
   },
   itdS19: { title: "Income-tax Act, 2025, section 19 (Income Tax Department)", url: "https://www.incometaxindia.gov.in/w/section-19-206" },
-  lksFte: { title: "Top 10 FAQs on fixed-term employment (Lakshmikumaran & Sridharan)", url: "https://www.lkslaw.com/insights/articles/top-10-faqs-on-fixed-term-employment-fte" }
+  lksFte: { title: "Top 10 FAQs on fixed-term employment (Lakshmikumaran & Sridharan)", url: "https://www.lkslaw.com/insights/articles/top-10-faqs-on-fixed-term-employment-fte" },
+  sccBonus: {
+    title: "Centre notifies bonus eligibility and calculation ceilings under the Code on Wages (SCC Online, 26 Aug 2026)",
+    url: "https://www.scconline.com/blog/post/2026/08/26/bonus-rules-under-code-on-wages-eligibility-calculation/"
+  },
+  khaitanBonus: {
+    title: "ERGO: bonus payout under the Code on Wages (Khaitan & Co, 4 Sep 2026)",
+    url: "https://www.khaitanco.com/sites/default/files/2026-09/Ergo_Bonus%20Payout_04%20September%202026.pdf"
+  }
 } satisfies Record<string, StatSource>;
 
 export const STAT_SOURCES = S;
@@ -146,6 +154,49 @@ export const STAT: Record<string, StatFact> = {
     display: "before the 7th of the next month",
     label: "Latest day to pay monthly-rated wages",
     law: "Code on Wages, 2019 s.17(1)(iv)",
+    source: S.wagesCode,
+    verified: true,
+    confidence: "high"
+  }),
+
+  /* ---------- Statutory bonus (Code on Wages, 2019, Chapter IV) ---------- */
+  "bonus.wageCeiling": fact({
+    value: 21000,
+    display: "₹21,000 a month",
+    label: "Monthly wages up to which an employee who worked at least 30 days in the year is entitled to statutory bonus",
+    law: "Code on Wages, 2019 s.26(1); notification S.O. 4711(E) of 25 Aug 2026, with effect from 21 Nov 2025 (central sphere)",
+    source: S.sccBonus,
+    also: [S.wagesCode, S.khaitanBonus],
+    verified: true,
+    confidence: "medium-high",
+    from: "2025-11-21",
+    note: "Notified by the Centre for establishments in its sphere; states notify their own. The Gazette text was not found, only law-firm and SCC Online reports."
+  }),
+  "bonus.calcCeiling": fact({
+    value: 7000,
+    display: "₹7,000 a month",
+    label: "Monthly wages on which bonus is worked out for employees who earn more (or the minimum wage, if higher)",
+    law: "Code on Wages, 2019 s.26; notification of 25 Aug 2026 (central sphere)",
+    source: S.sccBonus,
+    also: [S.wagesCode, S.khaitanBonus],
+    verified: true,
+    confidence: "medium-high",
+    from: "2025-11-21"
+  }),
+  "bonus.minRate": fact({
+    value: 8.33,
+    display: "8.33%",
+    label: "Minimum statutory bonus, as a share of wages earned in the year (or ₹100, if higher)",
+    law: "Code on Wages, 2019 s.26(1)",
+    source: S.wagesCode,
+    verified: true,
+    confidence: "high"
+  }),
+  "bonus.maxRate": fact({
+    value: 20,
+    display: "20%",
+    label: "Maximum statutory bonus, as a share of wages earned in the year",
+    law: "Code on Wages, 2019 s.26(2)",
     source: S.wagesCode,
     verified: true,
     confidence: "high"
@@ -718,6 +769,48 @@ export const stat = (id: string): StatFact => {
   return f;
 };
 export const statNum = (id: string): number => Number(stat(id).value);
+
+/** The figure at the start of a display string: "₹25,000 a month" → "₹25,000", "26 weeks" → "26 weeks". */
+const SHORT = /^(₹[\d,]+(?:\.\d+)?(?: (?:lakh|crore))?|\d+(?:\.\d+)?%|\d+ (?:working )?(?:days?|weeks?|months?|years?|hours?))/;
+
+/**
+ * Text for a statutory value, for pages. Throws for a value that is not verified,
+ * so an unconfirmed number can never reach a page by accident.
+ *   part "display" (default): "₹25,000 a month"; part "short": "₹25,000".
+ */
+export function factText(id: string, part: "display" | "short" = "display"): string {
+  const f = stat(id);
+  if (!f.verified) throw new Error(`Statutory fact "${id}" is not verified; it cannot be shown on a page.`);
+  if (part === "short") return f.display.match(SHORT)?.[1] ?? f.display;
+  return f.display;
+}
+
+/**
+ * Short alias for MDX component props, which can't hold <Fact>:
+ *   import { fx } from "../../../data/statutory";
+ *   <KeyNumbers items={[{ value: fx("esi.wageCeiling", "short"), … }]} />
+ */
+export const fx = factText;
+
+/** Tokens a writer can use in front matter, glossary entries and Markdown templates. */
+export const FACT_TOKEN = /\{\{\s*fact:([a-z]+\.[A-Za-z]+)(?:\|(short|display))?\s*\}\}/g;
+
+/** Replace {{fact:epf.wageCeiling}} and {{fact:epf.wageCeiling|short}} with today's figure. */
+export function resolveFacts(text: string): string {
+  return text.replace(FACT_TOKEN, (_m, id: string, part?: "short" | "display") => factText(id, part ?? "display"));
+}
+
+/** Official publishers: India Code, the Gazette, PIB, PRS and government (.gov.in / .nic.in) sites. */
+export const OFFICIAL_SOURCE = /(^|\.)(indiacode\.nic\.in|egazette\.gov\.in|pib\.gov\.in|prsindia\.org|[a-z0-9-]+\.gov\.in|[a-z0-9-]+\.nic\.in)$/;
+export const isOfficial = (s: StatSource): boolean => {
+  try {
+    return OFFICIAL_SOURCE.test(new URL(s.url).hostname);
+  } catch {
+    return false;
+  }
+};
+/** True when at least one source for the fact is an official publisher. */
+export const hasOfficialSource = (f: { source: StatSource; also?: StatSource[] }): boolean => [f.source, ...(f.also ?? [])].some(isOfficial);
 
 /* =====================================================================
  * Professional tax: state slabs

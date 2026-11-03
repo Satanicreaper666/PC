@@ -2,6 +2,16 @@ import { defineCollection } from "astro:content";
 import { file, glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { AUDIENCES, STAGES, TOOL_KINDS } from "./data/taxonomy";
+import { resolveFacts } from "./data/statutory";
+
+/**
+ * Text that may hold statutory tokens such as {{fact:epf.wageCeiling}} or
+ * {{fact:esi.wageCeiling|short}}. They become today's figure from
+ * src/data/statutory.ts at build time, so a rate changes in one place.
+ */
+const txt = z.string().transform(resolveFacts);
+/** 120–170 characters after tokens are resolved; used for search results and link previews. */
+const desc = z.string().transform(resolveFacts).pipe(z.string().max(200));
 
 const BOOK_IDS = ["labour-law", "tds", "recruitment", "hr-professional"] as const;
 
@@ -17,7 +27,7 @@ const source = z.object({
  * "handbooks/labour-law/03-leave-and-working-hours", "toolkit/gratuity-calculator" or "glossary/ctc".
  */
 const related = z.array(z.string()).default([]);
-const faq = z.array(z.object({ q: z.string(), a: z.string() })).default([]);
+const faq = z.array(z.object({ q: txt, a: txt })).default([]);
 
 /** Handbook chapters: src/content/handbooks/<book>/<NN>-<slug>.mdx */
 const handbooks = defineCollection({
@@ -25,7 +35,7 @@ const handbooks = defineCollection({
   schema: z.object({
     title: z.string(),
     /** 120–170 characters; used for search results and link previews. */
-    description: z.string().max(200),
+    description: desc,
     book: z.enum(BOOK_IDS),
     chapter: z.number().int().min(1),
     stage: stage.optional(),
@@ -33,7 +43,7 @@ const handbooks = defineCollection({
     /** Date every fact on the page was last checked against its sources. */
     checked: z.coerce.date(),
     /** 2–5 short sentences for the "In short" box. */
-    summary: z.array(z.string()).min(2).max(5),
+    summary: z.array(txt).min(2).max(5),
     sources: z.array(source).default([]),
     related,
     faq,
@@ -48,9 +58,9 @@ const field = z.object({
   type: z.enum(["text", "textarea", "date", "number", "email", "tel", "select", "money"]).default("text"),
   required: z.boolean().default(false),
   placeholder: z.string().optional(),
-  help: z.string().optional(),
+  help: txt.optional(),
   options: z.array(z.string()).optional(),
-  default: z.string().optional(),
+  default: txt.optional(),
   group: z.string().optional()
 });
 
@@ -67,7 +77,7 @@ const toolkit = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/toolkit" }),
   schema: z.object({
     title: z.string(),
-    description: z.string().max(200),
+    description: desc,
     kind: z.enum(TOOL_KINDS),
     stage,
     audiences,
@@ -76,13 +86,13 @@ const toolkit = defineCollection({
     code: z.string().optional(),
     checked: z.coerce.date(),
     /** One sentence: when to use it. */
-    useWhen: z.string(),
-    tips: z.array(z.string()).default([]),
+    useWhen: txt,
+    tips: z.array(txt).default([]),
     /** Calculator component id in src/components/calculators/<id>.astro (kind: calculator). */
     calculator: z.string().optional(),
     /** Calculators and apps: what goes in and what comes out, drawn in the page header. */
     glance: z
-      .object({ inputs: z.array(z.string()).min(1).max(6), output: z.string(), formula: z.string().optional() })
+      .object({ inputs: z.array(txt).min(1).max(6), output: txt, formula: txt.optional() })
       .optional(),
     /** Fill-in fields for letters, forms, policies and plans; used as {{id}} in the body. */
     fields: z.array(field).default([]),
@@ -92,7 +102,7 @@ const toolkit = defineCollection({
       .object({ min: z.number().int(), max: z.number().int(), labels: z.array(z.string()) })
       .optional(),
     /** Result bands on the average score, lowest first. */
-    bands: z.array(z.object({ min: z.number(), max: z.number(), label: z.string(), advice: z.string() })).default([]),
+    bands: z.array(z.object({ min: z.number(), max: z.number(), label: z.string(), advice: txt })).default([]),
     sources: z.array(source).default([]),
     related,
     faq,
@@ -108,7 +118,7 @@ const jds = defineCollection({
   schema: z.object({
     title: z.string(),
     /** 120–170 characters, for search results and link previews. */
-    description: z.string().max(200),
+    description: desc,
     industry: z.string(),
     function: z.string(),
     level: z.enum(JD_LEVELS),
@@ -117,8 +127,8 @@ const jds = defineCollection({
     stage: stage.default("recruit"),
     checked: z.coerce.date(),
     /** Two or three plain sentences: why the role exists and what success looks like. */
-    summary: z.string(),
-    responsibilities: z.array(z.string()).min(4),
+    summary: txt,
+    responsibilities: z.array(txt).min(4),
     competencies: z
       .array(
         z.object({
@@ -128,13 +138,13 @@ const jds = defineCollection({
         })
       )
       .default([]),
-    mustHave: z.array(z.string()).min(2),
-    goodToHave: z.array(z.string()).default([]),
+    mustHave: z.array(txt).min(2),
+    goodToHave: z.array(txt).default([]),
     /** Interview questions, each with what a strong answer shows. */
-    interview: z.array(z.object({ q: z.string(), look: z.string().optional() })).default([]),
+    interview: z.array(z.object({ q: txt, look: txt.optional() })).default([]),
     /** Signs of a strong candidate, and warning signs, for the interview panel. */
-    greenFlags: z.array(z.string()).default([]),
-    redFlags: z.array(z.string()).default([]),
+    greenFlags: z.array(txt).default([]),
+    redFlags: z.array(txt).default([]),
     sources: z.array(source).default([]),
     related,
     keywords: z.array(z.string()).default([]),
@@ -148,8 +158,8 @@ const glossary = defineCollection({
     id: z.string(),
     term: z.string(),
     expansion: z.string().optional(),
-    short: z.string(),
-    detail: z.string().optional(),
+    short: txt,
+    detail: txt.optional(),
     stage: stage.optional(),
     aliases: z.array(z.string()).default([]),
     related,

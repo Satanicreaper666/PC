@@ -1,0 +1,104 @@
+[
+  {
+    "file": "src/content/handbooks/labour-law/01-the-four-labour-codes.mdx",
+    "text": "EPF wage ceiling rising to ₹25,000 a month from 17 September 2026",
+    "why": "Historical: describes a change on a fixed date, true whatever the figure is later"
+  },
+  {
+    "file": "src/content/handbooks/labour-law/01-the-four-labour-codes.mdx",
+    "text": "EPF wage ceiling of ₹25,000 from 17 September 2026",
+    "why": "Historical: describes a change on a fixed date, true whatever the figure is later"
+  },
+  {
+    "file": "src/content/handbooks/labour-law/01-the-four-labour-codes.mdx",
+    "text": "label: \"EPF wage ceiling raised to ₹25,000\"",
+    "why": "Historical: timeline entry for 17 Sep 2026"
+  },
+  {
+    "file": "src/content/handbooks/labour-law/04-social-security-and-benefits.mdx",
+    "text": "when the ceiling rose to ₹25,000 on 17 September 2026",
+    "why": "Historical: describes a change on a fixed date, true whatever the figure is later"
+  },
+  {
+    "file": "src/content/handbooks/labour-law/04-social-security-and-benefits.mdx",
+    "text": "Employees earning between ₹15,000 and ₹25,000 who were outside PF had to be enrolled from 17 September 2026",
+    "why": "Historical: describes a change on a fixed date, true whatever the figure is later"
+  },
+  {
+    "file": "src/content/handbooks/labour-law/04-social-security-and-benefits.mdx",
+    "text": "title=\"Example: PF on wages of ₹25,000 a month\"",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
+  },
+  {
+    "file": "src/content/handbooks/labour-law/04-social-security-and-benefits.mdx",
+    "text": "note: \"8.33% of wages up to ₹25,000\"",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
+  },
+  {
+    "file": "src/content/handbooks/labour-law/11-whats-next.mdx",
+    "text": "the EPF wage ceiling of ₹25,000 a month from 17 September 2026",
+    "why": "Historical: list of changes since the Codes started"
+  },
+  {
+    "file": "src/content/handbooks/labour-law/11-whats-next.mdx",
+    "text": "The bonus ceilings of ₹21,000 and ₹7,000 notified by the Centre in August 2026",
+    "why": "Historical: list of changes since the Codes started"
+  },
+  {
+    "file": "src/content/handbooks/tds/03-ctc-design-and-perquisites.mdx",
+    "text": "note: \"12% of wages up to the ₹25,000 ceiling\"",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
+  },
+  {
+    "file": "src/content/handbooks/tds/03-ctc-design-and-perquisites.mdx",
+    "text": "wage ceiling rose from ₹15,000 to ₹25,000 a month from 17 September 2026",
+    "why": "Historical: describes a change on a fixed date, true whatever the figure is later"
+  },
+  {
+    "file": "src/content/toolkit/annual-hr-calendar.mdx",
+    "text": "PF wage ceiling rose to ₹25,000 a month on 17 September 2026",
+    "why": "Historical: calendar row for September 2026"
+  },
+  {
+    "file": "src/content/toolkit/epf-calculator.mdx",
+    "text": "The PF wage ceiling rose from ₹15,000 to <strong>₹25,000 a month from 17 September 2026</strong>",
+    "why": "Historical: describes a change on a fixed date, true whatever the figure is later"
+  },
+  {
+    "file": "src/content/toolkit/epf-calculator.mdx",
+    "text": "At or above ₹25,000 of PF wages that is ₹3,000 a month",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
+  },
+  {
+    "file": "src/content/toolkit/epf-calculator.mdx",
+    "text": "At ₹25,000 that is ₹2,083 to pension and ₹917 to PF",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
+  },
+  {
+    "file": "src/content/toolkit/epf-calculator.mdx",
+    "text": "title=\"Where PF goes at ₹25,000 of PF wages\"",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
+  },
+  {
+    "file": "src/content/toolkit/epf-calculator.mdx",
+    "text": "{ label: \"Wage ceiling\", values: [\"₹15,000 a month\", \"₹25,000 a month\"] }",
+    "why": "Historical: before-and-after table for the September 2026 change"
+  },
+  {
+    "file": "src/content/toolkit/hr-compliance-audit-checklist.md",
+    "text": "newly covered when the ceiling rose to ₹25,000 a month on 17 September 2026",
+    "why": "Historical: describes a change on a fixed date, true whatever the figure is later"
+  },
+  {
+    "file": "src/content/toolkit/take-home-salary-calculator.mdx",
+    "text": "note: \"12% of ₹25,000\"",
+    "fact": "epf.wageCeiling",
+    "why": "Worked example: the sums use this figure, so redo them if it changes"
+  }
+]

@@ -1,6 +1,6 @@
 ---
 title: EPF calculator
-description: Split monthly PF into the employee's share, the employer's EPF and pension (EPS) shares, EDLI and admin charges, with the ₹25,000 wage ceiling from 17 September 2026.
+description: Split monthly PF into the employee's share, the employer's EPF and pension (EPS) shares, EDLI and admin charges, with the {{fact:epf.wageCeiling|short}} wage ceiling.
 kind: calculator
 calculator: epf
 glance:
@@ -39,11 +39,13 @@ faq:
   - q: How much PF is deducted from salary?
     a: 12% of PF wages, usually capped at the wage ceiling. At or above ₹25,000 of PF wages that is ₹3,000 a month.
   - q: How is the employer's 12% split between EPF and EPS?
-    a: For an EPS member, 8.33% of wages up to the ceiling goes to the pension scheme and the rest of the 12% goes to the PF account. At ₹25,000 that is ₹2,083 to pension and ₹917 to PF.
+    a: For an EPS member, {{fact:epf.epsRate}} of wages up to the ceiling goes to the pension scheme and the rest of the 12% goes to the PF account. At ₹25,000 that is ₹2,083 to pension and ₹917 to PF.
   - q: Who pays EDLI and admin charges?
     a: The employer, on top of its 12%. Each is 0.5% of wages, with EDLI worked out on wages up to the ceiling.
 keywords: [epf calculator, pf calculator, pf contribution employer employee, eps contribution 8.33, pf wage ceiling 25000, edli admin charges]
 ---
+
+import { fx } from "../../data/statutory";
 
 ## How the split is worked out
 
@@ -51,11 +53,11 @@ keywords: [epf calculator, pf calculator, pf contribution employer employee, eps
   <div style={{ display: "grid", gap: "1.75rem" }}>
     <Formula
       result={{ value: "Employee PF", label: "deducted from pay" }}
-      parts={[{ value: "12%", label: "employee rate" }, { op: "×" }, { value: "PF wages", label: "up to ₹25,000, unless on full wages" }]}
+      parts={[{ value: "12%", label: "employee rate" }, { op: "×" }, { value: "PF wages", label: `up to ${fx("epf.wageCeiling", "short")}, unless on full wages` }]}
     />
     <Formula
       result={{ value: "Employer to PF", label: "the rest of the employer's 12%" }}
-      parts={[{ value: "12% of PF wages", label: "employer rate" }, { op: "−" }, { value: "8.33% of wages", label: "pension (EPS), up to the ceiling" }]}
+      parts={[{ value: "12% of PF wages", label: "employer rate" }, { op: "−" }, { value: `${fx("epf.epsRate")} of wages`, label: "pension (EPS), up to the ceiling" }]}
       example="Example: PF wages of ₹20,000 give ₹2,400 from the employee, ₹1,666 to pension and ₹734 to the PF account from the employer, plus ₹100 EDLI and ₹100 admin charges. These match EPFO's own example."
     />
   </div>
@@ -69,7 +71,7 @@ The employee contributes <Fact id="epf.employeeRate" /> of PF wages and the empl
     parts={[
       { label: "Employee PF", value: 3000, display: "₹3,000", note: "12%, from pay" },
       { label: "Employer to PF", value: 917, display: "₹917", note: "3.67%" },
-      { label: "Employer to pension", value: 2083, display: "₹2,083", note: "8.33%" },
+      { label: "Employer to pension", value: 2083, display: "₹2,083", note: fx("epf.epsRate") },
       { label: "EDLI insurance", value: 125, display: "₹125", note: "0.5%" },
       { label: "Admin charges", value: 125, display: "₹125", note: "0.5%" }
     ]}
@@ -102,7 +104,7 @@ PF is worked out on "wages" as the Code on Social Security defines them: basic p
       q: "Already a PF member?",
       yes: { result: "Stays a member and keeps contributing", detail: "Existing members cannot opt out", tone: "good" },
       no: {
-        q: "PF wages at joining are ₹25,000 or less?",
+        q: `PF wages at joining are ${fx("epf.wageCeiling", "short")} or less?`,
         yes: { result: "Must be enrolled", tone: "good" },
         no: { result: "Not mandatory; may join with the employer's consent", tone: "neutral" }
       }

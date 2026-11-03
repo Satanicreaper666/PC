@@ -1,12 +1,12 @@
 ---
 title: ESI calculator
-description: Check whether ESI applies and work out the employee's 0.75% and the employer's 3.25% on wages up to ₹21,000 a month, rounded up as the 2026 rules require.
+description: Check whether ESI applies and work out the employee's {{fact:esi.employeeRate}} and the employer's {{fact:esi.employerRate}} on wages up to {{fact:esi.wageCeiling}}, rounded up as the 2026 rules require.
 kind: calculator
 calculator: esi
 glance:
   inputs: ["Monthly ESI wages", "Establishment covered", "Disability", "Average daily wage"]
   output: "ESI each month"
-  formula: "Employee ESI = 0.75% × wages; employer ESI = 3.25% × wages"
+  formula: "Employee ESI = {{fact:esi.employeeRate}} × wages; employer ESI = {{fact:esi.employerRate}} × wages"
 stage: pay
 audiences: [hr, founders, employees]
 order: 30
@@ -38,15 +38,17 @@ sources:
 related: [toolkit/take-home-salary-calculator, toolkit/epf-calculator, handbooks/labour-law/04-social-security-and-benefits, glossary/esi]
 faq:
   - q: What is the ESI wage limit in 2026?
-    a: ₹21,000 a month, or ₹25,000 for an employee with a disability. The Labour Ministry's FAQs say the existing limit continues until revised rules are made.
+    a: "{{fact:esi.wageCeiling}}, or {{fact:esi.wageCeilingPwd|short}} for an employee with a disability. The Labour Ministry's FAQs say the existing limit continues until revised rules are made."
   - q: What are the ESI contribution rates?
-    a: 0.75% of wages from the employee and 3.25% from the employer, each rounded up to the next rupee. On ₹18,500 that is ₹139 and ₹602.
-  - q: What happens if salary goes above ₹21,000 during the year?
+    a: "{{fact:esi.employeeRate}} of wages from the employee and {{fact:esi.employerRate}} from the employer, each rounded up to the next rupee. On ₹18,500 that is ₹139 and ₹602."
+  - q: What happens if salary goes above {{fact:esi.wageCeiling|short}} during the year?
     a: An employee covered at the start of a contribution period (April to September, or October to March) stays covered until that period ends, with contributions on actual wages.
   - q: Does ESI apply to a company with fewer than 10 employees?
     a: Not compulsorily. Under the Code on Social Security, ESI is voluntary for establishments with fewer than 10 employees, but it applies where even one person does hazardous work.
 keywords: [esi calculator, esi contribution rate, esi wage limit 21000, esi employee employer contribution, esi eligibility, esi under social security code]
 ---
+
+import { fx } from "../../data/statutory";
 
 ## How the contributions are worked out
 
@@ -54,11 +56,11 @@ keywords: [esi calculator, esi contribution rate, esi wage limit 21000, esi empl
   <div style={{ display: "grid", gap: "1.75rem" }}>
     <Formula
       result={{ value: "Employee ESI", label: "deducted from pay" }}
-      parts={[{ value: "0.75%", label: "employee rate" }, { op: "×" }, { value: "Monthly wages", label: "up to ₹21,000" }]}
+      parts={[{ value: fx("esi.employeeRate"), label: "employee rate" }, { op: "×" }, { value: "Monthly wages", label: `up to ${fx("esi.wageCeiling", "short")}` }]}
     />
     <Formula
       result={{ value: "Employer ESI", label: "on top of pay" }}
-      parts={[{ value: "3.25%", label: "employer rate" }, { op: "×" }, { value: "Monthly wages", label: "the same wages" }]}
+      parts={[{ value: fx("esi.employerRate"), label: "employer rate" }, { op: "×" }, { value: "Monthly wages", label: "the same wages" }]}
       example="Example: on wages of ₹18,500, the employee pays ₹138.75, rounded up to ₹139, and the employer pays ₹601.25, rounded up to ₹602."
     />
   </div>
@@ -74,8 +76,8 @@ The Social Security (Central) Rules, 2026 set the employer's share at <Fact id="
       q: "Is the establishment covered by ESI?",
       detail: "10 or more employees, voluntary registration, or hazardous work",
       yes: {
-        q: "Are wages ₹21,000 a month or less?",
-        detail: "₹25,000 for an employee with a disability",
+        q: `Are wages ${fx("esi.wageCeiling")} or less?`,
+        detail: `${fx("esi.wageCeilingPwd", "short")} for an employee with a disability`,
         yes: { result: "Covered: both shares are payable", tone: "good" },
         no: { result: "Not covered for this contribution period", tone: "neutral" }
       },
@@ -86,9 +88,9 @@ The Social Security (Central) Rules, 2026 set the employer's share at <Fact id="
 
 <KeyNumbers
   items={[
-    { value: "₹21,000", label: "monthly wage limit for ESI", note: "₹25,000 for an employee with a disability" },
-    { value: "0.75%", label: "employee's share, rounded up" },
-    { value: "3.25%", label: "employer's share, rounded up" },
+    { value: fx("esi.wageCeiling", "short"), label: "monthly wage limit for ESI", note: `${fx("esi.wageCeilingPwd", "short")} for an employee with a disability` },
+    { value: fx("esi.employeeRate"), label: "employee's share, rounded up" },
+    { value: fx("esi.employerRate"), label: "employer's share, rounded up" },
     { value: "20 Nov 2026", label: "last day the old ESI rules are kept in force" }
   ]}
 />

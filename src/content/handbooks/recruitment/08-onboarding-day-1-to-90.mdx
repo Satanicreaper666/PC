@@ -70,6 +70,8 @@ keywords:
 draft: false
 ---
 
+import { fx } from "../../../data/statutory";
+
 <Snapshot
   who="HR teams, hiring managers and founders"
   level="Basic"
@@ -154,8 +156,8 @@ Four numbers decide most of the joining paperwork:
 <KeyNumbers
   items={[
     { value: "20", label: "employees: the size at which EPF applies to an establishment" },
-    { value: "₹25,000", label: "a month: EPF wage ceiling from 17 September 2026", note: "New joiners earning up to this must be enrolled" },
-    { value: "₹21,000", label: "a month: ESI wage ceiling", note: "₹25,000 for persons with disability" },
+    { value: fx("epf.wageCeiling", "short"), label: "a month: EPF wage ceiling", note: "New joiners earning up to this must be enrolled" },
+    { value: fx("esi.wageCeiling", "short"), label: "a month: ESI wage ceiling", note: `${fx("esi.wageCeilingPwd", "short")} for persons with disability` },
     { value: "6 + 3", label: "months of probation under the Model Standing Orders, where they apply" }
   ]}
 />

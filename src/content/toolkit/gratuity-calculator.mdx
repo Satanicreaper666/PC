@@ -35,7 +35,7 @@ sources:
 related: [toolkit/full-and-final-settlement-calculator, toolkit/notice-period-calculator, toolkit/leave-encashment-calculator, handbooks/labour-law/04-social-security-and-benefits, handbooks/labour-law/05-contracts-and-fixed-term-employment, glossary/gratuity, glossary/full-and-final-settlement]
 faq:
   - q: How is gratuity calculated in India?
-    a: Gratuity is last drawn monthly wages × 15 ÷ 26 × years of service, where a final part-year of more than six months counts as a full year. The total is capped at ₹20 lakh.
+    a: Gratuity is last drawn monthly wages × 15 ÷ 26 × years of service, where a final part-year of more than six months counts as a full year. The total is capped at {{fact:gratuity.ceiling}}.
   - q: Do fixed-term employees get gratuity after one year?
     a: Yes. Under the Industrial Relations Code, a fixed-term employee who has served one year under the contract is eligible, and gratuity is paid in proportion to the service. A contract shorter than a year does not qualify.
   - q: Is gratuity paid if I leave after 4 years and 8 months?
@@ -47,11 +47,13 @@ faq:
 keywords: [gratuity calculator, gratuity formula 15/26, gratuity eligibility 5 years, gratuity for fixed term employees, gratuity under new labour code, gratuity limit 20 lakh]
 ---
 
+import { fx } from "../../data/statutory";
+
 ## How the amount is worked out
 
 <Figure title="The gratuity formula" caption="Read left to right. The final part-year counts as a full year only when it is more than six months.">
   <Formula
-    result={{ value: "Gratuity", label: "up to ₹20 lakh" }}
+    result={{ value: "Gratuity", label: `up to ${fx("gratuity.ceiling")}` }}
     parts={[{ value: "Last drawn wages", label: "monthly, as the Codes define wages" }, { op: "×" }, { value: "15", label: "days' wages a year" }, { op: "÷" }, { value: "26", label: "working days in a month" }, { op: "×" }, { value: "Years counted", label: "part-year over 6 months counts" }]}
     example="Example: ₹60,000 × 15 ÷ 26 × 8 years = ₹2,76,923, for service from 1 April 2019 to 31 October 2026 (7 years and 7 months, so 8 years are counted)."
   />

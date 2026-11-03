@@ -43,7 +43,7 @@ interview:
 greenFlags:
   - "Can show a clean record in statutory filings and audits, and explain the checks behind it"
   - "Has led an HRMS migration or major upgrade"
-  - "Explains PF contributions and the current wage ceiling (₹25,000 a month from 17 September 2026) accurately"
+  - "Explains PF contributions and the current wage ceiling ({{fact:epf.wageCeiling}}) accurately"
 redFlags:
   - "Has outsourced compliance and can't explain the rules behind it"
   - "Can't work out a full and final settlement without the HRMS"

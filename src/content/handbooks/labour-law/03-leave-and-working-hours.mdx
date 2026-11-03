@@ -10,7 +10,7 @@ checked: 2026-11-02
 summary:
   - "Workers can't be made to work more than 8 hours a day, 48 hours a week or 6 days a week. Overtime needs their consent and is paid at twice the ordinary rate."
   - "A worker who works 180 days in a calendar year earns one day of paid annual leave for every 20 days worked, and can carry forward up to 30 days."
-  - "Maternity benefit is 26 weeks, or 12 weeks for a woman with two or more surviving children and for adoptive and commissioning mothers."
+  - "Maternity benefit is {{fact:maternity.weeks}}, or {{fact:maternity.weeksTwoChildren}} for a woman with two or more surviving children and for adoptive and commissioning mothers."
   - "Establishments with 50 or more employees must provide a crèche, and women can work night shifts only with written consent and the safeguards the rules require."
 sources:
   - title: "The OSH Code, 2020: sections 2, 6, 13, 22, 24, 25, 26, 27, 32, 43"
@@ -75,6 +75,8 @@ faq:
 keywords: [working hours labour code, overtime rules india, earned leave 180 days, maternity leave 26 weeks, creche allowance 500, women night shift rules india]
 draft: false
 ---
+
+import { fx } from "../../../data/statutory";
 
 <Snapshot
   who="HR operations, shift and site managers, payroll, and anyone writing a leave policy"
@@ -179,11 +181,11 @@ A woman who has worked at least 80 days in the 12 months before her expected del
     items={[
       { when: "Up to 8 weeks before", label: "Leave can start" },
       { when: "Delivery", label: "Expected delivery date", accent: true },
-      { when: "26 weeks in all", label: "Paid benefit ends" },
+      { when: `${fx("maternity.weeks")} in all`, label: "Paid benefit ends" },
       { when: "If agreed", label: "Work from home", note: "Where the work allows" },
       { when: "Until 15 months", label: "Two nursing breaks a day" }
     ]}
-    spans={[{ from: 0, to: 2, label: "26 weeks of paid maternity benefit" }]}
+    spans={[{ from: 0, to: 2, label: `${fx("maternity.weeks")} of paid maternity benefit` }]}
   />
 </Figure>
 

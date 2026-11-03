@@ -69,7 +69,7 @@ keywords: [hr compliance checklist india, labour law compliance checklist, statu
 Many duties start at a headcount threshold, so check each office and each state you employ people in.
 
 - [ ] Registered with EPFO if you employ 20 or more people, or registered voluntarily
-- [ ] Registered with ESIC if you have 10 or more employees, with everyone earning up to ₹21,000 a month (₹25,000 for a person with disability) insured
+- [ ] Registered with ESIC if you have 10 or more employees, with everyone earning up to {{fact:esi.wageCeiling}} ({{fact:esi.wageCeilingPwd|short}} for a person with disability) insured
 - [ ] Registered for professional tax in every state that levies it, and deducting it at that state's rates
 - [ ] Labour welfare fund contributions paid on each state's schedule, where the state has a fund
 - [ ] Every office registered under the state's Shops and Establishments Act or the OSH Code, as that state requires
@@ -93,7 +93,7 @@ Old ESI regulations continue until 20 November 2026 while new ones are awaited, 
 - [ ] ESI contributions paid by the 15th of the following month
 - [ ] PF and gratuity nominations on record for every employee
 - [ ] Gratuity liability provided for, including fixed-term employees, who qualify after one year of service
-- [ ] Maternity benefit given in full (26 weeks; 12 weeks for a woman with two or more surviving children, and for adopting or commissioning mothers), and women told about it in writing at joining
+- [ ] Maternity benefit given in full ({{fact:maternity.weeks}}; {{fact:maternity.weeksTwoChildren}} for a woman with two or more surviving children, and for adopting or commissioning mothers), and women told about it in writing at joining
 
 ## Tax on salary
 

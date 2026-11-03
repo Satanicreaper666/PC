@@ -128,7 +128,7 @@ In brief: {{leave_summary}}.
 
 **6. Social security.** PF and ESI apply to you as shown in Part A, item 13. You will be eligible for gratuity as the Code on Social Security, 2020 provides: generally after five years of continuous service, or after one year for fixed-term employees.
 
-**7. Maternity benefit.** Women employees are entitled to maternity benefit under Chapter VI of the Code on Social Security, 2020. This includes up to 26 weeks of paid leave for those who have worked at least 80 days in the 12 months before the expected delivery (12 weeks for a woman who already has two or more surviving children, and for adopting and commissioning mothers), and nursing breaks until the child is 15 months old. Our maternity policy has the details.
+**7. Maternity benefit.** Women employees are entitled to maternity benefit under Chapter VI of the Code on Social Security, 2020. This includes up to {{fact:maternity.weeks}} of paid leave for those who have worked at least 80 days in the 12 months before the expected delivery (12 weeks for a woman who already has two or more surviving children, and for adopting and commissioning mothers), and nursing breaks until the child is 15 months old. Our maternity policy has the details.
 
 **8. Ending employment.** Either you or the company may end your employment by giving notice in writing: {{notice}}. The company may pay wages instead of all or part of the notice period, and will also give any notice, pay or compensation the law requires. Employment may be ended without notice for serious misconduct proved after a fair inquiry, in line with our disciplinary policy and any standing orders that apply.
 

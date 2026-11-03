@@ -10,7 +10,7 @@ useWhen: You are writing or updating your company's leave policy and want one th
 tips:
   - "Check your state first. Shops and Establishments laws differ: Karnataka allows earned leave to build up to 45 days and gives 12 days of sickness leave a year; Maharashtra gives 8 days of casual leave and allows 45 days to build up. 'Workers' under the OSH Code can carry forward 30 days."
   - "Don't set the carry-forward limit or the sick leave below what your state allows. The policy says the more generous rule wins, but employees should not have to work that out."
-  - "Maternity leave is set by law (the Code on Social Security, 2020): 26 weeks for the first two children. Paternity leave is not required by law for private employers, so the number of days is your choice."
+  - "Maternity leave is set by law (the Code on Social Security, 2020): {{fact:maternity.weeks}} for the first two children. Paternity leave is not required by law for private employers, so the number of days is your choice."
   - "Have someone who knows your state's law read the final version, and share it with every employee at joining."
 fields:
   - { id: company, label: Company name, required: true, group: Company }
@@ -74,8 +74,8 @@ faq:
     a: No central law requires it, so the number of days is the employer's choice. Central government employees get 15 days, which some employers use as a benchmark.
   - q: Does the Karnataka Shops and Establishments Act still apply to my company?
     a: An amendment in force from 4 September 2026 excludes establishments with 10 or more workers that are registered under the OSH Code. Experts differ on whether this removes them from the whole Act or only from registration, so until it is settled, keep giving at least the leave the Karnataka Act sets.
-  - q: Who gets 26 weeks of maternity leave?
-    a: A woman who has worked at least 80 days in the 12 months before her expected delivery gets 26 weeks of paid leave if she has fewer than two surviving children, and 12 weeks if she has two or more. Adopting and commissioning mothers get 12 weeks.
+  - q: Who gets {{fact:maternity.weeks}} of maternity leave?
+    a: A woman who has worked at least 80 days in the 12 months before her expected delivery gets {{fact:maternity.weeks}} of paid leave if she has fewer than two surviving children, and {{fact:maternity.weeksTwoChildren}} if she has two or more. Adopting and commissioning mothers get {{fact:maternity.weeksAdoption}}.
   - q: What happens to unused earned leave when someone leaves?
     a: It is paid out with the final settlement. For OSH Code 'workers' who are discharged, dismissed or who quit, the law says it must be paid within two working days.
 keywords: [leave policy template india, leave policy for employees, earned leave casual leave sick leave policy, leave policy as per labour code, company leave policy format]
@@ -105,7 +105,7 @@ Leave is credited and counted for the leave year {{leave_year}}. If you join or 
 | Casual leave | {{cl_days}} days a year | Lapse at the end of the leave year |
 | Sick leave | {{sl_days}} days a year | Lapse at the end of the leave year |
 | Public holidays | {{holidays}} days, plus {{optional_holidays}} optional | Lapse at the end of the leave year |
-| Maternity leave | 26 weeks, or 12 weeks (section 9) | Not carried forward |
+| Maternity leave | {{fact:maternity.weeks}}, or {{fact:maternity.weeksTwoChildren}} (section 9) | Not carried forward |
 | Paternity and partner leave | {{paternity_days}} working days | Not carried forward |
 | Bereavement leave | {{bereavement_days}} working days | Not carried forward |
 
@@ -142,7 +142,7 @@ Leave is credited and counted for the leave year {{leave_year}}. If you join or 
 ### 9. Maternity leave
 
 - You are eligible if you have worked for us for at least 80 days in the 12 months before your expected date of delivery.
-- You get 26 weeks of paid maternity leave if you have fewer than two surviving children. Up to 8 of these weeks can be taken before the expected delivery.
+- You get {{fact:maternity.weeks}} of paid maternity leave if you have fewer than two surviving children. Up to 8 of these weeks can be taken before the expected delivery.
 - If you have two or more surviving children, you get 12 weeks, of which up to 6 can be taken before the expected delivery.
 - If you adopt a child or become a mother through surrogacy (as the commissioning mother), you get 12 weeks of paid leave from the date the child is handed over to you.
 - Paid leave is also available after a miscarriage or medical termination of pregnancy (6 weeks) and after a tubectomy (2 weeks). If you have an illness arising from pregnancy, delivery or miscarriage, you can take up to one extra month.

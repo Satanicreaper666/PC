@@ -1,13 +1,22 @@
 ---
-import { stat } from "../../data/statutory";
-/** Inline statutory value with its source on hover: <Fact id="gratuity.ceiling" /> */
+import { factText, hasOfficialSource, stat } from "../../data/statutory";
+/**
+ * Inline statutory value from src/data/statutory.ts, with its source on hover:
+ *   <Fact id="gratuity.ceiling" />        → ₹20 lakh
+ *   <Fact id="epf.wageCeiling" short />   → ₹25,000 (without "a month")
+ * Unverified values throw at build time (see factText).
+ */
 interface Props {
   id: string;
+  short?: boolean;
 }
-const f = stat(Astro.props.id);
+const { id, short = false } = Astro.props;
+const f = stat(id);
+const text = factText(id, short ? "short" : "display");
+const where = hasOfficialSource(f) ? "" : " Source: secondary (no official text found yet).";
 ---
 
-<abbr class="fact" title={`${f.label}. ${f.law}. Checked ${f.checked}.`}>{f.display}</abbr>
+<abbr class="fact" title={`${f.label}. ${f.law}. Checked ${f.checked}.${where}`}>{text}</abbr>
 
 <style>
   .fact {
