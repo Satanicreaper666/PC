@@ -78,6 +78,20 @@ Follows [REPORT.md](REPORT.md) (3 November 2026). Work is on branch `claude/peop
 | OPS-2 Redirects | **Verified (config)** | Unchanged. Test 3 old URLs on the live site after the next deploy. | — |
 | OPS-3 Uptime | **Fixed** | `.github/workflows/uptime.yml` checks 5 URLs daily. | — |
 
+## 4 November 2026: merged with the owner's Learn update
+
+The owner's 4 Nov zip was built on the 3 Nov source, so it was committed on top of the original import (`claude/owner-update-2026-11-04`) and merged into this branch. Three files conflicted: the glossary (the new 251-term version, with the six fact tokens re-applied), `make-assets.cjs` (the owner's option to make only some images, combined with JPEG output and calculator cards) and the home page imports. The new section then got the same fixes as the rest of the site:
+
+| What | Done |
+|---|---|
+| Typed statutory figures in Learn | Modules 08 and 18 typed the EPF ceiling, ESI and bonus limits and maternity weeks in 9 places. They now come from the data file; 4 worked examples or dated history are allow-listed. Learn's quiz, summary and model fields resolve `{{fact:…}}`. Credentials figures were already read from `src/data/credentials.ts`. |
+| Trust and SEO | Expert-review stamp and AI note, reviewer fields, Person author, `datePublished`, share image (JPEG), titles within 65 characters, sitemap lastmod. |
+| Sharing | WhatsApp and share buttons on modules and guides. |
+| Accessibility | Nested `<aside>` landmarks became notes; module 10's table got a first-column header. **199 of 199 pages pass axe with no violations.** |
+| Layout shift | `/learn/models/` rendered its A–Z index open and closed it on phones after load, moving 145 cards: CLS 0.398 → 0.01, performance 80 → 99. |
+| Checked | 283 tests, type check, facts and header checks, build (201 pages), 22,905 internal links, 0 CSP or console errors, 0 third-party requests; quizzes, scenarios, practice bank, models and search smoke-tested with the CSP on. |
+| Still heavy | `/learn/practice/` renders all 193 questions (19,285 DOM elements; 250 ms blocking time, performance 93). Paging or rendering on demand would help as the bank grows. |
+
 ## Still for the owner
 
 1. **Legal review** (LEG-1, LEG-6, CON-4), then record `reviewedBy` and `reviewed` on reviewed pages.
@@ -86,3 +100,4 @@ Follows [REPORT.md](REPORT.md) (3 November 2026). Work is on branch `claude/peop
 4. **Safari check** (VIS-1) and a **screen-reader pass** (A11Y-5).
 5. **Connect the Vercel project to this GitHub repository** (Vercel → peoplecraft-hr-os → Settings → Git), or keep deploying with `npx vercel --prod` from the repo. Then merge this branch to deploy production.
 6. **Content gaps and JD depth** (UX-4/CON-3, SEO-3, SEO-6) once a reviewer is in place.
+7. **Learn review:** the 20 modules are AI-drafted too. Modules 8, 10, 11 and 12 and the regulation claims in 16 and 17 had a separate AI fact review, but no qualified human has reviewed them.

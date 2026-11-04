@@ -1,5 +1,18 @@
 # PeopleCraft rebuild: what changed and why
 
+## 4 November 2026: audit fixes, merged with Learn
+
+A 360° audit (`docs/audit-2026/REPORT.md`) and the fixes that followed (`docs/audit-2026/FIX-LOG.md`), merged with the Learn update above.
+
+- **Trust:** stamps say "Sources checked … · expert review pending" until a qualified reviewer is recorded (`reviewedBy`, `reviewed` in front matter), and every sources footer says the page was drafted with AI assistance. "How we check" now describes what actually happens.
+- **One place for figures:** statutory figures in chapters, tools, the glossary and Learn come from `src/data/statutory.ts` (`<Fact>`, `fx()`, `{{fact:…}}`); `npm run check:facts` fails the build on a typed figure. Bonus ceilings and rates added as facts. Official EPFO and ESIC sources added; figures with only secondary sources are labelled.
+- **Calculators and search:** gratuity cautions people just short of five years; search understands shorthand, filler words and typos.
+- **Speed and phones:** subset fonts (pages 30–45% lighter, LCP 2.0–2.4 s), tools on the first screen on phones, light JPEG share images with a card per calculator, Learn's models page no longer jumps on load.
+- **Security and accessibility:** inline scripts hash-locked by a per-page CSP, header parity between Vercel and Apache checked, npm audit clean; no axe violations on any page.
+- **New:** `/changes/` with RSS, WhatsApp and share buttons, the landing page kept for offline use, CI on GitHub Actions with Lighthouse budgets and a daily uptime check.
+
+---
+
 ## 4 November 2026: PeopleCraft Learn
 
 A free, visual, self-paced HR course at `/learn/`.
