@@ -101,7 +101,7 @@ const description = `${count(models.length, "HR theory and model", "HR theories 
           </div>
 
           <div class="layout">
-            <details class="index" open data-mm-index data-pagefind-ignore>
+            <details class="index" data-mm-index data-pagefind-ignore>
               <summary>A to Z index of all {models.length}</summary>
               <nav aria-label="Models from A to Z">
                 {letters.map((l) => (
@@ -174,7 +174,9 @@ const description = `${count(models.length, "HR theory and model", "HR theories 
   const total = cards.length;
 
   if (bar && input && count && index) {
-    // The index is a side pane on wide screens and a closed drawer on narrow ones.
+    // The index is a side pane on wide screens and a closed drawer on narrow ones. It is closed in the
+    // HTML and opened here on wide screens, where it sits in its own column: opening a long index
+    // above the cards on a phone and closing it after load moved every card (CLS 0.4).
     const wide = window.matchMedia("(min-width: 1100px)");
     const fit = () => (index.open = wide.matches);
     fit();
