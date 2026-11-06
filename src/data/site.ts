@@ -3,7 +3,7 @@ export const SITE = {
   name: "PeopleCraft",
   tagline: "The free HR library for India",
   description:
-    "Free, plain-English HR guides, templates and calculators for India: leave, salary, PF, gratuity, notice period and more. No sign-up, no tracking.",
+    "Free, plain-English HR guides, templates and calculators for India: leave, salary, PF, gratuity, notice period and more. No sign-up, no cookies.",
   /** Leave empty until a real inbox exists; the "Suggest an edit" links hide themselves. */
   contactEmail: "akashmukund1996@gmail.com",
   /** Review cadence promised on the editorial-standards page. */

@@ -5,14 +5,14 @@ import Icon from "../components/ui/Icon.astro";
 import { CONTACT } from "../data/contact";
 import { breadcrumbLd } from "../lib/library";
 
-const updated = "3 November 2026";
+const updated = "6 November 2026";
 const trail = [
   { name: "Library", href: "/" },
   { name: "Privacy", href: "/privacy/" }
 ];
 ---
 
-<BaseLayout title="Privacy" description="PeopleCraft has no accounts, no ads, no analytics and no tracking cookies. Calculators, templates and people analytics run in your browser." jsonLd={breadcrumbLd(Astro.site, trail)}>
+<BaseLayout title="Privacy" description="PeopleCraft has no accounts, no ads and no cookies. Visits are counted anonymously. Calculators, templates and people analytics run in your browser." jsonLd={breadcrumbLd(Astro.site, trail)}>
   <PageHero title="Privacy" lede="Short version: we don't collect your personal data. What you type into the library stays on your device." trail={trail}>
     <p class="small updated">Last updated {updated}</p>
   </PageHero>
@@ -20,7 +20,8 @@ const trail = [
   <div class="wrap-narrow section">
     <ul class="summary" aria-label="Privacy at a glance">
       <li><Icon name="shield" size={20} /><span>No accounts or sign-up</span></li>
-      <li><Icon name="shield" size={20} /><span>No ads, no analytics, no tracking cookies</span></li>
+      <li><Icon name="shield" size={20} /><span>No ads and no cookies</span></li>
+      <li><Icon name="shield" size={20} /><span>Visits counted anonymously, by page only</span></li>
       <li><Icon name="shield" size={20} /><span>No third-party scripts or fonts</span></li>
       <li><Icon name="check-circle" size={20} /><span>Tools run inside your browser</span></li>
       <li><Icon name="check-circle" size={20} /><span>Your desk and saved work stay on this device</span></li>
@@ -30,7 +31,7 @@ const trail = [
       <h2>What happens to what you type</h2>
       <ul>
         <li>
-          <strong>Calculators</strong> work in your browser. Your inputs go into the page address only so that "Copy link" can share a result. Scenarios you
+          <strong>Calculators</strong> work in your browser. Your inputs go into the page address only so that "Copy link" can share a result; the visit counter never receives that part of the address. Scenarios you
           save to compare (up to 8 per calculator, with the names you give them) are kept in this browser's local storage. Nothing is sent to us.
         </li>
         <li>
@@ -41,7 +42,7 @@ const trail = [
         </li>
         <li><strong>Checklists</strong> remember your ticks, and any owners and due dates you add. <strong>Surveys</strong> keep a team's answers once you add a second person, with no names or times. Both stay on this device.</li>
         <li><strong>People analytics</strong> and the other tools that read a spreadsheet do it inside your browser. The file is never uploaded, and the data is gone when you close the tab unless you choose to keep a copy in this browser.</li>
-        <li><strong>Search</strong> downloads a small index from this site and searches it on your device. Your search terms are not sent anywhere.</li>
+        <li><strong>Search</strong> downloads a small index from this site and searches it on your device. Your search terms are not sent anywhere, including to the visit counter below.</li>
       </ul>
       <p>Anything saved on your device stays there until you clear it. You can clear it with the button below or in your browser's settings.</p>
 
@@ -75,6 +76,22 @@ const trail = [
     </div>
 
     <div class="prose">
+      <h2 id="counting-visits">Counting visits</h2>
+      <p>
+        To see which pages are useful, the site counts visits with Vercel Web Analytics, run by Vercel, which hosts PeopleCraft. It uses no cookies and
+        stores nothing on your device. For each page you open it receives:
+      </p>
+      <ul>
+        <li>the page's address <strong>without anything after a "?" or "#"</strong>, so calculator inputs, salaries and search words are never sent;</li>
+        <li>the site you came from, your country, and your device type, operating system and browser.</li>
+      </ul>
+      <p>
+        To tell visits apart without cookies, Vercel uses a code made from your request that changes every day, so it can't follow you from one day to the
+        next or across websites, and it discards visit sessions after 24 hours. We see only totals, such as visits per page. If your browser sends Do Not
+        Track or Global Privacy Control, this site doesn't count your visits at all.
+        <a href="https://vercel.com/docs/analytics/privacy-policy" rel="noopener">Vercel's Web Analytics privacy notice</a> has the details.
+      </p>
+
       <h2>Server logs</h2>
       <p>
         Like any website, the company that hosts PeopleCraft may keep standard server logs, such as the IP address, time and page requested, to keep the site secure and running. We don't use them to identify or

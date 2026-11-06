@@ -1,6 +1,6 @@
 # PeopleCraft: the free HR library for India
 
-A static website of plain-English HR handbooks, a free visual HR course (PeopleCraft Learn), working tools and a glossary for everyone who works in India: HR professionals, founders, employees, and students or job seekers. There are no accounts, ads, analytics or third-party requests. Calculators, templates and people analytics run in the reader's browser.
+A static website of plain-English HR handbooks, a free visual HR course (PeopleCraft Learn), working tools and a glossary for everyone who works in India: HR professionals, founders, employees, and students or job seekers. There are no accounts, ads, cookies or third-party requests; on Vercel, visits are counted anonymously by page (Vercel Web Analytics, query strings stripped). Calculators, templates and people analytics run in the reader's browser.
 
 Built with [Astro](https://astro.build) (static output), MDX and [Pagefind](https://pagefind.app) for offline search.
 
@@ -116,7 +116,7 @@ scripts/              make-assets.cjs, check-links.mjs, make-preview.mjs, render
 | Self-hosted Anek Latin font, no Google Fonts or CDNs | Privacy and speed |
 | Old URLs and anchors redirect | Existing links and bookmarks keep working |
 | JD library keeps the 50 roles, interview questions and signals, but drops the salary bands, "market intelligence" trends and the rule-based "AI generator" | The pay figures had no traceable source. Each JD links to the salary band designer, so teams set bands from their own data |
-| No login, no Firebase, no Vercel Analytics | The About page promises "No login. No tracking"; the site now keeps that promise |
+| No login, no Firebase. Vercel Web Analytics added on 6 Nov 2026, cookie-free and path-only | The owner wanted visit counts. Vercel Web Analytics uses no cookies; `src/scripts/analytics.ts` sends only the page path (calculator inputs and search words live in the query string and are stripped), skips visitors with Do Not Track or Global Privacy Control, and is built in only on Vercel. The privacy page says exactly this |
 | Mail merge works with every letter in the toolkit | One template system to maintain, instead of 8 separate copies |
 | Art direction: paper-cut stick figures on woven cloth (`docs/ART-DIRECTION.md`) | A craft brand needs its own pictures. No skin tones, faces or gendered clothing, so every reader can see themselves |
 | A "marked-up desk": highlighters, pen marks, notepaper and sticky notes, each with one meaning | Pages read the way an expert would mark them: yellow for the number to remember, pink for a deadline or risk, green for what to do, blue for a defined term |
@@ -145,7 +145,7 @@ scripts/              make-assets.cjs, check-links.mjs, make-preview.mjs, render
 - [ ] **Terms of use**: the template licence (free to adapt, including commercially) and "don't republish whole chapters" are policy choices. Confirm them.
 - [ ] **Domain**: builds default to `https://peoplecraft.vercel.app`. The old pages' metadata pointed at `peoplecraft.in`. If you own that domain, add it in Vercel, then run `SITE_URL=https://peoplecraft.in npm run assets` and build with `SITE_URL`, and verify it in Google Search Console (DNS verification, no script on the pages).
 - [ ] **Trademark**: no conflicting "PeopleCraft" HR brand was found in a web search, but run a formal check before investing in the brand.
-- [x] **Vercel Analytics**: confirmed off on 3 Nov 2026 (the Vercel API reports no Web Analytics for project `peoplecraft-hr-os`), and the pages load no analytics script. If you want analytics later, choose a cookie-free tool and update the privacy page first.
+- [ ] **Vercel Web Analytics**: the site sends anonymous, path-only page views when built on Vercel. Switch it on in Vercel → peoplecraft-hr-os → Analytics → Enable, then redeploy: the `/_vercel/insights/` routes only exist in deployments made after it is enabled. Data appears in the Analytics tab within a few minutes of visits.
 - [ ] **Safari**: check a few pages on an iPhone and a Mac. Card edges use CSS masks and drop-shadow filters, and the hero uses WebGL; Safari draws these slightly differently from Chrome, which is what the build was tested in.
 - [ ] **Offline copies**: after the first deploy, open two pages, switch on airplane mode and reopen them (the first page you opened is kept too, since 3 Nov 2026); open a third page to see the offline page. `sw.js` must be served from the site root with `Cache-Control: no-cache` (`vercel.json` and `.htaccess` already say so).
 - [ ] **Firebase**: the old admin panel used Firebase sign-in and Firestore, and its web config was public in `js/firebase-config.js`. The rebuild uses neither. Delete the Firebase project (or at least lock its Firestore rules) and any user records you no longer need.

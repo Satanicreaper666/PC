@@ -125,6 +125,8 @@ const ld = [...(isHome ? [siteLd, orgLd] : []), ...extraLd];
     <script>
       import "../scripts/site";
       import "../scripts/desk";
+      // Anonymous page-view counts on Vercel only; see src/scripts/analytics.ts and the privacy page.
+      if (__VERCEL_ANALYTICS__) void import("../scripts/analytics").then((m) => m.startAnalytics());
     </script>
   </body>
 </html>

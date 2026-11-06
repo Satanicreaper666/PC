@@ -9,7 +9,7 @@
     "build": "astro build && pagefind --site dist --output-subdir pagefind && node scripts/csp-meta.mjs dist",
     "preview": "astro preview",
     "check:links": "node scripts/check-links.mjs dist",
-    "test": "node --test src/lib/calc/*.test.ts src/lib/analytics/*.test.ts src/lib/orgchart/*.test.ts src/lib/mailmerge/*.test.ts src/lib/*.test.ts",
+    "test": "node --test src/lib/calc/*.test.ts src/lib/analytics/*.test.ts src/lib/orgchart/*.test.ts src/lib/mailmerge/*.test.ts src/lib/*.test.ts src/scripts/*.test.ts",
     "assets": "node scripts/make-assets.cjs",
     "check:facts": "node scripts/check-facts.mjs"
   },
@@ -20,6 +20,7 @@
     "@astrojs/mdx": "^8.1.2",
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource-variable/anek-latin": "^5.3.0",
+    "@vercel/analytics": "2.0.1",
     "astro": "^7.4.5",
     "docx": "^9.15.1",
     "marked": "^15.0.12",

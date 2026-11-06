@@ -1,5 +1,11 @@
 # PeopleCraft rebuild: what changed and why
 
+## 6 November 2026: anonymous visit counts
+
+Vercel Web Analytics, at the owner's request. It uses no cookies, and `src/scripts/analytics.ts` sends only the page path: calculator inputs (salaries, dates) and search words sit in the query string, so it is stripped before anything is sent, along with `#` fragments. Visitors whose browser sends Do Not Track or Global Privacy Control aren't counted. It is built in only when the site is built on Vercel, so local, CI and Apache builds load nothing. The privacy page has a new "Counting visits" section, and "no tracking" became "no cookies" on the home page, About, Learn and in the footer.
+
+---
+
 ## 4 November 2026: audit fixes, merged with Learn
 
 A 360° audit (`docs/audit-2026/REPORT.md`) and the fixes that followed (`docs/audit-2026/FIX-LOG.md`), merged with the Learn update above.
