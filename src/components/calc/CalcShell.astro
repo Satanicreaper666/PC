@@ -16,6 +16,9 @@ import CalcScenarios from "./CalcScenarios.astro";
  *   "{1}" counts 1, 2, 3…  (e.g. "Offer {A}").
  * scenarios: "external" when the calculator places <CalcScenarios id={id} external />
  *   itself, below its own result sections.
+ * paper: "working" (default) adds a working paper (Word or print) with a Prepared /
+ *   Reviewed / Approved block; "statement" makes it an employee's settlement statement
+ *   with their name and acknowledgement (src/components/calc/working-paper.ts).
  */
 interface Props {
   id: string;
@@ -24,8 +27,10 @@ interface Props {
   bars?: boolean;
   scenarioLabel?: string;
   scenarios?: "inside" | "external";
+  paper?: "working" | "statement";
 }
-const { id, resultLabel, inputsLabel = "Your details", bars = false, scenarioLabel = "Scenario {1}", scenarios = "inside" } = Astro.props;
+const { id, resultLabel, inputsLabel = "Your details", bars = false, scenarioLabel = "Scenario {1}", scenarios = "inside", paper = "working" } = Astro.props;
+const statement = paper === "statement";
 const uid = `calc-${id}`;
 ---
 
@@ -68,7 +73,61 @@ const uid = `calc-${id}`;
         <button class="btn btn-secondary btn-sm" type="button" data-calc-link><Icon name="link" size={16} /><span data-label>Copy link to these numbers</span></button>
         <button class="btn btn-ghost btn-sm" type="button" data-calc-csv><Icon name="download" size={16} /> Download CSV</button>
         <button class="btn btn-ghost btn-sm" type="button" data-calc-print><Icon name="printer" size={16} /> Print</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-wp-open aria-expanded="false" aria-controls={`${uid}-wp`}><Icon name="word" size={16} /> {statement ? "Settlement statement" : "Working paper"}</button>
       </div>
+      <form class="wp-form" id={`${uid}-wp`} data-wp-form data-wp-mode={paper} hidden data-print="hide" aria-label={statement ? "Settlement statement" : "Working paper"}>
+        <p class="field-help">
+          {
+            statement
+              ? "A statement to give the employee: every amount, deduction and due date, with sign-off boxes and their acknowledgement."
+              : "The result, inputs, working and the rates used, with a Prepared, Reviewed and Approved block, for your file or an auditor."
+          }{" "}
+          What you type here isn't saved or put in the link.
+        </p>
+        <div class="wp-grid">
+          <div class="field">
+            <label class="field-label" for={`${uid}-wp-company`}>Company</label>
+            <input class="control" id={`${uid}-wp-company`} data-wp="company" autocomplete="organization" />
+          </div>
+          {
+            statement ? (
+              <>
+                <div class="field">
+                  <label class="field-label" for={`${uid}-wp-employee`}>Employee's name</label>
+                  <input class="control" id={`${uid}-wp-employee`} data-wp="employee" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label class="field-label" for={`${uid}-wp-empid`}>Employee ID</label>
+                  <input class="control" id={`${uid}-wp-empid`} data-wp="empid" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label class="field-label" for={`${uid}-wp-role`}>Designation and department</label>
+                  <input class="control" id={`${uid}-wp-role`} data-wp="role" autocomplete="off" />
+                </div>
+              </>
+            ) : (
+              <div class="field">
+                <label class="field-label" for={`${uid}-wp-for`}>What it is for (optional)</label>
+                <input class="control" id={`${uid}-wp-for`} data-wp="for" autocomplete="off" placeholder="FY 2026-27 budget, option B" />
+              </div>
+            )
+          }
+          <div class="field">
+            <label class="field-label" for={`${uid}-wp-prepared`}>Prepared by</label>
+            <input class="control" id={`${uid}-wp-prepared`} data-wp="prepared" autocomplete="name" />
+          </div>
+          <div class="field">
+            <label class="field-label" for={`${uid}-wp-ref`}>Reference (optional)</label>
+            <input class="control" id={`${uid}-wp-ref`} data-wp="ref" autocomplete="off" />
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="btn btn-sm" type="submit"><Icon name="word" size={16} /> Download Word</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-wp-print><Icon name="printer" size={16} /> Print or save PDF</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-wp-cancel>Close</button>
+        </div>
+        <p class="field-help" role="status" aria-live="polite" data-wp-status></p>
+      </form>
       <form class="save-form" id={`${uid}-save`} data-save-form hidden data-print="hide">
         <label class="field-label" for={`${uid}-name`}>Name this scenario</label>
         <div class="save-row">
@@ -466,6 +525,61 @@ const uid = `calc-${id}`;
     }
     .note-tape {
       display: none;
+    }
+  }
+
+  .wp-form {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--canvas);
+  }
+  .wp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.6rem 0.9rem;
+  }
+  :global(.wp-print-root) {
+    display: none;
+  }
+  @media print {
+    :global(html.wp-printing body > *:not(.wp-print-root)) {
+      display: none !important;
+    }
+    :global(html.wp-printing .wp-print-root) {
+      display: block;
+      font-size: 10pt;
+      color: #000;
+    }
+    :global(.wp-doc h1) {
+      font-size: 16pt;
+      margin: 0 0 6pt;
+    }
+    :global(.wp-doc h2) {
+      font-size: 12pt;
+      margin: 12pt 0 4pt;
+    }
+    :global(.wp-doc p),
+    :global(.wp-doc li) {
+      margin: 0 0 4pt;
+    }
+    :global(.wp-doc table) {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 8pt;
+      page-break-inside: auto;
+    }
+    :global(.wp-doc tr) {
+      page-break-inside: avoid;
+    }
+    :global(.wp-doc th),
+    :global(.wp-doc td) {
+      border: 1px solid #888;
+      padding: 3pt 5pt;
+      text-align: left;
+      vertical-align: top;
     }
   }
 </style>

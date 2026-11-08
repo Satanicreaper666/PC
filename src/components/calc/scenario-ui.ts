@@ -52,7 +52,7 @@ export type ScenarioHost = {
 };
 
 type Field = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-type FieldInfo = { name: string; label: string; display: (raw: string | undefined) => string; isHidden: () => boolean };
+export type FieldInfo = { name: string; label: string; display: (raw: string | undefined) => string; isHidden: () => boolean };
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const clean = (s: string | null | undefined) => (s ?? "").replace(/\s+/g, " ").trim();
@@ -130,7 +130,7 @@ function displayer(form: HTMLFormElement, el: Field): (raw: string | undefined) 
   };
 }
 
-function fieldInfos(form: HTMLFormElement): FieldInfo[] {
+export function fieldInfos(form: HTMLFormElement): FieldInfo[] {
   const seen = new Set<string>();
   const out: FieldInfo[] = [];
   for (const el of Array.from(form.querySelectorAll<Field>("[name]"))) {
@@ -175,7 +175,7 @@ function slug(host: ScenarioHost): string {
   return location.pathname.split("/").filter(Boolean).pop() || host.id;
 }
 
-function pageTitle(host: ScenarioHost): string {
+export function pageTitle(host: ScenarioHost): string {
   return clean(document.querySelector("h1")?.textContent) || host.resultLabel;
 }
 

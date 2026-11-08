@@ -22,6 +22,7 @@
  * - `CalcLine.key`: a stable id for comparing scenarios when a label changes.
  */
 import { setupScenarios, type ScenarioHost } from "../components/calc/scenario-ui";
+import { setupPaper } from "../components/calc/working-paper";
 
 export type Better = "higher" | "lower";
 export type CalcLine = {
@@ -313,6 +314,7 @@ export function bindCalculator(id: string, compute: (v: Values) => CalcResult) {
   run();
   scenarios = setupScenarios(host);
   scenarios?.refresh();
+  setupPaper(host);
 }
 
 function setField(el: Field, v: string) {

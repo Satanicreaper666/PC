@@ -100,6 +100,15 @@ const S = {
     url: "https://www.incometaxindia.gov.in/w/what-is-the-effective-date-of-enhancement-of-limit-of-gratuity-from-rs-10-lakh-to-20-lakh-for-purpose-of-tax-exemption-computation-under-section-10-10-ii-"
   },
   itdS19: { title: "Income-tax Act, 2025, section 19 (Income Tax Department)", url: "https://www.incometaxindia.gov.in/w/section-19-206" },
+  itdS202: { title: "Income-tax Act, 2025, section 202: new tax regime slab rates (Income Tax Department)", url: "https://www.incometaxindia.gov.in/w/section-202-76" },
+  itdS156: { title: "Income-tax Act, 2025, section 156: rebate of income-tax (Income Tax Department)", url: "https://www.incometaxindia.gov.in/w/section-156-88" },
+  itdRates: { title: "Tax rates for individuals: old regime slabs, surcharge and cess (Income Tax Department)", url: "https://incometaxindia.gov.in/Documents/Left%20Menu/TAX%20RATES_Indvl.htm" },
+  budget2026: { title: "Budget 2026-27: no change in income-tax slabs (Moneylife)", url: "https://www.moneylife.in/article/budget-202627-no-change-in-incometax-slabs-fm-offers-compliance-relief-for-individuals/79540.html" },
+  financeAct2026: { title: "Finance Act, 2026 notified: rates, surcharge and cess (CAclubindia)", url: "https://www.caclubindia.com/news/finance-act-2026-notified-new-income-tax-rates-surcharge-structure-key-changes-explained-26385.asp" },
+  leave25Lakh: { title: "CBDT notifies ₹25 lakh limit for leave encashment exemption, from 1 Apr 2023 (Taxmann)", url: "https://taxmann.com/post/blog/cbdt-notifies-exemption-limit-of-rs-25-lakh-for-leave-encashment-u-s-1010aa" },
+  leave25LakhZoho: { title: "Leave encashment exemption: what employers must know, 2026 (Zoho Payroll)", url: "https://www.zoho.com/in/payroll/academy/payroll-administration/leave-encashment-exemption-employers-must-know-2026.html" },
+  retrenchTax: { title: "Exemption for retrenchment compensation: new section 19, old section 10(10B) (TaxTMI)", url: "https://www.taxtmi.com/manuals?id=873" },
+  retrenchTaxEz: { title: "Layoffs: what to expect and tax implications (EZTax)", url: "https://eztax.in/understand-layoffs-taxation" },
   lksFte: { title: "Top 10 FAQs on fixed-term employment (Lakshmikumaran & Sridharan)", url: "https://www.lkslaw.com/insights/articles/top-10-faqs-on-fixed-term-employment-fte" },
   epfoFaq: { title: "EPFO FAQs: contributions, pension share and EDLI (epfindia.gov.in)", url: "https://www.epfindia.gov.in/site_en/FAQ.php" },
   epfoRates: { title: "EPFO: present rates of contribution and administration charges (epfindia.gov.in)", url: "https://www.epfindia.gov.in/site_docs/PDFs/MiscPDFs/ContributionRate.pdf" },
@@ -738,6 +747,100 @@ export const STAT: Record<string, StatFact> = {
     confidence: "high"
   }),
 
+  /* ---------- Income tax on salary (Income-tax Act, 2025; tax year 2026-27) ---------- */
+  "tax.stdDeductionNew": fact({
+    value: 75000,
+    display: "₹75,000",
+    label: "Standard deduction from salary under the new tax regime (or the salary, if lower)",
+    law: "Income-tax Act, 2025 s.19, Table",
+    source: S.itdS19,
+    also: [S.budget2026],
+    verified: true,
+    confidence: "medium-high",
+    from: "2026-04-01"
+  }),
+  "tax.stdDeductionOld": fact({
+    value: 50000,
+    display: "₹50,000",
+    label: "Standard deduction from salary under the old tax regime (or the salary, if lower)",
+    law: "Income-tax Act, 2025 s.19, Table",
+    source: S.itdS19,
+    also: [S.budget2026],
+    verified: true,
+    confidence: "medium-high",
+    from: "2026-04-01"
+  }),
+  "tax.rebateLimitNew": fact({
+    value: 1200000,
+    display: "₹12 lakh",
+    label: "New regime: a resident's tax is rebated in full (up to ₹60,000) when taxable income is no more than this, with marginal relief just above it",
+    law: "Income-tax Act, 2025 s.156",
+    source: S.itdS156,
+    also: [S.budget2026],
+    verified: true,
+    confidence: "medium-high"
+  }),
+  "tax.rebateMaxNew": fact({
+    value: 60000,
+    display: "₹60,000",
+    label: "New regime: largest rebate for a resident individual",
+    law: "Income-tax Act, 2025 s.156",
+    source: S.itdS156,
+    verified: true,
+    confidence: "medium-high"
+  }),
+  "tax.rebateLimitOld": fact({
+    value: 500000,
+    display: "₹5 lakh",
+    label: "Old regime: a resident's tax is rebated (up to ₹12,500) when taxable income is no more than this",
+    law: "Income-tax Act, 2025 s.156",
+    source: S.itdS156,
+    verified: true,
+    confidence: "medium-high"
+  }),
+  "tax.rebateMaxOld": fact({
+    value: 12500,
+    display: "₹12,500",
+    label: "Old regime: largest rebate for a resident individual",
+    law: "Income-tax Act, 2025 s.156",
+    source: S.itdS156,
+    verified: true,
+    confidence: "medium-high"
+  }),
+  "tax.cess": fact({
+    value: 4,
+    display: "4%",
+    label: "Health and education cess, on income tax plus any surcharge",
+    law: "Finance Act, 2026",
+    source: S.itdRates,
+    also: [S.financeAct2026],
+    verified: true,
+    confidence: "medium-high"
+  }),
+  "tax.leaveEncashmentExemption": fact({
+    value: 2500000,
+    display: "₹25 lakh",
+    label: "Lifetime limit on tax-free leave encashment on retirement or leaving, for non-government employees (reported)",
+    law: "Income-tax Act, 2025 s.19, Table; CBDT notification of 24 May 2023 under the 1961 Act",
+    source: S.leave25Lakh,
+    also: [S.leave25LakhZoho, S.itdS19],
+    verified: false,
+    confidence: "medium",
+    from: "2023-04-01",
+    note: "Notified under s.10(10AA) of the 1961 Act from 1 April 2023. Commentators say section 19 of the 2025 Act carries it over unchanged; no fresh notification was found. The exempt amount is also limited to 10 months' average salary and to leave earned at up to 30 days a year. Confirm with a tax adviser."
+  }),
+  "tax.retrenchmentExemption": fact({
+    value: 500000,
+    display: "₹5 lakh",
+    label: "Limit on tax-free retrenchment compensation received by a worker (reported)",
+    law: "Income-tax Act, 2025 s.19, Table (formerly s.10(10B) of the 1961 Act)",
+    source: S.retrenchTax,
+    also: [S.retrenchTaxEz, S.itdS19],
+    verified: false,
+    confidence: "medium",
+    note: "The exempt amount is the least of the compensation received, 15 days' average pay for each completed year (and part over six months), and the notified amount, ₹5 lakh since 1997 under the 1961 Act. Commentators say the 2025 Act keeps it; no fresh notification was found. Compensation under a scheme approved by the Central Government can be wholly exempt. Confirm with a tax adviser."
+  }),
+
   /* ---------- Notice, retrenchment (Industrial Relations Code, 2020) ---------- */
   "notice.retrenchmentNoticeMonths": fact({
     value: 1,
@@ -766,6 +869,16 @@ export const STAT: Record<string, StatFact> = {
     also: [S.pibCodes, S.kpmgRules],
     verified: true,
     confidence: "high"
+  }),
+  "notice.closureCompensationCapMonths": fact({
+    value: 3,
+    display: "3 months' average pay",
+    label: "Most a worker's closure compensation can be when the undertaking closes because of unavoidable circumstances beyond the employer's control",
+    law: "Industrial Relations Code, 2020 s.75(1), proviso",
+    source: S.irCode,
+    verified: true,
+    confidence: "medium-high",
+    note: "Financial difficulties, losses, accumulated stock and the end of a lease or licence are not unavoidable circumstances for this purpose."
   }),
   "notice.layoffPermissionWorkers": fact({
     value: 300,

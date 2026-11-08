@@ -6,12 +6,15 @@ import DateIn from "../calc/DateIn.astro";
 import AsAt from "./parts/AsAt.astro";
 import { SEPARATION_LABELS } from "../../lib/calc/full-and-final";
 import { WEEKLY_OFF_LABELS } from "../../lib/calc/working-days";
+import { PT_PICKER } from "../../lib/calc/professional-tax";
 import { stat } from "../../data/statutory";
 
 const supervisorLimit = stat("osh.supervisorWageLimit").display;
+const pfCeiling = stat("epf.wageCeiling").display.replace(/ a month$/, "");
+const capMonths = stat("notice.closureCompensationCapMonths").display;
 ---
 
-<CalcShell id="full-and-final" resultLabel="Full and final settlement" inputsLabel="Exit details" bars>
+<CalcShell id="full-and-final" resultLabel="Full and final settlement" inputsLabel="Exit details" bars paper="statement">
   <Fragment slot="inputs">
     <Pick name="exit" label="How is employment ending?" style="select" options={Object.entries(SEPARATION_LABELS).map(([value, label]) => ({ value, label }))} />
     <Pick
@@ -58,6 +61,7 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
           { value: "26", label: "÷ 26" },
           { value: "30", label: "÷ 30" }
         ]}
+        help="Also used for retrenchment compensation."
       />
     </div>
     <Pick
@@ -67,15 +71,112 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
         { value: "yes", label: "Yes" },
         { value: "no", label: "No" }
       ]}
-      help={`Not a worker: managerial or administrative staff, and supervisors earning more than ${supervisorLimit}. It changes when leave must be paid.`}
+      help={`Not a worker: managerial or administrative staff, and supervisors earning more than ${supervisorLimit}. It changes when leave must be paid, and only workers get retrenchment or closure compensation under the Industrial Relations Code.`}
+    />
+
+    <p class="group">Retrenchment or closure</p>
+    <p class="group-help">For a worker with a year's service, retrenchment or closure compensation is worked out from the wages above: 15 days' average pay for each completed year, and any part over six months.</p>
+    <Pick
+      name="unavoidable"
+      label="If the establishment is closing: is it because of circumstances beyond the employer's control?"
+      options={[
+        { value: "no", label: "No" },
+        { value: "yes", label: "Yes" }
+      ]}
+      help={`Then closure compensation can't be more than ${capMonths}. Losses, unsold stock, or the end of a lease or licence don't count as unavoidable.`}
+    />
+    <Num
+      name="severance"
+      label="Severance or ex gratia beyond the law (optional)"
+      prefix="₹"
+      placeholder="0"
+      help="What the company pays on top of statutory compensation, for example under a separation scheme or agreement. For anyone who isn't a worker, enter the whole severance here."
     />
 
     <p class="group">Other amounts</p>
-    <Num name="lieu" label="Notice pay the employer pays in lieu (optional)" prefix="₹" placeholder="0" />
+    <Num name="lieu" label="Notice pay the employer pays in lieu (optional)" prefix="₹" placeholder="0" help="For retrenching a worker: one month's wages if one month's written notice wasn't given." />
     <Num name="dues" label="Other dues (optional)" prefix="₹" placeholder="0" help="Bonus, incentives, reimbursements or arrears that are due." />
     <Num name="recovery" label="Notice shortfall to recover (optional)" prefix="₹" placeholder="0" help="Work this out as the contract says; the components and the number of days in a month differ between contracts." />
     <Num name="loans" label="Loans and advances to recover (optional)" prefix="₹" value="10,000" />
     <Num name="other" label="Other recoveries (optional)" prefix="₹" placeholder="0" help="For example the agreed value of assets not returned." />
+
+    <p class="group">Deductions from the final pay</p>
+    <Pick
+      name="pf"
+      label="Employee's PF on the final month's wages"
+      style="select"
+      value="restricted"
+      options={[
+        { value: "restricted", label: `12% of wages up to ${pfCeiling}` },
+        { value: "actual", label: "12% of actual wages" },
+        { value: "none", label: "Not a PF member" }
+      ]}
+      help="Worked out on the wages above for the payable days. PF isn't deducted from leave encashment, gratuity or compensation."
+    />
+    <Pick
+      name="esi"
+      label="Is the employee covered by ESI this contribution period?"
+      options={[
+        { value: "no", label: "No" },
+        { value: "yes", label: "Yes" }
+      ]}
+    />
+    <Pick name="state" label="State, for professional tax" style="select" options={PT_PICKER} value="KA" help="Worked out on the final month's salary." />
+    <div data-ff-gender>
+      <Pick
+        name="gender"
+        label="Employee's gender"
+        options={[
+          { value: "woman", label: "Woman" },
+          { value: "other", label: "Man or other" }
+        ]}
+        value="other"
+        help="Maharashtra charges women less."
+      />
+    </div>
+
+    <p class="group">Income tax (TDS), an estimate</p>
+    <Pick
+      name="regime"
+      label="Tax regime the employee chose"
+      options={[
+        { value: "new", label: "New (default)" },
+        { value: "old", label: "Old" },
+        { value: "none", label: "Don't estimate" }
+      ]}
+    />
+    <Num
+      name="ytd"
+      label="Taxable salary already paid this tax year (optional)"
+      prefix="₹"
+      placeholder="From the monthly gross"
+      help="Gross salary from 1 April (or joining) to the end of the month before the last one, plus any bonus paid. Leave blank to use the monthly gross for each earlier month."
+    />
+    <Num
+      name="tdsytd"
+      label="TDS already deducted this tax year (optional)"
+      prefix="₹"
+      placeholder="Estimated"
+      help="From payroll. Leave blank to assume payroll spread a full year's tax evenly."
+    />
+    <div data-ff-old>
+      <Num
+        name="ded"
+        label="Old regime: exemptions and deductions for the year"
+        prefix="₹"
+        placeholder="0"
+        help="HRA exemption, professional tax paid in earlier months, and Form 124 deductions such as PF, insurance and home-loan interest. Professional tax for the final month is added for you."
+      />
+      <Pick
+        name="age"
+        label="Old regime: age during the tax year"
+        options={[
+          { value: "below60", label: "Below 60" },
+          { value: "60to79", label: "60 to 79" },
+          { value: "80plus", label: "80 or more" }
+        ]}
+      />
+    </div>
 
     <p class="group">Working days, for the due dates</p>
     <Pick name="off" label="Weekly offs" style="select" value="sat_sun" options={Object.entries(WEEKLY_OFF_LABELS).map(([value, label]) => ({ value, label }))} />
@@ -91,15 +192,44 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
   </Fragment>
 </CalcShell>
 <AsAt
-  ids={["wages.separationPayDays", "leave.exitPaymentWorkingDays", "leave.retirementPaymentMonths", "gratuity.daysPerYear", "gratuity.divisor", "gratuity.minYears", "gratuity.fixedTermMinYears", "gratuity.ceiling", "gratuity.paymentDays", "osh.supervisorWageLimit"]}
+  ids={[
+    "wages.separationPayDays",
+    "leave.exitPaymentWorkingDays",
+    "leave.retirementPaymentMonths",
+    "gratuity.daysPerYear",
+    "gratuity.divisor",
+    "gratuity.minYears",
+    "gratuity.fixedTermMinYears",
+    "gratuity.ceiling",
+    "gratuity.paymentDays",
+    "osh.supervisorWageLimit",
+    "notice.retrenchmentNoticeMonths",
+    "notice.retrenchmentCompensationDays",
+    "notice.closureCompensationCapMonths",
+    "notice.reskillingFundDays",
+    "notice.layoffPermissionWorkers",
+    "epf.employeeRate",
+    "epf.wageCeiling",
+    "esi.employeeRate",
+    "tax.stdDeductionNew",
+    "tax.stdDeductionOld",
+    "tax.rebateLimitNew",
+    "tax.cess",
+    "gratuity.taxExemptionLimit",
+    "tax.leaveEncashmentExemption",
+    "tax.retrenchmentExemption"
+  ]}
+  note="Professional tax uses the state slabs on the professional tax calculator page. Income-tax slabs for 2026-27 are in the TDS handbook, chapter 2."
 />
 
 <script>
-  import { bindCalculator, inr, num, type CalcStep } from "../../scripts/calc-kit";
+  import { bindCalculator, inr, num, type CalcLine, type CalcStep } from "../../scripts/calc-kit";
   import { computeFnf, SEPARATION_LABELS } from "../../lib/calc/full-and-final";
-  import type { PayBasis, SeparationType } from "../../lib/calc/full-and-final";
+  import type { FnfTaxInput, PayBasis, SeparationType } from "../../lib/calc/full-and-final";
   import { gratuityRules } from "../../lib/calc/gratuity";
   import type { EmploymentType } from "../../lib/calc/gratuity";
+  import type { AgeBand, Regime } from "../../lib/calc/income-tax";
+  import type { Gender } from "../../lib/calc/professional-tax";
   import { addMonthsClamped, longDate, parseHolidays, parseISO, shortDate, WEEKLY_OFF_LABELS } from "../../lib/calc/working-days";
   import type { WeeklyOff } from "../../lib/calc/working-days";
   import { stat, statNum } from "../../data/statutory";
@@ -108,11 +238,40 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
   const gr = gratuityRules();
   const codesFrom = stat("wages.halfRule").from ?? "2025-11-21";
   const nearMissDays = statNum("gratuity.continuousServiceDays");
+  const compDays = statNum("notice.retrenchmentCompensationDays");
   const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  const minus = (n: number) => `− ${inr(n)}`;
+
+  // Show the gender choice only for Maharashtra, and the old-regime inputs only for the old regime.
+  const root = document.querySelector<HTMLElement>('[data-calc="full-and-final"]');
+  const genderField = root?.querySelector<HTMLElement>("[data-ff-gender]");
+  const oldFields = root?.querySelector<HTMLElement>("[data-ff-old]");
+  const syncFields = () => {
+    const form = root?.querySelector("form");
+    if (!form) return;
+    const state = (form.elements.namedItem("state") as HTMLSelectElement | null)?.value;
+    const regime = (form.elements.namedItem("regime") as RadioNodeList | null)?.value;
+    if (genderField) genderField.hidden = state !== "MH";
+    if (oldFields) oldFields.hidden = regime !== "old";
+  };
+  root?.addEventListener("change", syncFields);
 
   bindCalculator("full-and-final", (v) => {
     const separation = v.str("exit", "resignation") as SeparationType;
     const paidRaw = v.raw("paid").replace(/[,\s]/g, "");
+    const ytdRaw = v.raw("ytd").replace(/[₹,\s]/g, "");
+    const tdsRaw = v.raw("tdsytd").replace(/[₹,\s]/g, "");
+    const regime = v.str("regime", "new");
+    const tax: FnfTaxInput | null =
+      regime === "none"
+        ? null
+        : {
+            regime: regime as Regime,
+            age: v.str("age", "below60") as AgeBand,
+            salaryBefore: ytdRaw === "" ? null : v.num("ytd"),
+            tdsBefore: tdsRaw === "" ? null : v.num("tdsytd"),
+            deductions: v.num("ded")
+          };
     const r = computeFnf({
       separation,
       employment: v.str("type", "permanent") as EmploymentType,
@@ -131,35 +290,103 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
       loans: v.num("loans"),
       otherRecoveries: v.num("other"),
       weeklyOff: v.str("off", "sat_sun") as WeeklyOff,
-      holidays: parseHolidays(v.raw("holidays")).dates
+      holidays: parseHolidays(v.raw("holidays")).dates,
+      severance: v.num("severance"),
+      closureUnavoidable: v.str("unavoidable", "no") === "yes",
+      pf: v.str("pf", "restricted") as "restricted" | "actual" | "none",
+      esi: v.str("esi", "no") === "yes",
+      ptState: v.str("state", "KA"),
+      gender: v.str("gender", "other") as Gender,
+      tax
     });
     if (r.status !== "ok") return { outputs: { net: "₹0", sub: "" }, message: r.message };
 
     const g = r.gratuity;
+    const c = r.compensation;
+    const t = r.tax;
+    const isRetrench = separation === "retrenchment" || separation === "closure";
+    const compLabel = separation === "closure" ? "Closure compensation" : "Retrenchment compensation";
     const gratuityNote =
       g.status !== "ok" ? "Not worked out: see the gratuity calculator" : g.eligible ? `${g.countedYears} years counted` : `${g.service.years} completed years; ${g.minYears} needed`;
+    const compNote = c.applies
+      ? `${compDays} days × ${plural(c.years, "year")} at ${inr(Math.round(c.dailyRate))} a day${c.capped ? `, capped at ${stat("notice.closureCompensationCapMonths").display}` : ""}`
+      : c.reason === "not-worker"
+        ? "Only for workers; see severance"
+        : c.reason === "under-a-year"
+          ? "Less than a year's continuous service"
+          : "Enter the monthly wages";
     const negative = r.net < 0;
-    const lines = [
+    const lieu = v.num("lieu");
+    const otherDues = v.num("dues");
+    const pt = r.statutory.pt;
+
+    const lines: CalcLine[] = [
       { label: "Salary for the last month", value: inr(r.salary.amount), note: `${num(r.salary.days, 1)} of ${r.salary.divisor} days${r.salary.defaulted ? ", from the dates" : ""}` },
       { label: "Leave encashment", value: inr(r.leave.amount), note: `${num(v.num("leave"), 1)} days at ${inr(Math.round(r.leave.dailyRate))} a day` },
       { label: "Gratuity", value: inr(r.gratuityAmount), note: gratuityNote },
-      ...(v.num("lieu") > 0 ? [{ label: "Notice pay in lieu", value: inr(v.num("lieu")) }] : []),
-      ...(v.num("dues") > 0 ? [{ label: "Other dues", value: inr(v.num("dues")) }] : []),
+      ...(isRetrench ? [{ label: compLabel, value: inr(c.amount), note: compNote, key: "compensation" }] : []),
+      ...(r.severance > 0 ? [{ label: "Severance or ex gratia", value: inr(r.severance) }] : []),
+      ...(lieu > 0 ? [{ label: "Notice pay in lieu", value: inr(lieu) }] : []),
+      ...(otherDues > 0 ? [{ label: "Other dues", value: inr(otherDues) }] : []),
       { label: "Total dues", value: inr(r.dues), strong: true },
-      ...(v.num("recovery") > 0 ? [{ label: "Notice shortfall recovery", value: `− ${inr(v.num("recovery"))}`, tone: "bad" as const }] : []),
-      ...(v.num("loans") > 0 ? [{ label: "Loans and advances", value: `− ${inr(v.num("loans"))}`, tone: "bad" as const }] : []),
-      ...(v.num("other") > 0 ? [{ label: "Other recoveries", value: `− ${inr(v.num("other"))}`, tone: "bad" as const }] : []),
-      ...(r.recoveries > 0 ? [{ label: "Total recoveries", value: `− ${inr(r.recoveries)}` }] : []),
+      ...(r.statutory.pf > 0 ? [{ label: "Employee's PF", value: minus(r.statutory.pf), note: `12% of ${inr(r.statutory.pfBase)}`, tone: "bad" as const }] : []),
+      ...(r.statutory.esi > 0 ? [{ label: "Employee's ESI", value: minus(r.statutory.esi), tone: "bad" as const }] : []),
+      ...(pt > 0 ? [{ label: "Professional tax", value: minus(pt), note: "On the final month's salary", tone: "bad" as const }] : []),
+      ...(t
+        ? [
+            {
+              label: "Income tax (TDS), estimate",
+              value: t.tds > 0 ? minus(t.tds) : "₹0",
+              note:
+                t.tds > 0
+                  ? `Tax for the year ${inr(t.year.total)} less ${inr(t.tdsBefore)} already deducted`
+                  : t.excess > 0
+                    ? `${inr(t.excess)} more was deducted earlier than the year's tax`
+                    : t.year.total === 0 && t.year.regime === "new" && t.year.taxableIncome <= statNum("tax.rebateLimitNew")
+                      ? `Taxable income for the year, ${inr(t.year.taxableIncome)}, is within the ${stat("tax.rebateLimitNew").display} rebate`
+                      : t.year.total === 0
+                        ? "No tax for the year"
+                        : "Already deducted in earlier months",
+              tone: t.tds > 0 ? ("bad" as const) : undefined,
+              key: "tds"
+            }
+          ]
+        : []),
+      ...(r.deductions > 0 ? [{ label: "Total deductions", value: minus(r.deductions) }] : []),
+      ...(v.num("recovery") > 0 ? [{ label: "Notice shortfall recovery", value: minus(v.num("recovery")), tone: "bad" as const }] : []),
+      ...(v.num("loans") > 0 ? [{ label: "Loans and advances", value: minus(v.num("loans")), tone: "bad" as const }] : []),
+      ...(v.num("other") > 0 ? [{ label: "Other recoveries", value: minus(v.num("other")), tone: "bad" as const }] : []),
+      ...(r.recoveries > 0 ? [{ label: "Total recoveries", value: minus(r.recoveries) }] : []),
       { label: negative ? "Employee owes" : "Net payable", value: inr(Math.abs(r.net)), strong: true },
+      ...(t ? [{ label: "Taxable part of the settlement", value: inr(t.settlementTaxable), note: `Exempt: ${inr(t.exempt.leave + t.exempt.gratuity + t.exempt.compensation)}`, key: "taxable" }] : []),
+      ...(r.reskilling > 0 ? [{ label: "Employer pays to the re-skilling fund", value: inr(r.reskilling), note: "Not taken from the settlement: the fund credits the worker", key: "reskilling" }] : []),
       { label: "Pay wages by", value: r.due.wages.date ? longDate(r.due.wages.date) : "Normal pay date", note: r.due.wages.rule },
+      ...(r.due.compensation?.date ? [{ label: `Pay ${compLabel.toLowerCase()} on`, value: longDate(r.due.compensation.date), note: r.due.compensation.rule }] : []),
       { label: "Pay leave encashment by", value: r.due.leave.date ? longDate(r.due.leave.date) : "With final wages", note: r.due.leave.rule },
       ...(r.gratuityAmount > 0 ? [{ label: "Pay gratuity by", value: longDate(r.due.gratuity.date!), note: r.due.gratuity.rule }] : [])
     ];
+
     const notes = [
       caveat,
       ...(r.due.wages.date ? [] : [`${SEPARATION_LABELS[separation]}: ${r.due.wages.text}.`]),
       ...(g.status === "not-covered" && g.message ? [g.message] : []),
-      "Income tax (TDS) on the settlement is not worked out here.",
+      ...(r.statutory.ptNote ? [r.statutory.ptNote] : []),
+      ...(t
+        ? [
+            "TDS is an estimate for a resident employee. It uses the reported exemption limits for gratuity, leave encashment and retrenchment compensation, which the Income-tax Act, 2025 carries over; confirm them, and any exemption the employee used with an earlier employer, with your tax adviser.",
+            ...(r.severance > 0 && !c.applies
+              ? ["Severance for someone who isn't a 'worker' is taxable salary. The employee may be able to claim relief for it in the return; that isn't applied here."]
+              : []),
+            "A recovery for notice not served reduces what is paid, but it isn't taken off taxable salary here; take advice before doing so."
+          ]
+        : separation === "death"
+          ? ["Amounts paid to the legal heirs of an employee who has died are not their salary, so no TDS on salary is worked out."]
+          : ["Income tax (TDS) is not estimated. Choose a regime above to see it."]),
+      ...(isRetrench && c.applies
+        ? [
+            `Industrial establishments with ${stat("notice.layoffPermissionWorkers").display} or more need the government's permission before retrenchment or closure, and must give three months' notice or wages in lieu.`
+          ]
+        : []),
       "PF withdrawal or transfer is a claim the employee makes to EPFO; it is not part of the employer's settlement."
     ];
 
@@ -169,6 +396,7 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
     const holidaysTyped = parseHolidays(v.raw("holidays")).dates.length;
     const skipNote = `Skips ${WEEKLY_OFF_LABELS[off] ?? "weekly offs"}${holidaysTyped ? " and the holidays listed" : ""}`;
     const plus = (xs: number[]) => xs.filter((n) => n > 0).map((n) => inr(n)).join(" + ") || "₹0";
+    const ldiv = v.str("ldiv", "26") === "30" ? 30 : 26;
     const working: CalcStep[] = [
       {
         label: "Salary for the last month",
@@ -176,7 +404,7 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
         result: inr(r.salary.amount),
         note: r.salary.defaulted ? "Payable days counted from the dates" : undefined
       },
-      { label: "Leave encashment", formula: `${inr(v.num("wages"))} ÷ ${v.str("ldiv", "26") === "30" ? 30 : 26} × ${num(v.num("leave"), 1)} days`, result: inr(r.leave.amount) },
+      { label: "Leave encashment", formula: `${inr(v.num("wages"))} ÷ ${ldiv} × ${num(v.num("leave"), 1)} days`, result: inr(r.leave.amount) },
       g.status === "ok" && g.eligible && r.gratuityAmount > 0
         ? {
             label: "Gratuity",
@@ -184,7 +412,72 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
             result: inr(r.gratuityAmount)
           }
         : { label: "Gratuity", formula: "", result: "₹0", note: gratuityNote },
-      { label: "Total dues", formula: plus([r.salary.amount, r.leave.amount, r.gratuityAmount, v.num("lieu"), v.num("dues")]), result: inr(r.dues) },
+      ...(isRetrench
+        ? [
+            c.applies
+              ? {
+                  label: compLabel,
+                  formula: `${inr(v.num("wages"))} ÷ ${ldiv} × ${compDays} days × ${plural(c.years, "year")}${c.capped ? `, capped at ${inr(c.amount)}` : ""}`,
+                  result: inr(c.amount),
+                  note: "Completed years, and one more for a part over six months"
+                }
+              : { label: compLabel, formula: "", result: "₹0", note: compNote }
+          ]
+        : []),
+      { label: "Total dues", formula: plus([r.salary.amount, r.leave.amount, r.gratuityAmount, c.amount, r.severance, lieu, otherDues]), result: inr(r.dues) },
+      ...(r.statutory.pf > 0 ? [{ label: "Employee's PF", formula: `12% × ${inr(r.statutory.pfBase)}`, result: inr(r.statutory.pf), note: "Wages for the payable days, up to the ceiling if restricted" }] : []),
+      ...(t
+        ? [
+            {
+              label: "Taxable salary for the year",
+              formula: `${inr(t.salaryBefore)} paid before + ${inr(t.settlementTaxable)} taxable in the settlement`,
+              result: inr(t.year.salary),
+              note: t.salaryBeforeDefaulted ? `Earlier pay assumed: ${inr(v.num("gross"))} × ${plural(t.months, "month")}` : undefined
+            },
+            ...(t.exempt.leave + t.exempt.gratuity + t.exempt.compensation > 0
+              ? [
+                  {
+                    label: "Exempt from tax",
+                    formula: [
+                      t.exempt.gratuity > 0 ? `gratuity ${inr(t.exempt.gratuity)}` : "",
+                      t.exempt.leave > 0 ? `leave encashment ${inr(t.exempt.leave)}` : "",
+                      t.exempt.compensation > 0 ? `compensation ${inr(t.exempt.compensation)}` : ""
+                    ]
+                      .filter(Boolean)
+                      .join(" + "),
+                    result: inr(t.exempt.leave + t.exempt.gratuity + t.exempt.compensation),
+                    note: "Least of the amount paid and the reported limits"
+                  }
+                ]
+              : []),
+            {
+              label: "Taxable income",
+              formula: `${inr(t.year.salary)} − ${inr(t.year.standardDeduction)} standard deduction${t.year.deductions > 0 ? ` − ${inr(t.year.deductions)} deductions` : ""}`,
+              result: inr(t.year.taxableIncome),
+              note: `${t.year.regime === "new" ? "New" : "Old"} regime`
+            },
+            {
+              label: "Tax for the year",
+              formula: [
+                `${inr(Math.round(t.year.slabTax))} at slab rates`,
+                t.year.rebate > 0 ? `− ${inr(Math.round(t.year.rebate))} rebate` : "",
+                t.year.marginalRelief > 0 ? `− ${inr(Math.round(t.year.marginalRelief))} marginal relief` : "",
+                t.year.surcharge > 0 ? `+ ${inr(Math.round(t.year.surcharge))} surcharge` : "",
+                t.year.cess > 0 ? `+ ${inr(Math.round(t.year.cess))} cess` : ""
+              ]
+                .filter(Boolean)
+                .join(" "),
+              result: inr(t.year.total)
+            },
+            {
+              label: "TDS on the settlement",
+              formula: `${inr(t.year.total)} − ${inr(t.tdsBefore)} already deducted`,
+              result: inr(t.tds),
+              note: t.tdsBeforeDefaulted ? "TDS so far assumed: a full year's tax spread evenly over the months" : t.excess > 0 ? "Deducted earlier is more than the year's tax: nothing more to deduct" : undefined
+            }
+          ]
+        : []),
+      ...(r.deductions > 0 ? [{ label: "Total deductions", formula: plus([r.statutory.pf, r.statutory.esi, pt, t?.tds ?? 0]), result: inr(r.deductions) }] : []),
       ...(r.recoveries > 0
         ? [
             [v.num("recovery"), v.num("loans"), v.num("other")].filter((n) => n > 0).length > 1
@@ -192,7 +485,7 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
               : { label: "Total recoveries", formula: "", result: inr(r.recoveries), note: v.num("loans") > 0 ? "Loans and advances" : v.num("recovery") > 0 ? "Notice shortfall" : "Other recoveries" }
           ]
         : []),
-      { label: negative ? "Employee owes" : "Net payable", formula: `${inr(r.dues)} − ${inr(r.recoveries)}`, result: inr(Math.abs(r.net)) },
+      { label: negative ? "Employee owes" : "Net payable", formula: `${inr(r.dues)} − ${inr(r.deductions)} − ${inr(r.recoveries)}`, result: inr(Math.abs(r.net)) },
       ...(r.due.wages.date
         ? [{ label: "Pay wages by", formula: `${shortDate(lwd)} + ${stat("wages.separationPayDays").display}`, result: longDate(r.due.wages.date), note: skipNote }]
         : []),
@@ -212,12 +505,30 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
     const wages = v.num("wages");
     if (gross > 0 && wages > gross)
       warnings.push(`Wages for gratuity and leave (${inr(wages)}) are more than the monthly gross salary (${inr(gross)}). Wages are part of gross pay, so check the two figures.`);
-    if (v.num("lieu") > 0 && v.num("recovery") > 0)
+    if (lieu > 0 && v.num("recovery") > 0)
       warnings.push(
         "Notice pay in lieu and a notice shortfall recovery are both entered. Usually only one applies: the employer pays in lieu when it ends the notice early, and recovers a shortfall when the employee leaves before serving it."
       );
+    if (isRetrench && c.applies && lieu === 0)
+      warnings.push(
+        `A worker with a year's service must get ${stat("notice.retrenchmentNoticeMonths").display}'s written notice with the reasons, or wages for the notice period in lieu (Industrial Relations Code s.70(a)). If notice wasn't given, enter the wages in lieu.`
+      );
+    if (isRetrench && c.reason === "not-worker")
+      warnings.push(
+        "Retrenchment and closure compensation under the Industrial Relations Code is for workers. For managerial or administrative staff, pay what the contract, policy or separation agreement says, and enter it as severance."
+      );
+    if (isRetrench && c.reason === "under-a-year")
+      warnings.push(
+        "Less than a year of service, so no statutory compensation is included. A worker who worked 240 days or more in the previous 12 months can still count as having a year's continuous service; check attendance before settling."
+      );
+    if (separation === "closure" && v.str("unavoidable", "no") === "yes" && !c.capped && c.applies)
+      warnings.push("Closure for unavoidable reasons is marked, but the compensation is already below the three-month cap, so it is unchanged.");
     if (paidRaw !== "" && v.num("paid") > r.salary.divisor)
       warnings.push(`${num(v.num("paid"), 1)} payable days is more than the ${r.salary.divisor} the pay basis allows for the month, so ${r.salary.divisor} are used.`);
+    if (t && t.tdsBeforeDefaulted && t.excess > 0)
+      warnings.push(
+        `On the assumed TDS so far (${inr(t.tdsBefore)}), more tax was deducted earlier than the year's tax. Enter the TDS payroll actually deducted to check; any excess is claimed back in the employee's return, not refunded by the employer.`
+      );
     if (g.status === "ok" && !g.eligible && separation !== "death" && v.str("type", "permanent") === "permanent" && g.service.years === g.minYears - 1) {
       const extra = parseISO(lwd)! - parseISO(addMonthsClamped(v.str("doj"), 12 * g.service.years).date)! + 1;
       if (extra >= nearMissDays)
@@ -233,18 +544,27 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
       warnings,
       outputs: {
         net: negative ? `− ${inr(Math.abs(r.net))}` : inr(r.net),
-        sub: r.due.wages.date ? `Pay wages by ${longDate(r.due.wages.date)}, within ${stat("wages.separationPayDays").display} of the last working day.` : r.due.wages.text + "."
+        sub: [
+          r.deductions > 0 ? `After ${inr(r.deductions)} of PF, ESI, professional tax and TDS.` : "",
+          r.due.wages.date ? `Pay wages by ${longDate(r.due.wages.date)}, within ${stat("wages.separationPayDays").display} of the last working day.` : r.due.wages.text + "."
+        ]
+          .filter(Boolean)
+          .join(" ")
       },
       lines,
       bars: [
         { label: "Salary", value: r.salary.amount, display: inr(r.salary.amount) },
         { label: "Leave", value: r.leave.amount, display: inr(r.leave.amount) },
         { label: "Gratuity", value: r.gratuityAmount, display: inr(r.gratuityAmount) },
-        { label: "Recoveries", value: r.recoveries, display: `− ${inr(r.recoveries)}` }
+        ...(c.amount + r.severance > 0 ? [{ label: "Compensation", value: c.amount + r.severance, display: inr(c.amount + r.severance) }] : []),
+        ...(r.deductions > 0 ? [{ label: "Deductions", value: r.deductions, display: minus(r.deductions) }] : []),
+        { label: "Recoveries", value: r.recoveries, display: minus(r.recoveries) }
       ],
       notes
     };
   });
+  // After bindCalculator has restored a shared link's values.
+  syncFields();
 </script>
 
 <style>
@@ -253,6 +573,11 @@ const supervisorLimit = stat("osh.supervisorWageLimit").display;
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
     align-items: start;
+  }
+  .group-help {
+    margin-top: -0.4rem;
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
   }
   .group {
     margin-top: 0.5rem;
