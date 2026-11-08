@@ -1,0 +1,292 @@
+---
+/**
+ * Increment cycle: per-person increments from an employee file, against a merit
+ * budget and a separate promotion budget, with totals by department and manager,
+ * and a file for the mail merge's salary revision letters.
+ * Logic: src/lib/increment/cycle.ts (tested). Page behaviour: src/components/increment/app.ts.
+ */
+import Icon from "../ui/Icon.astro";
+import { DEFAULT_MATRIX, RATINGS, ZONES } from "../../lib/increment/cycle";
+---
+
+<div class="ic" data-ic>
+  <section class="ic-step" aria-labelledby="ic-load-title">
+    <p class="ic-stepno">Step 1 of 3</p>
+    <h2 class="ic-h" id="ic-load-title">Load the people in this review</h2>
+    <p class="ic-lede">
+      A CSV or Excel export from your HRMS, one row per person, with their annual salary (CTC or fixed pay) and final rating. Band midpoint, grade, department, manager, date of joining and a promotion column make the result better.
+    </p>
+    <div class="ic-actions">
+      <label class="btn">
+        <Icon name="file-text" size={18} /> Choose a file
+        <input class="visually-hidden" type="file" accept=".csv,.txt,.xlsx,.xlsm,text/csv" data-ic-file />
+      </label>
+      <button class="btn btn-secondary" type="button" data-ic-sample><Icon name="sparkle" size={18} /> Try with sample data</button>
+      <button class="btn btn-secondary" type="button" data-ic-shared hidden><Icon name="people" size={18} /> <span data-ic-shared-label>Use the file from another tool</span></button>
+      <button class="btn btn-ghost btn-sm" type="button" data-ic-template><Icon name="download" size={16} /> Blank template (CSV)</button>
+    </div>
+    <label class="ic-check">
+      <input type="checkbox" data-ic-share />
+      <span>Use this file in other tools (talent review, pay equity) until I close this tab <span class="muted">(nothing is kept after that)</span></span>
+    </label>
+    <p class="ic-status" role="status" aria-live="polite" data-ic-status></p>
+    <p class="tiny muted" data-ic-cols></p>
+  </section>
+
+  <section class="ic-step" aria-labelledby="ic-rules-title" data-ic-rules hidden>
+    <p class="ic-stepno">Step 2 of 3</p>
+    <h2 class="ic-h" id="ic-rules-title">Set the rules</h2>
+    <form class="ic-form" data-ic-form>
+      <div class="ic-grid">
+        <label class="field">
+          <span class="field-label">Merit budget, % of payroll</span>
+          <input class="control" name="budget" inputmode="decimal" value="8" />
+        </label>
+        <label class="field">
+          <span class="field-label">New salaries apply from</span>
+          <input class="control" name="effective" type="date" value="2027-04-01" />
+        </label>
+        <label class="field">
+          <span class="field-label">No merit increase if they joined after</span>
+          <input class="control" name="cutoff" type="date" value="2027-01-01" />
+        </label>
+        <label class="field">
+          <span class="field-label">Numeric ratings</span>
+          <select class="control" name="scale">
+            <option value="five-best">5 is the best</option>
+            <option value="one-best">1 is the best</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">Promotion increase, % on top of merit</span>
+          <input class="control" name="promo" inputmode="decimal" value="10" />
+        </label>
+        <label class="field">
+          <span class="field-label">Promotion budget, % of payroll</span>
+          <input class="control" name="promobudget" inputmode="decimal" value="1" />
+        </label>
+      </div>
+      <label class="ic-check"><input type="checkbox" name="prorate" checked /> <span>Prorate merit for people who joined in the last 12 months (months served ÷ 12)</span></label>
+      <label class="ic-check"><input type="checkbox" name="fit" /> <span>Scale the matrix so merit spends exactly the budget</span></label>
+      <fieldset class="ic-matrix">
+        <legend>Merit matrix: increase % by rating and compa-ratio</legend>
+        <div class="ic-mx" role="group" aria-label="Merit matrix">
+          <span></span>
+          {ZONES.map((z) => <span class="ic-mx-h">{z}</span>)}
+          {
+            RATINGS.map((r, ri) => (
+              <>
+                <span class="ic-mx-r">{r}</span>
+                {ZONES.map((z, zi) => (
+                  <input class="control ic-mx-in" name={`m${ri}_${zi}`} inputmode="decimal" value={DEFAULT_MATRIX[ri][zi]} aria-label={`${r}, compa-ratio ${z}`} />
+                ))}
+              </>
+            ))
+          }
+        </div>
+        <p class="tiny muted">Compa-ratio is salary ÷ band midpoint. Without a midpoint column, the grade's median salary is used; without a grade, everyone is treated as at the midpoint.</p>
+      </fieldset>
+    </form>
+  </section>
+
+  <section class="ic-step ic-results" aria-labelledby="ic-res-title" data-ic-results hidden tabindex="-1">
+    <p class="ic-stepno">Step 3 of 3</p>
+    <h2 class="ic-h" id="ic-res-title">The cycle</h2>
+    <div class="ic-kpis" data-ic-kpis></div>
+    <ul class="ic-warn" data-ic-warn hidden></ul>
+    <h3 class="ic-h3">By rating</h3>
+    <div class="tw"><table class="ic-table" data-ic-rating></table></div>
+    <h3 class="ic-h3">By department</h3>
+    <div class="tw"><table class="ic-table" data-ic-dept></table></div>
+    <h3 class="ic-h3">By manager</h3>
+    <div class="tw"><table class="ic-table" data-ic-mgr></table></div>
+    <h3 class="ic-h3">Each person</h3>
+    <label class="field ic-filter">
+      <span class="field-label">Find a person, department or manager</span>
+      <input class="control" type="search" data-ic-filter autocomplete="off" />
+    </label>
+    <div class="tw"><table class="ic-table ic-people" data-ic-people></table></div>
+    <p class="tiny muted" data-ic-more></p>
+    <div class="ic-actions" data-print="hide">
+      <button class="btn" type="button" data-ic-letters><Icon name="mail" size={18} /> Salary revision letters (CSV for mail merge)</button>
+      <button class="btn btn-secondary" type="button" data-ic-csv><Icon name="download" size={18} /> Download the cycle (CSV)</button>
+      <button class="btn btn-ghost" type="button" data-print-page><Icon name="printer" size={18} /> Print</button>
+    </div>
+    <p class="tiny muted">
+      The letters file has the <a href="/toolkit/salary-revision-letter/">salary revision letter</a>'s own column names. Open the <a href="/toolkit/mail-merge/">mail merge</a>, choose that letter, and load the file: every letter is filled in at once.
+    </p>
+  </section>
+</div>
+
+<script>
+  import "../increment/app";
+</script>
+
+<style>
+  .ic {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .ic-step {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--canvas);
+  }
+  .ic-results {
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+  }
+  .ic-stepno {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--neel-700);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .ic-h {
+    font-size: var(--fs-lg);
+  }
+  .ic-h3 {
+    font-size: var(--fs-md);
+    margin-top: 0.4rem;
+  }
+  .ic-lede {
+    color: var(--ink-2);
+    max-width: 70ch;
+  }
+  .ic-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+  }
+  .ic-check {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+  }
+  .ic-check input {
+    margin-top: 0.2rem;
+    accent-color: var(--neel-600);
+  }
+  .ic-status:empty {
+    display: none;
+  }
+  .ic-status {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .ic-form {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .ic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.75rem 1rem;
+  }
+  .ic-matrix {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .ic-matrix legend {
+    font-weight: 650;
+    font-size: var(--fs-sm);
+    margin-bottom: 0.4rem;
+  }
+  .ic-mx {
+    display: grid;
+    grid-template-columns: minmax(9rem, 1.4fr) repeat(3, minmax(4.5rem, 1fr));
+    gap: 0.4rem;
+    align-items: center;
+    max-width: 38rem;
+  }
+  .ic-mx-h {
+    font-size: var(--fs-xs);
+    font-weight: 650;
+    color: var(--ink-2);
+    text-align: center;
+  }
+  .ic-mx-r {
+    font-size: var(--fs-sm);
+  }
+  .ic-mx-in {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .ic-kpis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .ic-kpis :global(.kpi) {
+    padding: 0.55rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+    min-width: 9rem;
+  }
+  .ic-kpis :global(.kpi strong) {
+    display: block;
+    font-size: var(--fs-lg);
+    font-variant-numeric: tabular-nums;
+  }
+  .ic-kpis :global(.kpi.bad strong) {
+    color: var(--bad, #b42318);
+  }
+  .ic-warn {
+    padding: 0.8rem 1rem 0.8rem 2rem;
+    border-radius: var(--r);
+    background: var(--note-pink, #fde8ec);
+    font-size: var(--fs-sm);
+    display: grid;
+    gap: 0.3rem;
+  }
+  .tw {
+    overflow-x: auto;
+  }
+  .ic-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .ic-table :global(th),
+  .ic-table :global(td) {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+    white-space: nowrap;
+  }
+  .ic-table :global(td.n),
+  .ic-table :global(th.n) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .ic-table :global(thead th) {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-weight: 650;
+  }
+  .ic-table :global(.flag) {
+    color: var(--bad, #b42318);
+    font-weight: 600;
+  }
+  .ic-filter {
+    max-width: 24rem;
+  }
+  @media (max-width: 560px) {
+    .ic-mx {
+      grid-template-columns: minmax(7rem, 1.2fr) repeat(3, minmax(3.5rem, 1fr));
+    }
+  }
+</style>

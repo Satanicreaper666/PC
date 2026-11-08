@@ -66,3 +66,38 @@ test("slab parts add up", () => {
   const s = slabTax(1725000, NEW_SLABS);
   assert.equal(s.parts.reduce((a, p) => a + p.tax, 0), s.total);
 });
+
+import { breakEvenDeductions, hraExemption, taxUnder } from "./income-tax.ts";
+
+test("HRA exemption: the handbook's Bengaluru examples", () => {
+  assert.equal(hraExemption({ salary: 480000, hra: 240000, rent: 360000, city50: true }).exempt, 240000);
+  assert.equal(hraExemption({ salary: 480000, hra: 240000, rent: 360000, city50: false }).exempt, 192000);
+  // Priya: basic 9 lakh, HRA 3.6 lakh, rent 3 lakh → 2.1 lakh.
+  assert.equal(hraExemption({ salary: 900000, hra: 360000, rent: 300000, city50: true }).exempt, 210000);
+});
+
+test("Priya's old regime: ₹3.87 lakh of exemptions and deductions isn't enough to beat the new regime", () => {
+  const i = { salary: 1800000, basic: 900000, hra: 360000, rent: 300000, city50: true, investments: 150000, health: 25000, professionalTax: 2400 };
+  const old = taxUnder("old", i);
+  assert.equal(old.deductionsUsed.total, 387400);
+  const nw = taxUnder("new", i);
+  assert.equal(nw.tax.total, 150800);
+  assert.ok(old.tax.total > nw.tax.total);
+  const be = breakEvenDeductions(i)!;
+  assert.ok(be > 387400);
+  // At the break-even the old regime costs no more than the new.
+  const atBe = taxUnder("old", { salary: 1800000, otherDeductions: be }).tax.total;
+  assert.ok(Math.abs(atBe - nw.tax.total) <= 60);
+});
+
+test("employer NPS above 14% of basic (new) or 10% (old) is taxed", () => {
+  const i = { salary: 1500000, basic: 600000, employerNps: 90000 };
+  assert.equal(taxUnder("new", i).npsExcess, 6000);
+  assert.equal(taxUnder("old", i).npsExcess, 30000);
+});
+
+test("caps on investments and home-loan interest", () => {
+  const r = taxUnder("old", { salary: 2000000, investments: 300000, homeLoanInterest: 350000 });
+  assert.equal(r.deductionsUsed.investments, 150000);
+  assert.equal(r.deductionsUsed.homeLoan, 200000);
+});

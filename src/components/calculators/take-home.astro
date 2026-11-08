@@ -58,13 +58,50 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
       <input type="checkbox" name="pfin" value="1" />
       <span>Count the employer's PF as an excluded item in the 50% test <small>(the law does not settle this)</small></span>
     </label>
+
+    <p class="group">Income tax (TDS)</p>
+    <Pick
+      name="regime"
+      label="Tax regime"
+      options={[
+        { value: "new", label: "New (default)" },
+        { value: "old", label: "Old" },
+        { value: "none", label: "Before tax" }
+      ]}
+      help="The year's tax spread evenly over 12 months. The income tax calculator compares both regimes in detail."
+    />
+    <div data-th-old>
+      <div class="two">
+        <Num name="rent" label="Rent paid a month" prefix="₹" placeholder="0" help="For the HRA exemption." />
+        <Pick
+          name="city"
+          label="Rented home is in"
+          style="select"
+          options={[
+            { value: "50", label: "Mumbai, Delhi, Kolkata, Chennai, Bengaluru, Hyderabad, Pune or Ahmedabad" },
+            { value: "40", label: "Another city" }
+          ]}
+        />
+      </div>
+      <div class="two">
+        <Num name="inv" label="Investments beyond your PF, a year" prefix="₹" placeholder="0" help="PPF, ELSS, life cover and the like. With your PF, capped at ₹1,50,000." />
+        <Num name="ded" label="Health insurance and other deductions, a year" prefix="₹" placeholder="0" />
+      </div>
+    </div>
   </Fragment>
   <Fragment slot="headline">
     <span class="big" data-out="inhand">₹0</span>
     <span class="sub" data-out="sub"></span>
   </Fragment>
 </CalcShell>
-<AsAt ids={["wages.halfRule", "epf.employeeRate", "epf.employerRate", "epf.wageCeiling", "esi.wageCeiling", "esi.employeeRate", "esi.employerRate", "gratuity.daysPerYear", "gratuity.divisor", "pt.karnataka", "pt.maharashtra"]} note="Professional tax for other states uses the slabs on the professional tax calculator page." />
+<AsAt
+  ids={["wages.halfRule", "epf.employeeRate", "epf.employerRate", "epf.wageCeiling", "esi.wageCeiling", "esi.employeeRate", "esi.employerRate", "gratuity.daysPerYear", "gratuity.divisor", "pt.karnataka", "pt.maharashtra", "tax.stdDeductionNew", "tax.stdDeductionOld", "tax.rebateLimitNew", "tax.cess"]}
+  note="Professional tax for other states uses the slabs on the professional tax calculator page. Income-tax slabs for 2026-27 are in the TDS handbook, chapter 2."
+/>
+<div class="annex" data-print="hide">
+  <button class="btn btn-secondary btn-sm" type="button" data-annexure>Download the salary annexure (Word)</button>
+  <span class="tiny muted" role="status" aria-live="polite" data-annexure-status>The monthly and annual structure, ready to attach to an offer or appointment letter.</span>
+</div>
 
 <script>
   import { bindCalculator, inr, inrExact, num, type CalcStep } from "../../scripts/calc-kit";
@@ -74,8 +111,12 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
   import { epfRules } from "../../lib/calc/epf";
   import { esiRules } from "../../lib/calc/esi";
   import { gratuityRules } from "../../lib/calc/gratuity";
+  import { taxUnder, type Regime, type RegimeResult } from "../../lib/calc/income-tax";
+  import type { TakeHomeResult } from "../../lib/calc/take-home";
 
   const pf = epfRules();
+  const oldBox = document.querySelector<HTMLElement>('[data-calc="take-home"] [data-th-old]');
+  let last: { r: TakeHomeResult; tax: RegimeResult | null; ctc: number } | null = null;
   const esi = esiRules();
   const gr = gratuityRules();
   const genderField = document.querySelector<HTMLElement>('[data-calc="take-home"] [data-gender-field]');
@@ -88,6 +129,8 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
 
   bindCalculator("take-home", (v) => {
     syncGender();
+    const regime = v.str("regime", "new");
+    if (oldBox) oldBox.hidden = regime !== "old";
     const code = v.str("state", "KA");
     const r = computeTakeHome({
       ctc: v.num("ctc"),
@@ -100,7 +143,28 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
       state: code,
       gender: v.str("gender", "other") as Gender
     });
-    if (r.status !== "ok") return { outputs: { inhand: "₹0", sub: "" }, message: r.message };
+    if (r.status !== "ok") {
+      last = null;
+      return { outputs: { inhand: "₹0", sub: "" }, message: r.message };
+    }
+
+    // Income tax: the year's tax on 12 months of gross salary, spread evenly.
+    const tax =
+      regime === "none"
+        ? null
+        : taxUnder(regime as Regime, {
+            salary: r.gross * 12,
+            basic: r.basic * 12,
+            hra: r.hra * 12,
+            rent: v.num("rent") * 12,
+            city50: v.str("city", "50") === "50",
+            investments: r.employeePf * 12 + v.num("inv"),
+            otherDeductions: v.num("ded"),
+            professionalTax: r.pt * 12
+          });
+    const tds = tax ? Math.round(tax.tax.total / 12) : 0;
+    const afterTax = r.inHand - tds;
+    last = { r, tax, ctc: v.num("ctc") };
 
     const st = ptState(code);
     const t = r.wagesTest;
@@ -121,7 +185,19 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
       { label: "Employee PF", value: `− ${inr(r.employeePf)}`, note: `${pf.employeeRate}% of ${rs(r.pfBase)}`, tone: "bad" as const },
       ...(r.esiCovered ? [{ label: "Employee ESI", value: `− ${inr(r.employeeEsi)}`, note: `${esi.employeeRate}% of wages, rounded up`, tone: "bad" as const }] : []),
       r.pt > 0 ? { label: "Professional tax", value: `− ${rs(r.pt)}`, note: ptNote, tone: "bad" as const } : { label: "Professional tax", value: "Nil", note: ptNote },
-      { label: "In-hand before income tax", value: rs(r.inHand), strong: true },
+      { label: "In-hand before income tax", value: rs(r.inHand), strong: !tax },
+      ...(tax
+        ? [
+            {
+              label: `Income tax (TDS), ${tax.regime} regime`,
+              value: tds > 0 ? `− ${inr(tds)}` : "Nil",
+              note: tds > 0 ? `${inr(tax.tax.total)} for the year ÷ 12` : `Taxable income ${inr(tax.tax.taxableIncome)} is within the rebate`,
+              tone: tds > 0 ? ("bad" as const) : undefined,
+              key: "tds"
+            },
+            { label: "In-hand after TDS", value: rs(afterTax), strong: true, key: "after", better: "higher" as const }
+          ]
+        : []),
       { label: "Employer PF", value: inr(r.employerPf), note: "Part of CTC, paid into PF and pension" },
       ...(r.esiCovered ? [{ label: "Employer ESI", value: inr(r.employerEsi), note: `${esi.employerRate}% of wages, rounded up` }] : []),
       ...(r.gratuityProvision > 0 ? [{ label: "Gratuity provision", value: rs(r.gratuityProvision), note: `${gr.daysPerYear} ÷ ${gr.divisor} of a month's wages a year, paid on exit if eligible` }] : []),
@@ -136,7 +212,9 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
       t.addBack > 0
         ? `50% rule: HRA and other excluded allowances are ${pct(t.excludedShare)} of total pay. The ${rs(t.addBack)} above half is added back to wages, so PF, ESI and gratuity are worked out on ${rs(t.wages)}.`
         : `50% rule: HRA and other excluded allowances are ${pct(t.excludedShare)} of total pay, within the limit, so nothing is added back to wages.`,
-      "Income tax (TDS) is not deducted here. See the TDS handbook for how tax on salary works.",
+      tax
+        ? `TDS is an estimate: the ${tax.regime} regime's tax on 12 months of gross salary (${inr(r.gross * 12)}), with the standard deduction${tax.regime === "old" ? ", HRA exemption, PF and the deductions you entered" : ""}, spread evenly. Bonuses, arrears and a mid-year raise change it. The income tax calculator compares both regimes.`
+        : "Income tax (TDS) is not deducted here. Choose a regime to see it.",
       `Employer PF admin and EDLI charges (${inr(r.admin + r.edli)} a month) are not included; some employers add them to CTC.`
     ];
     if (r.esiCovered) notes.push(`ESI applies because wages are ${inr(r.esiCeiling)} or less. It applies in covered establishments, usually those with ${stat("esi.coverageEmployees").display} or more.`);
@@ -208,10 +286,13 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
       working,
       warnings,
       better: { inhand: "higher" },
-      outputs: { inhand: rs(r.inHand), sub: `a month before income tax, from a gross salary of ${inr(r.gross)}` },
+      outputs: tax
+        ? { inhand: rs(afterTax), sub: `a month after ${tds > 0 ? `${inr(tds)} of TDS` : "TDS (nil)"}, PF and professional tax, from a gross salary of ${inr(r.gross)}` }
+        : { inhand: rs(r.inHand), sub: `a month before income tax, from a gross salary of ${inr(r.gross)}` },
       lines,
       bars: [
-        { label: "In hand", value: r.inHand, display: rs(r.inHand) },
+        { label: "In hand", value: tax ? afterTax : r.inHand, display: rs(tax ? afterTax : r.inHand) },
+        ...(tds > 0 ? [{ label: "Income tax (TDS)", value: tds, display: inr(tds) }] : []),
         { label: "PF, both shares", value: r.employeePf + r.employerPf, display: inr(r.employeePf + r.employerPf) },
         ...(r.esiCovered ? [{ label: "ESI, both shares", value: r.employeeEsi + r.employerEsi, display: inr(r.employeeEsi + r.employerEsi) }] : []),
         { label: "Gratuity provision", value: r.gratuityProvision, display: rs(r.gratuityProvision) },
@@ -219,6 +300,85 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
       ],
       notes
     };
+  });
+
+  // The salary annexure for an offer or appointment letter, as a Word file.
+  document.querySelector<HTMLButtonElement>("[data-annexure]")?.addEventListener("click", async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    const status = document.querySelector<HTMLElement>("[data-annexure-status]");
+    if (!last) {
+      if (status) status.textContent = "Fix the calculator's message first.";
+      return;
+    }
+    const { r, tax, ctc } = last;
+    const m = (n: number) => inr(Math.round(n));
+    const a = (n: number) => inr(Math.round(n * 12));
+    const rows: [string, number][] = [
+      ["Basic pay + DA", r.basic],
+      ["House rent allowance (HRA)", r.hra],
+      ...(r.otherExcluded > 0 ? ([["Other allowances", r.otherExcluded]] as [string, number][]) : []),
+      ["Special allowance", r.special]
+    ];
+    const el = (tag: string, text?: string) => Object.assign(document.createElement(tag), text === undefined ? {} : { textContent: text });
+    const table = (head: string[], body: string[][]) => {
+      const t = el("table");
+      const tb = el("tbody");
+      const tr = el("tr");
+      head.forEach((h) => tr.append(el("th", h)));
+      tb.append(tr);
+      body.forEach((row) => {
+        const r2 = el("tr");
+        row.forEach((c, i) => r2.append(el(i === 0 ? "th" : "td", c)));
+        tb.append(r2);
+      });
+      t.append(tb);
+      return t;
+    };
+    const doc = el("div");
+    const tds = tax ? Math.round(tax.tax.total / 12) : 0;
+    doc.append(
+      el("h1", "Annexure: salary structure"),
+      el("p", `Annual cost to company (CTC): ${inr(ctc)}`),
+      el("h2", "Earnings"),
+      table(["Component", "Monthly", "Annual"], [...rows.map(([k, n]) => [k, m(n), a(n)]), ["Gross salary", inr(r.gross), inr(r.gross * 12)]]),
+      el("h2", "Employer contributions (part of CTC)"),
+      table(
+        ["Component", "Monthly", "Annual"],
+        [
+          ["Employer's provident fund", inr(r.employerPf), inr(r.employerPf * 12)],
+          ...(r.esiCovered ? [["Employer's ESI", inr(r.employerEsi), inr(r.employerEsi * 12)]] : []),
+          ...(r.gratuityProvision > 0 ? [["Gratuity (provision; paid on leaving, if eligible)", m(r.gratuityProvision), a(r.gratuityProvision)]] : []),
+          ["Cost to company", m(r.monthlyCtc), inr(ctc)]
+        ]
+      ),
+      el("h2", "Deductions from pay"),
+      table(
+        ["Deduction", "Monthly", "Annual"],
+        [
+          ["Employee's provident fund", inr(r.employeePf), inr(r.employeePf * 12)],
+          ...(r.esiCovered ? [["Employee's ESI", inr(r.employeeEsi), inr(r.employeeEsi * 12)]] : []),
+          ["Professional tax", m(r.pt), a(r.pt)],
+          ...(tax ? [[`Income tax (TDS, estimate, ${tax.regime} regime)`, inr(tds), inr(tds * 12)]] : []),
+          ["Net pay", m(r.inHand - tds), a(r.inHand - tds)]
+        ]
+      ),
+      el(
+        "p",
+        `Wages under the Labour Codes: ${m(r.wagesTest.wages)} a month. ${r.wagesTest.addBack > 0 ? `Allowances outside wages are more than half of pay, so ${m(r.wagesTest.addBack)} is added back to wages for PF, ESI and gratuity.` : "Allowances outside wages are within half of pay."}`
+      ),
+      el("p", "Professional tax, ESI and income tax follow the law and the employee's declarations, and may change. The gratuity provision is not paid monthly.")
+    );
+    btn.disabled = true;
+    try {
+      const { downloadPaper } = await import("../calc/working-paper");
+      await downloadPaper(doc, "Annexure: salary structure", `salary-annexure-ctc-${Math.round(ctc)}`);
+      if (status) status.textContent = "Downloaded the salary annexure.";
+    } catch (err) {
+      console.error(err);
+      if (status) status.textContent = "The Word file couldn't be made. Try again.";
+    } finally {
+      btn.disabled = false;
+    }
   });
 </script>
 
@@ -228,6 +388,21 @@ const mhHelp = `Maharashtra exempts women earning up to ₹${new Intl.NumberForm
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
     align-items: start;
+  }
+  .group {
+    margin-top: 0.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-sm);
+    font-weight: 680;
+    color: var(--neel-800);
+  }
+  .annex {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-top: 1rem;
   }
   .check {
     display: flex;

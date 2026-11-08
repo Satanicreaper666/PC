@@ -1,0 +1,224 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import AsAt from "./parts/AsAt.astro";
+import { HRA_50_CITIES } from "../../lib/calc/income-tax";
+---
+
+<CalcShell id="income-tax" resultLabel="Income tax for 2026-27" inputsLabel="Salary and claims" scenarioLabel="Option {A}">
+  <Fragment slot="inputs">
+    <Num
+      name="salary"
+      label="Taxable salary for the year"
+      prefix="₹"
+      value="18,00,000"
+      help="Gross salary paid in the tax year, including bonus and allowances. Leave out the employer's PF and any gratuity provision, which are part of CTC but not taxed each month."
+    />
+    <div class="two">
+      <Num name="basic" label="Basic pay + DA for the year" prefix="₹" value="9,00,000" help="For the HRA and employer NPS limits." />
+      <Num name="nps" label="Employer's NPS contribution (optional)" prefix="₹" placeholder="0" help="A year. Tax-free up to 14% of basic + DA (new regime) or 10% (old)." />
+    </div>
+    <Num name="other" label="Other income (optional)" prefix="₹" placeholder="0" help="Interest and other income the employee declares to payroll." />
+    <Pick
+      name="age"
+      label="Age during the tax year"
+      options={[
+        { value: "below60", label: "Below 60" },
+        { value: "60to79", label: "60 to 79" },
+        { value: "80plus", label: "80 or more" }
+      ]}
+      help="Changes the old regime's nil band only."
+    />
+    <Pick
+      name="resident"
+      label="Resident in India this year?"
+      options={[
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" }
+      ]}
+      help="Non-residents don't get the section 156 rebate."
+    />
+
+    <p class="group">Old regime claims (Form 124), for the year</p>
+    <div class="two">
+      <Num name="hra" label="HRA received" prefix="₹" value="3,60,000" />
+      <Num name="rent" label="Rent paid" prefix="₹" value="3,00,000" />
+    </div>
+    <Pick
+      name="city"
+      label="Rented home is in"
+      options={[
+        { value: "50", label: "One of the eight cities" },
+        { value: "40", label: "Anywhere else" }
+      ]}
+      help={`50% of salary in ${HRA_50_CITIES.join(", ")}; 40% elsewhere.`}
+    />
+    <div class="two">
+      <Num name="inv" label="Investments (PF, PPF, ELSS, life cover…)" prefix="₹" value="1,50,000" help="Capped at ₹1,50,000." />
+      <Num name="health" label="Health insurance premiums" prefix="₹" value="25,000" help="Within the limits for you and your parents." />
+    </div>
+    <div class="two">
+      <Num name="home" label="Home-loan interest (own home)" prefix="₹" placeholder="0" help="Capped at ₹2,00,000." />
+      <Num name="pt" label="Professional tax paid" prefix="₹" value="2,400" />
+    </div>
+    <Num name="otherded" label="Other deductions (optional)" prefix="₹" placeholder="0" help="For example education-loan interest or donations, as claimed on Form 124." />
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="best">₹0</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+<AsAt
+  ids={["tax.stdDeductionNew", "tax.stdDeductionOld", "tax.rebateLimitNew", "tax.rebateMaxNew", "tax.rebateLimitOld", "tax.rebateMaxOld", "tax.cess"]}
+  note="Slab rates for 2026-27 (section 202 and the old regime's rates, unchanged by Budget 2026-27), surcharge and the HRA city list are explained in the TDS handbook, chapters 2 and 4."
+/>
+
+<script>
+  import { bindCalculator, inr, type CalcStep } from "../../scripts/calc-kit";
+  import { breakEvenDeductions, slabsFor, taxUnder, type AgeBand, type RegimeInput, type RegimeResult } from "../../lib/calc/income-tax";
+
+  const pct = (n: number) => `${(Math.round(n * 10) / 10).toFixed(1)}%`;
+
+  bindCalculator("income-tax", (v) => {
+    const i: RegimeInput = {
+      salary: v.num("salary"),
+      basic: v.num("basic"),
+      employerNps: v.num("nps"),
+      otherIncome: v.num("other"),
+      age: v.str("age", "below60") as AgeBand,
+      resident: v.str("resident", "yes") === "yes",
+      hra: v.num("hra"),
+      rent: v.num("rent"),
+      city50: v.str("city", "50") === "50",
+      investments: v.num("inv"),
+      health: v.num("health"),
+      homeLoanInterest: v.num("home"),
+      professionalTax: v.num("pt"),
+      otherDeductions: v.num("otherded")
+    };
+    if (!(i.salary > 0)) return { outputs: { best: "₹0", sub: "" }, message: "Enter the taxable salary for the year." };
+    const nw = taxUnder("new", i);
+    const old = taxUnder("old", i);
+    const better: RegimeResult = old.tax.total < nw.tax.total ? old : nw;
+    const saving = Math.abs(old.tax.total - nw.tax.total);
+    const be = breakEvenDeductions(i);
+    const name = (r: RegimeResult) => (r.regime === "new" ? "New regime" : "Old regime");
+    const monthly = Math.round(better.tax.total / 12);
+    const income = i.salary + (i.otherIncome ?? 0);
+
+    const lines = [
+      { label: "New regime: tax for the year", value: inr(nw.tax.total), note: `Taxable income ${inr(nw.tax.taxableIncome)}`, strong: better.regime === "new", key: "new", better: "lower" as const },
+      { label: "Old regime: tax for the year", value: inr(old.tax.total), note: `Taxable income ${inr(old.tax.taxableIncome)} after ${inr(old.deductionsUsed.total)} of claims`, strong: better.regime === "old", key: "old", better: "lower" as const },
+      { label: "Cheaper regime", value: saving === 0 ? "Either" : name(better), note: saving === 0 ? "Same tax" : `Saves ${inr(saving)} a year`, key: "cheaper" },
+      { label: "Monthly TDS, spread evenly", value: inr(monthly), note: `${name(better)}, over 12 months`, key: "monthly" },
+      { label: "Effective tax rate", value: income > 0 ? pct((better.tax.total / income) * 100) : "0%", note: "Tax as a share of salary and other income", key: "rate" },
+      ...(be !== null
+        ? [{ label: "Old regime breaks even at", value: inr(be), note: "Of exemptions and deductions, beyond the standard deduction", key: "breakeven" }]
+        : [{ label: "Old regime breaks even at", value: "Never", note: nw.tax.total === 0 ? "The new regime's tax is already nil" : "No amount of deductions makes the old regime cheaper", key: "breakeven" }])
+    ];
+
+    const stepsFor = (r: RegimeResult): CalcStep[] => {
+      const t = r.tax;
+      const slabs = slabsFor(r.regime, i.age);
+      const label = name(r);
+      return [
+        {
+          label: `${label}: taxable income`,
+          formula: [
+            inr(i.salary),
+            r.npsExcess > 0 ? `+ ${inr(r.npsExcess)} employer NPS over the limit` : "",
+            (i.otherIncome ?? 0) > 0 ? `+ ${inr(i.otherIncome!)} other income` : "",
+            `− ${inr(t.standardDeduction)} standard deduction`,
+            t.deductions > 0 ? `− ${inr(t.deductions)} claims` : ""
+          ]
+            .filter(Boolean)
+            .join(" "),
+          result: inr(t.taxableIncome),
+          note:
+            r.regime === "old" && r.deductionsUsed.total > 0
+              ? [
+                  r.deductionsUsed.hra ? `HRA ${inr(r.deductionsUsed.hra)}` : "",
+                  r.deductionsUsed.investments ? `investments ${inr(r.deductionsUsed.investments)}` : "",
+                  r.deductionsUsed.health ? `health ${inr(r.deductionsUsed.health)}` : "",
+                  r.deductionsUsed.homeLoan ? `home loan ${inr(r.deductionsUsed.homeLoan)}` : "",
+                  r.deductionsUsed.pt ? `professional tax ${inr(r.deductionsUsed.pt)}` : "",
+                  r.deductionsUsed.other ? `other ${inr(r.deductionsUsed.other)}` : ""
+                ]
+                  .filter(Boolean)
+                  .join(", ")
+              : undefined
+        },
+        {
+          label: `${label}: slab tax`,
+          formula: t.slabParts
+            .filter((p) => p.rate > 0)
+            .map((p) => `${p.rate}% of ${inr(p.to - p.from)}`)
+            .join(" + ") || "Nil",
+          result: inr(Math.round(t.slabTax)),
+          note: `Slabs from ${slabs.map((s) => (s.upTo === Infinity ? "" : inr(s.upTo))).filter(Boolean).join(", ")}`
+        },
+        {
+          label: `${label}: tax for the year`,
+          formula: [
+            inr(Math.round(t.slabTax)),
+            t.rebate > 0 ? `− ${inr(Math.round(t.rebate))} rebate` : "",
+            t.marginalRelief > 0 ? `− ${inr(Math.round(t.marginalRelief))} marginal relief` : "",
+            t.surcharge > 0 ? `+ ${inr(Math.round(t.surcharge))} surcharge at ${t.surchargeRate}%` : "",
+            t.cess > 0 ? `+ ${inr(Math.round(t.cess))} cess` : ""
+          ]
+            .filter(Boolean)
+            .join(" "),
+          result: inr(t.total)
+        }
+      ];
+    };
+
+    const warnings: string[] = [];
+    if ((i.basic ?? 0) > i.salary) warnings.push("Basic pay + DA is more than the taxable salary. Basic is part of salary, so check the two figures.");
+    if ((i.hra ?? 0) > 0 && !(i.rent ?? 0)) warnings.push("HRA is entered but no rent: without rent paid, HRA is fully taxable in the old regime.");
+    if ((i.investments ?? 0) > 150000) warnings.push("Investments above ₹1,50,000 are capped, so only ₹1,50,000 is used.");
+
+    return {
+      outputs: {
+        best: inr(better.tax.total),
+        sub:
+          saving === 0
+            ? `Both regimes cost the same. About ${inr(monthly)} a month in TDS.`
+            : `${name(better)} is cheaper by ${inr(saving)} a year. About ${inr(monthly)} a month in TDS.`
+      },
+      better: { best: "lower" },
+      lines,
+      working: [...stepsFor(nw), ...stepsFor(old)],
+      warnings,
+      notes: [
+        "An estimate for a resident salaried employee, using the slabs, standard deduction, rebate, surcharge and cess for tax year 2026-27.",
+        "Payroll recomputes TDS each month: tax for the year, minus TDS already deducted, spread over the months left. A raise or bonus late in the year raises the later months' TDS.",
+        "The new regime is the default. An employee who wants the old regime tells the employer at the start of the year; when filing the return they can choose again.",
+        "Special-rate income (capital gains, lottery), relief for arrears and perquisite values are not included."
+      ]
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  .group {
+    margin-top: 0.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-sm);
+    font-weight: 680;
+    color: var(--neel-800);
+  }
+  @media (max-width: 420px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

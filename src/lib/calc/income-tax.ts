@@ -193,3 +193,94 @@ export function computeIncomeTax(i: TaxInput, r: TaxRules = taxRules()): TaxResu
     total: roundRupee(b.after + sc.amount + cess)
   };
 }
+
+/* ---------- Old regime: HRA exemption and Form 124 deductions ---------- */
+
+/** Cities where the HRA limit is 50% of salary from 1 April 2026 (Income-tax Rules, 2026, rule 279). */
+export const HRA_50_CITIES = ["Mumbai", "Delhi", "Kolkata", "Chennai", "Bengaluru", "Hyderabad", "Pune", "Ahmedabad"];
+
+/** Exempt HRA: the least of HRA received, rent − 10% of salary, and 50% (listed cities) or 40% of salary. Salary = basic + DA. All annual. */
+export function hraExemption(i: { salary: number; hra: number; rent: number; city50: boolean }): { exempt: number; parts: [number, number, number] } {
+  const a = Math.max(0, i.hra);
+  const b = Math.max(0, i.rent - 0.1 * Math.max(0, i.salary));
+  const c = (i.city50 ? 0.5 : 0.4) * Math.max(0, i.salary);
+  return { exempt: Math.min(a, b, c), parts: [a, b, c] };
+}
+
+/** Caps the calculator applies to old-regime claims (as carried over to the 2025 Act). */
+export const OLD_CAPS = { investments: 150000, homeLoanInterest: 200000 };
+
+export type RegimeInput = {
+  /** Gross taxable salary for the year: everything paid, before standard deduction; leave out employer PF and a gratuity provision. */
+  salary: number;
+  /** Basic + DA for the year, for the HRA and employer NPS limits. */
+  basic?: number;
+  /** Employer's NPS contribution for the year (already outside the salary figure). */
+  employerNps?: number;
+  otherIncome?: number;
+  age?: AgeBand;
+  resident?: boolean;
+  /** Old regime claims, all annual. */
+  hra?: number;
+  rent?: number;
+  city50?: boolean;
+  investments?: number;
+  health?: number;
+  homeLoanInterest?: number;
+  professionalTax?: number;
+  otherDeductions?: number;
+};
+
+export type RegimeResult = {
+  regime: Regime;
+  tax: TaxResult;
+  /** Employer NPS above the regime's limit, added to taxable salary. */
+  npsExcess: number;
+  deductionsUsed: { hra: number; investments: number; health: number; homeLoan: number; pt: number; other: number; total: number };
+};
+
+/** Employer NPS deduction limit: 14% of basic + DA in the new regime, 10% in the old (non-government employers). */
+const NPS_LIMIT: Record<Regime, number> = { new: 0.14, old: 0.1 };
+
+export function taxUnder(regime: Regime, i: RegimeInput, r: TaxRules = taxRules()): RegimeResult {
+  const basic = Math.max(0, i.basic ?? 0);
+  const nps = Math.max(0, i.employerNps ?? 0);
+  const npsExcess = nps > 0 ? Math.max(0, Math.round(nps - NPS_LIMIT[regime] * basic)) : 0;
+  const zero = { hra: 0, investments: 0, health: 0, homeLoan: 0, pt: 0, other: 0, total: 0 };
+  let used = zero;
+  if (regime === "old") {
+    const hra = i.hra && i.rent ? hraExemption({ salary: basic, hra: i.hra, rent: i.rent, city50: !!i.city50 }).exempt : 0;
+    const investments = Math.min(Math.max(0, i.investments ?? 0), OLD_CAPS.investments);
+    const homeLoan = Math.min(Math.max(0, i.homeLoanInterest ?? 0), OLD_CAPS.homeLoanInterest);
+    const health = Math.max(0, i.health ?? 0);
+    const pt = Math.max(0, i.professionalTax ?? 0);
+    const other = Math.max(0, i.otherDeductions ?? 0);
+    used = { hra, investments, health, homeLoan, pt, other, total: hra + investments + health + homeLoan + pt + other };
+  }
+  const tax = computeIncomeTax(
+    { salary: Math.max(0, i.salary) + npsExcess, regime, age: i.age, deductions: used.total, otherIncome: i.otherIncome, resident: i.resident },
+    r
+  );
+  return { regime, tax, npsExcess, deductionsUsed: used };
+}
+
+/**
+ * Old-regime deductions (beyond the standard deduction) at which both regimes cost the
+ * same, for this salary. Below it the new regime is cheaper. Null if the old regime
+ * can't win, or the new regime is already nil.
+ */
+export function breakEvenDeductions(i: RegimeInput, r: TaxRules = taxRules()): number | null {
+  const target = taxUnder("new", i, r).tax.total;
+  if (target === 0) return null;
+  const at = (d: number) => computeIncomeTax({ salary: Math.max(0, i.salary), regime: "old", age: i.age, deductions: d, otherIncome: i.otherIncome, resident: i.resident }, r).total;
+  let lo = 0;
+  let hi = Math.max(0, i.salary) + Math.max(0, i.otherIncome ?? 0);
+  if (at(lo) <= target) return 0;
+  if (at(hi) > target) return null;
+  for (let k = 0; k < 60; k++) {
+    const mid = (lo + hi) / 2;
+    if (at(mid) > target) lo = mid;
+    else hi = mid;
+  }
+  return Math.ceil(hi / 100) * 100;
+}

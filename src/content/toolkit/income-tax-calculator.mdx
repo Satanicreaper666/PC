@@ -1,0 +1,72 @@
+---
+title: Income tax calculator, old vs new regime
+description: Work out an employee's income tax and monthly TDS for 2026-27 under both regimes, with HRA, investments and employer NPS, and the deductions at which the old regime breaks even.
+kind: calculator
+calculator: income-tax
+glance:
+  inputs: ["Taxable salary", "Basic + DA", "HRA and rent", "Investments and other claims", "Age"]
+  output: "Tax for the year and monthly TDS, both regimes"
+  formula: "Tax = slab tax − rebate + surcharge + 4% cess"
+stage: pay
+audiences: [employees, hr, founders, students]
+order: 11
+checked: 2026-11-08
+useWhen: An employee is choosing a tax regime, you are checking payroll's TDS, or a candidate wants to know what an offer is worth after tax.
+tips:
+  - "Start from <strong>taxable salary</strong>, not CTC. The employer's PF and a gratuity provision are part of CTC but aren't taxed each month. The <a href=\"/toolkit/take-home-salary-calculator/\">take-home calculator</a> shows the gross salary inside a CTC."
+  - "Under the new regime a resident pays <strong>no tax up to ₹12 lakh</strong> of taxable income, about ₹12.75 lakh of salary after the standard deduction."
+  - "The old regime only wins when exemptions and deductions are large. Look at the break-even figure before switching."
+  - "Save each option with <strong>Save this scenario</strong> to compare offers or structures side by side."
+sources:
+  - title: "Income-tax Act, 2025, section 202: new tax regime slab rates"
+    url: https://www.incometaxindia.gov.in/w/section-202-76
+    publisher: Income Tax Department
+  - title: "Income-tax Act, 2025, section 156: rebate"
+    url: https://www.incometaxindia.gov.in/w/section-156-88
+    publisher: Income Tax Department
+  - title: "Income-tax Act, 2025, section 19: standard deduction"
+    url: https://www.incometaxindia.gov.in/w/section-19-206
+    publisher: Income Tax Department
+  - title: "Income-tax Act, 2025, section 124: employer contributions to the pension scheme"
+    url: https://www.incometaxindia.gov.in/w/section-124-98
+    publisher: Income Tax Department
+  - title: "Income-tax Rules, 2026, rule 279: HRA exemption limits and cities"
+    url: https://www.incometaxindia.gov.in/w/rule-279-1
+    publisher: Income Tax Department
+  - title: "Tax rates for individuals: old regime slabs, surcharge and cess"
+    url: https://incometaxindia.gov.in/Documents/Left%20Menu/TAX%20RATES_Indvl.htm
+    publisher: Income Tax Department
+  - title: "Budget 2026-27: no change in income-tax slabs"
+    url: https://www.moneylife.in/article/budget-202627-no-change-in-incometax-slabs-fm-offers-compliance-relief-for-individuals/79540.html
+    publisher: Moneylife
+related: [toolkit/take-home-salary-calculator, toolkit/full-and-final-settlement-calculator, handbooks/tds/02-salary-tds, handbooks/tds/04-investment-declarations, handbooks/tds/03-ctc-design-and-perquisites, glossary/new-tax-regime]
+faq:
+  - q: Which tax regime is better for a salaried employee in 2026-27?
+    a: For most people, the new regime. It has lower slab rates, a ₹75,000 standard deduction and no tax up to ₹12 lakh of taxable income. The old regime is cheaper only when HRA, investments, health insurance and home-loan interest together pass the break-even this calculator shows.
+  - q: How is monthly TDS on salary worked out?
+    a: Payroll estimates the year's taxable salary, works out the tax under the regime the employee chose, subtracts TDS already deducted and divides the rest by the months left. This calculator shows the year's tax spread evenly over 12 months.
+  - q: Is the employer's NPS contribution taxable?
+    a: It is deductible up to 14% of basic pay plus DA in the new regime, and 10% in the old regime for non-government employers. Anything above the limit is taxed as salary.
+keywords: [income tax calculator 2026-27, old vs new tax regime calculator, tds on salary calculator, new tax regime 12 lakh rebate calculator, hra exemption calculator 2026]
+---
+
+## How the tax is worked out
+
+<Figure title="Tax for the year" caption="The same steps in both regimes; only the slabs, the standard deduction and the claims allowed differ.">
+  <Formula
+    result={{ value: "Tax for the year" }}
+    parts={[{ value: "Slab tax", label: "on taxable income" }, { op: "−" }, { value: "Rebate", label: "residents, up to ₹12 lakh (new)" }, { op: "+" }, { value: "Surcharge", label: "above ₹50 lakh" }, { op: "+" }, { value: "4% cess" }]}
+    example="Example: ₹18 lakh salary, new regime. Taxable income ₹17,25,000; slab tax ₹1,45,000; no rebate; cess ₹5,800. Tax ₹1,50,800, about ₹12,567 a month."
+  />
+</Figure>
+
+- **Taxable income** is salary minus the standard deduction (₹75,000 new, ₹50,000 old), plus other income. In the old regime you also subtract the HRA exemption, investments up to ₹1,50,000, health insurance, home-loan interest up to ₹2,00,000 and professional tax.
+- **HRA exemption** (old regime only) is the least of the HRA received, rent minus 10% of basic + DA, and 50% of basic + DA in Mumbai, Delhi, Kolkata, Chennai, Bengaluru, Hyderabad, Pune and Ahmedabad (40% elsewhere).
+- **Rebate:** a resident with taxable income up to ₹12 lakh pays no tax under the new regime (up to ₹5 lakh under the old). Just above ₹12 lakh, marginal relief limits the tax to the income above ₹12 lakh.
+- **Surcharge** applies above ₹50 lakh, with marginal relief at each threshold. **Cess** of 4% is added to the tax and surcharge.
+
+The example is the TDS handbook's Priya: in Bengaluru, ₹18 lakh salary, ₹9 lakh basic, ₹3.6 lakh HRA, ₹3 lakh rent, ₹1.5 lakh of investments and ₹25,000 of health insurance. Her ₹3.87 lakh of claims leaves the old regime more expensive, so the new regime wins.
+
+<Callout type="note" title="An estimate, not a return">
+The calculator covers a resident's salary and simple other income. It leaves out capital gains and other special-rate income, relief for salary arrears, perquisite values and losses. Use it to choose a regime and check TDS; the return is worked out on the year's actual figures.
+</Callout>

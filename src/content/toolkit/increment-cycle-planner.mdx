@@ -1,0 +1,68 @@
+---
+title: Increment cycle planner
+description: Run the annual increment cycle from your employee file, person by person, with a merit matrix, proration, a promotion budget, totals by manager and salary revision letters.
+kind: app
+calculator: increment-cycle
+glance:
+  inputs: ["Employee file (CSV or Excel)", "Merit budget %", "Merit matrix", "Promotion % and budget", "Effective and cut-off dates"]
+  output: "Each person's increase, the cost against budget and a letters file"
+  formula: "New salary = salary × (1 + matrix % × proration × fit + promotion %)"
+stage: grow
+audiences: [hr, founders]
+order: 22
+checked: 2026-11-08
+useWhen: You have final ratings and want to work out every person's increase, check the total against the budget, see each manager's spend and produce the salary revision letters.
+tips:
+  - "Start from <strong>final, calibrated ratings</strong>. Running the numbers before calibration invites managers to argue ratings backwards from the increase they want."
+  - "Give the band <strong>midpoint</strong> for each person if you have it. Without it, the grade's median salary stands in, which treats today's pay as the market."
+  - "Keep <strong>promotions on their own budget</strong>, so merit for strong performers isn't squeezed by a few large promotion jumps."
+  - "Check the <strong>by-manager</strong> table before you finalise. Large differences in average increase between managers with similar teams usually mean ratings weren't calibrated."
+  - "Run the result through the <a href=\"/toolkit/pay-equity-analyzer/\">pay equity analyser</a> before letters go out."
+related: [toolkit/increment-budget-allocator, toolkit/salary-band-designer, toolkit/salary-revision-letter, toolkit/mail-merge, toolkit/pay-equity-analyzer, toolkit/nine-box-talent-mapper, toolkit/annual-performance-appraisal]
+faq:
+  - q: What is a merit matrix?
+    a: A table of increase percentages by performance rating and position in the salary band (compa-ratio). People with higher ratings get more, and people low in their band get more than people with the same rating who are already high in it, so pay moves towards the midpoint over time.
+  - q: How should joiners be treated in the increment cycle?
+    a: Most companies leave out people who joined in the last three months and prorate the increase for those who joined during the review year, by months served out of twelve. Set both rules here and apply them to everyone the same way.
+  - q: Should promotions come out of the merit budget?
+    a: It is clearer to keep a separate promotion budget, often 0.5% to 1.5% of payroll. Then merit increases reflect performance, and promotion increases reflect a bigger role.
+keywords: [increment cycle planner, merit increase calculator, salary increment matrix excel alternative, annual appraisal increment calculation, compa ratio merit matrix tool]
+---
+
+## How it works
+
+<Figure title="One person's increase" caption="Applied to every row of your file. The merit budget and the promotion budget are checked separately.">
+  <Formula
+    result={{ value: "New salary" }}
+    parts={[{ value: "Salary" }, { op: "×" }, { value: "1 + increase %" }]}
+    example="Example: ₹8,00,000, rated 4 out of 5 (exceeds expectations), compa-ratio 0.80 (low in the band): 11% → ₹8,88,000. Joined six months before the effective date: 5.5% → ₹8,44,000."
+  />
+</Figure>
+
+1. **Compa-ratio** is salary ÷ band midpoint. Below 0.90 is low in the band, 0.90 to 1.10 is around the midpoint, above 1.10 is high.
+2. **Matrix %** is the cell for the person's rating and compa-ratio zone.
+3. **Proration**: people who joined in the 12 months before the effective date get months served ÷ 12 of the matrix increase. People who joined after the cut-off date are left out.
+4. **Fit to budget** (optional) scales every cell by the same factor, so merit spends exactly the budget and the matrix keeps its shape.
+5. **Promotion %** is added on top for people marked for promotion, and checked against its own budget.
+
+## Preparing your file
+
+Export one row per person in the review, with a header row. The tool recognises common HRMS column names; the blank template shows the exact ones.
+
+| Column | Needed? | Notes |
+| --- | --- | --- |
+| Annual CTC or fixed pay | Yes | Use the same pay element the increase applies to |
+| Final rating | Yes | 1 to 5, or words such as "Exceeds expectations" |
+| Band midpoint | Better | Otherwise the grade's median salary is used |
+| Band maximum | Optional | Flags anyone whose new salary goes above it |
+| Grade, department, manager | Better | For compa-ratio fallback and the totals |
+| Date of joining | Better | For proration and the cut-off |
+| Promotion, new designation | Optional | "Yes" in the promotion column |
+
+<Callout type="note" title="Your file stays on this device">
+The file is read in your browser and isn't uploaded. It is gone when you close the tab, unless you tick the box to use it in other tools, and even then only until the tab closes.
+</Callout>
+
+## From the cycle to the letters
+
+**Salary revision letters (CSV for mail merge)** downloads one row per person getting an increase, with the [salary revision letter](/toolkit/salary-revision-letter/)'s own column names. In the [mail merge](/toolkit/mail-merge/), choose that letter and load the file: the company details and signatory come from your saved company details, and every letter is ready to download in one Word file.

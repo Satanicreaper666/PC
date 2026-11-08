@@ -1,20 +1,21 @@
 ---
 title: Take-home salary calculator
-description: Turn an annual CTC into monthly in-hand pay before income tax, with PF, ESI, professional tax, the gratuity provision and the Labour Codes' 50% wage rule.
+description: Turn an annual CTC into monthly in-hand pay after PF, ESI, professional tax and TDS, with the Labour Codes' 50% wage rule and a salary annexure to download.
 kind: calculator
 calculator: take-home
 glance:
-  inputs: ["Annual CTC", "Basic + DA %", "PF basis", "Gratuity in CTC", "State"]
-  output: "Monthly in-hand pay"
-  formula: "In-hand = gross − employee PF − ESI − professional tax"
+  inputs: ["Annual CTC", "Basic + DA %", "PF basis", "Gratuity in CTC", "State", "Tax regime"]
+  output: "Monthly in-hand pay after TDS"
+  formula: "In-hand = gross − employee PF − ESI − professional tax − TDS"
 stage: pay
 audiences: [employees, students, hr, founders]
 order: 10
 checked: 2026-11-02
-useWhen: You have an offer or a salary structure and want to know what lands in the bank each month, before income tax, and whether the structure passes the 50% wage rule.
+useWhen: You have an offer or a salary structure and want to know what lands in the bank each month, whether the structure passes the 50% wage rule, and an annexure to attach to the letter.
 tips:
   - "Take the <strong>basic pay and HRA percentages</strong> from the offer letter's salary annexure. If it lists a conveyance or similar allowance, enter it as an allowance outside wages."
-  - "This is in-hand pay <strong>before income tax</strong>. TDS depends on your tax regime and declarations; see the <a href=\"/handbooks/tds/salary-tds/\">TDS handbook</a>."
+  - "TDS is an <strong>estimate</strong>: the year's tax on 12 months of gross salary, spread evenly. The <a href=\"/toolkit/income-tax-calculator/\">income tax calculator</a> compares both regimes in detail."
+  - "<strong>Download the salary annexure</strong> under the calculator for the offer or appointment letter: earnings, employer contributions, deductions and net pay, monthly and annual."
   - "Compare offers on in-hand pay and on what your employer puts into PF for you, not on CTC alone."
 sources:
   - title: The Code on Wages, 2019, section 2(y) on the definition of wages (India Code)
@@ -32,16 +33,16 @@ sources:
   - title: Labour Ministry FAQs on the Labour Codes, 30 December 2025 (summary)
     url: https://www.scconline.com/blog/post/2026/01/03/labour-ministry-issued-faqs-on-the-labour-codes/
     publisher: SCC Online
-related: [toolkit/epf-calculator, toolkit/esi-calculator, toolkit/professional-tax-calculator, toolkit/gratuity-calculator, handbooks/tds/02-salary-tds, handbooks/tds/03-ctc-design-and-perquisites, handbooks/labour-law/02-wages-and-pay, glossary/ctc]
+related: [toolkit/income-tax-calculator, toolkit/epf-calculator, toolkit/esi-calculator, toolkit/professional-tax-calculator, toolkit/gratuity-calculator, handbooks/tds/02-salary-tds, handbooks/tds/03-ctc-design-and-perquisites, handbooks/labour-law/02-wages-and-pay, glossary/ctc]
 faq:
   - q: How much of my CTC will I get in hand?
-    a: Take away the employer's PF, any employer ESI and the gratuity provision to get gross pay, then take away your PF, any ESI and professional tax. Income tax comes off after that. For a ₹9 lakh CTC in Karnataka with basic at 50%, in-hand pay before tax is about ₹66,185 a month.
+    a: Take away the employer's PF, any employer ESI and the gratuity provision to get gross pay, then take away your PF, any ESI and professional tax. Income tax comes off after that. For a ₹9 lakh CTC in Karnataka with basic at 50%, in-hand pay is about ₹66,185 a month. That is also the in-hand pay after tax, because ₹8.3 lakh of gross salary is within the new regime's rebate.
   - q: What is the 50% wage rule in the new Labour Codes?
     a: Wages are basic pay, dearness allowance and other pay not on the exclusion list. If excluded items such as HRA, conveyance, overtime and commission add up to more than half of total pay, the excess is added back to wages for PF, ESI, gratuity and other benefits.
   - q: Is employer PF part of my in-hand salary?
     a: No. The employer's 12% goes into your PF account and the pension scheme. It is part of CTC but is never paid out monthly.
   - q: Does this calculator deduct income tax?
-    a: No. It stops at in-hand pay before income tax. TDS depends on the tax regime, your declarations and other income.
+    a: "It gives an estimate: the tax on 12 months of gross salary under the regime you choose, spread evenly over the year, so you can see in-hand pay after TDS. Payroll's actual TDS also depends on your declarations, bonuses, other income and when in the year you joined. The income tax calculator compares both regimes."
 keywords: [take home salary calculator, ctc to in hand calculator, in hand salary calculator india, salary calculator new labour code, 50 percent wage rule, gross to net salary india]
 ---
 
