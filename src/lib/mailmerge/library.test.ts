@@ -52,7 +52,10 @@ test("the real letters merge cleanly with their sample data", { skip: !yaml && "
     const rows = checkRows(t, sample.rows, 2, map, "dmy");
     assert.equal(rows.length, SAMPLE_ROWS);
     const s = summarise(rows);
-    assert.equal(s.fix, t.kind === "letter" ? 2 : 1, `${t.id}: the deliberate mistakes are caught`);
+    // The samples break one required detail (letters) and one required date (when there is one).
+    const firstGroup = t.fields[0]?.group;
+    const hasReqDate = t.fields.some((f) => f.type === "date" && f.required && (t.kind !== "form" || f.group === firstGroup));
+    assert.equal(s.fix, (t.kind === "letter" ? 1 : 0) + (hasReqDate ? 1 : 0), `${t.id}: the deliberate mistakes are caught`);
     assert.equal(rows[0].status, "ready", `${t.id}: ${rows[0].problems.map((p) => p.label + " " + p.message).join("; ")}`);
     for (const r of rows) {
       const text = plainText(mergeNodes(t.html, r.values, { today: longDate(today), keepEmpty: t.kind === "form", blank: "line" }));

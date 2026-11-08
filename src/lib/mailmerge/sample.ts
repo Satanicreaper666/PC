@@ -74,7 +74,10 @@ function moneyValue(id: string, k: number): string {
     old_fixed: oldFixed,
     new_fixed: newFixed,
     old_ctc: oldFixed,
-    new_ctc: newFixed
+    new_ctc: newFixed,
+    // Retrenchment: 15 days' wages a year for 3 to 7 years, and one month in lieu of notice.
+    compensation: Math.round((basic / 26) * 15 * (3 + k)),
+    lieu_amount: basic
   };
   return table[id] === undefined ? "" : inr(table[id]);
 }
