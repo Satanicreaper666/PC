@@ -110,7 +110,7 @@ test("span of control resolves IDs, names and 'Name (ID)'", () => {
 
 test("pay groups hide small groups and use inclusive percentiles", () => {
   const r = computeDashboard(people, FY, NO_FILTERS, opts);
-  assert.ok(r.pay!.groups.every((g) => g.stats === null), "groups under 3 people show no figures");
+  assert.ok(r.pay!.groups.every((g) => g.stats === null), "groups under 5 people show no figures");
   const lakh = [3, 4, 5, 6, 10].map((x) => emp({ doj: "2020-01-01", dept: "Ops", salary: x * 100_000 }));
   const g = payGroups(lakh, "dept").groups[0];
   assert.deepEqual(g.stats, { min: 300_000, p25: 400_000, median: 500_000, p75: 600_000, max: 1_000_000, mean: 560_000 });

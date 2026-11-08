@@ -12,7 +12,51 @@ const values = Array.from({ length: scale.max - scale.min + 1 }, (_, i) => scale
 const dims = Array.from(new Set(questions.map((q) => q.dimension ?? "Overall")));
 ---
 
-<div class="sv" data-survey={entry.id} data-title={entry.data.title} data-min={scale.min} data-max={scale.max} data-bands={JSON.stringify(bands)}>
+<div class="sv" data-survey={entry.id} data-title={entry.data.title} data-min={scale.min} data-max={scale.max} data-labels={JSON.stringify(scale.labels)} data-bands={JSON.stringify(bands)}>
+  <details class="imp" data-print="hide" data-imp-box>
+    <summary>
+      <span class="imp-title"><Icon name="upload" size={18} /> Import responses (CSV or Excel)</span>
+      <span class="imp-sub">For a team survey run in Google Forms or Microsoft Forms</span>
+      <Icon name="chevron-down" size={18} class="team-chev" />
+    </summary>
+    <div class="imp-body">
+      <p class="tiny muted">
+        Put these {questions.length} statements in your form with the same {scale.min} to {scale.max} scale, then download the responses. Columns are matched by the statement's wording. Add a
+        team or department column for cuts (shown only for groups of five or more), and a 0 to 10 "recommend" question for eNPS. The file is read in this browser and isn't saved or uploaded.
+      </p>
+      <div class="imp-files">
+        <label class="field">
+          <span class="field-label">Responses file</span>
+          <input class="control" type="file" accept=".csv,.txt,.xlsx,text/csv" data-imp-file />
+        </label>
+        <label class="field">
+          <span class="field-label">An earlier round, to compare (optional)</span>
+          <input class="control" type="file" accept=".csv,.txt,.xlsx,text/csv" data-imp-prev />
+        </label>
+      </div>
+      <p class="imp-status" role="status" aria-live="polite" data-imp-status></p>
+    </div>
+  </details>
+  <section class="imp-results results" data-imp-results hidden aria-labelledby="imp-title" tabindex="-1">
+    <h2 id="imp-title">Team results from your file</h2>
+    <p class="sv-band" data-imp-head></p>
+    <p class="advice" data-imp-advice></p>
+    <div class="imp-kpis" data-imp-kpis></div>
+    <h3 class="imp-h">By area</h3>
+    <div class="tbl-wrap"><table class="imp-table" data-imp-areas></table></div>
+    <h3 class="imp-h">By statement, lowest first</h3>
+    <div class="tbl-wrap"><table class="imp-table" data-imp-items></table></div>
+    <div data-imp-cuts-box hidden>
+      <h3 class="imp-h">By group</h3>
+      <div class="tbl-wrap"><table class="imp-table" data-imp-cuts></table></div>
+    </div>
+    <p class="tiny muted" data-imp-note></p>
+    <div class="sv-actions" data-print="hide">
+      <button class="btn btn-secondary btn-sm" type="button" data-imp-csv><Icon name="download" size={16} /> Download results as CSV</button>
+      <button class="btn btn-secondary btn-sm" type="button" data-print-page><Icon name="printer" size={16} /> Print results</button>
+      <button class="btn btn-ghost btn-sm" type="button" data-imp-clear><Icon name="x" size={16} /> Clear</button>
+    </div>
+  </section>
   <p class="sv-next" data-sv-next role="status" aria-live="polite" hidden></p>
   <form class="qs" data-sv-form>
     {
@@ -341,5 +385,114 @@ const dims = Array.from(new Set(questions.map((q) => q.dimension ?? "Overall")))
     .team-box :global(.team-chev) {
       display: none;
     }
+  }
+
+  /* ---------- Import a team's responses ---------- */
+  .imp {
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--canvas);
+  }
+  .imp summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.9rem;
+    padding: 0.9rem 1.2rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .imp summary::-webkit-details-marker {
+    display: none;
+  }
+  .imp-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 650;
+  }
+  .imp-title :global(svg) {
+    color: var(--neel-600);
+  }
+  .imp-sub {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .imp :global(.team-chev) {
+    margin-left: auto;
+    color: var(--ink-3);
+    transition: transform 200ms var(--ease);
+  }
+  .imp[open] :global(.team-chev) {
+    transform: rotate(180deg);
+  }
+  .imp-body {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0 1.2rem 1.2rem;
+  }
+  .imp-files {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.8rem;
+  }
+  .imp-status {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .imp-status:empty {
+    display: none;
+  }
+  .imp-kpis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .imp-kpis :global(.kpi) {
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--paper);
+    font-size: var(--fs-sm);
+  }
+  .imp-kpis :global(.kpi strong) {
+    display: block;
+    font-size: var(--fs-lg);
+    font-variant-numeric: tabular-nums;
+  }
+  .imp-h {
+    font-size: var(--fs-md);
+    margin-top: 0.4rem;
+  }
+  .tbl-wrap {
+    overflow-x: auto;
+  }
+  .imp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .imp-table :global(th),
+  .imp-table :global(td) {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  .imp-table :global(td.n) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .imp-table :global(thead th) {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-weight: 650;
+  }
+  .imp-table :global(.up) {
+    color: var(--ok, #1a7f4b);
+  }
+  .imp-table :global(.down) {
+    color: var(--bad, #b42318);
   }
 </style>

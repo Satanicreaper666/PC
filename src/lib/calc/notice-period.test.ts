@@ -62,3 +62,16 @@ test("bad input gives a message", () => {
   assert.equal(computeNotice({ resignationDate: R, n: 0, unit: "days", convention: "next_day" }).status, "invalid");
   assert.equal(computeNotice({ resignationDate: R, n: 36, unit: "months", convention: "next_day" }).status, "invalid");
 });
+
+test("buy-out amount: days actually bought out × monthly pay ÷ 30 (or 26)", () => {
+  const r = computeNotice({ resignationDate: R, n: 60, unit: "days", convention: "next_day", buyoutDays: 15, waivedDays: 5, monthlyPay: 90000 });
+  assert.equal(r.boughtOutDays, 15);
+  assert.equal(r.buyoutAmount, 45000);
+  const r26 = computeNotice({ resignationDate: R, n: 60, unit: "days", convention: "next_day", buyoutDays: 13, monthlyPay: 52000, dayDivisor: 26 });
+  assert.equal(r26.buyoutAmount, 26000);
+  // Only 30 days can come off a 30-day notice; buy-out counts first.
+  const capped = computeNotice({ resignationDate: R, n: 30, unit: "days", convention: "next_day", buyoutDays: 45, monthlyPay: 30000 });
+  assert.equal(capped.boughtOutDays, 30);
+  assert.equal(capped.buyoutAmount, 30000);
+  assert.equal(computeNotice({ resignationDate: R, n: 30, unit: "days", convention: "next_day", buyoutDays: 10 }).buyoutAmount, 0);
+});

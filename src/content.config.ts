@@ -100,6 +100,12 @@ const toolkit = defineCollection({
     /** One sentence: when to use it. */
     useWhen: txt,
     tips: z.array(txt).default([]),
+    /**
+     * Sensitive forms (a POSH complaint, a medical declaration): drafts are kept on the
+     * device only if the reader ticks "Keep a draft on this device", which starts unticked,
+     * and the people in them are never kept for other letters.
+     */
+    sensitive: z.boolean().default(false),
     /** Calculator component id in src/components/calculators/<id>.astro (kind: calculator). */
     calculator: z.string().optional(),
     /** Calculators and apps: what goes in and what comes out, drawn in the page header. */

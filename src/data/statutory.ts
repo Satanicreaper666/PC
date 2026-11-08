@@ -105,6 +105,18 @@ const S = {
   itdRates: { title: "Tax rates for individuals: old regime slabs, surcharge and cess (Income Tax Department)", url: "https://incometaxindia.gov.in/Documents/Left%20Menu/TAX%20RATES_Indvl.htm" },
   budget2026: { title: "Budget 2026-27: no change in income-tax slabs (Moneylife)", url: "https://www.moneylife.in/article/budget-202627-no-change-in-incometax-slabs-fm-offers-compliance-relief-for-individuals/79540.html" },
   financeAct2026: { title: "Finance Act, 2026 notified: rates, surcharge and cess (CAclubindia)", url: "https://www.caclubindia.com/news/finance-act-2026-notified-new-income-tax-rates-surcharge-structure-key-changes-explained-26385.asp" },
+  kaMenstrualLiveLaw: {
+    title: "Karnataka High Court directs strict implementation of menstrual leave (LiveLaw, April 2026)",
+    url: "https://www.livelaw.in/high-court/karnataka-high-court/karnataka-high-court-directs-menstrual-leave-strict-implementation-530402"
+  },
+  kaMenstrualBB: {
+    title: "No stay for now by Karnataka HC on menstrual leave policy (Bar & Bench)",
+    url: "https://www.barandbench.com/news/no-stay-for-now-by-karnataka-hc-on-menstrual-leave-policy-after-state-defends-it-as-progressive-move"
+  },
+  kaMenstrualMondaq: {
+    title: "Menstrual leave in Karnataka: what the High Court judgment means for employers (Mondaq)",
+    url: "https://www.mondaq.com/india/employee-rights-labour-relations/1788282/menstrual-leave-in-karnataka-what-the-karnataka-high-court-judgment-means-for-employers"
+  },
   leave25Lakh: { title: "CBDT notifies ₹25 lakh limit for leave encashment exemption, from 1 Apr 2023 (Taxmann)", url: "https://taxmann.com/post/blog/cbdt-notifies-exemption-limit-of-rs-25-lakh-for-leave-encashment-u-s-1010aa" },
   leave25LakhZoho: { title: "Leave encashment exemption: what employers must know, 2026 (Zoho Payroll)", url: "https://www.zoho.com/in/payroll/academy/payroll-administration/leave-encashment-exemption-employers-must-know-2026.html" },
   retrenchTax: { title: "Exemption for retrenchment compensation: new section 19, old section 10(10B) (TaxTMI)", url: "https://www.taxtmi.com/manuals?id=873" },
@@ -725,6 +737,17 @@ export const STAT: Record<string, StatFact> = {
     also: [S.taxclueLeave, S.faq2026],
     verified: true,
     confidence: "high"
+  }),
+  "leave.menstrualKarnataka": fact({
+    value: 12,
+    display: "12 days a year",
+    label: "Paid menstrual leave for women employees in Karnataka, one day a month, including in private establishments",
+    law: "Karnataka Menstrual Leave Policy, 2025 (government order)",
+    source: S.kaMenstrualLiveLaw,
+    also: [S.kaMenstrualBB, S.kaMenstrualMondaq],
+    verified: true,
+    confidence: "medium",
+    note: "The High Court (Dharwad Bench) directed strict implementation on 15 April 2026. Employers' petitions against the policy were reported as pending, with no final ruling found as of July 2026. Check the current position before relying on it."
   }),
   "leave.exitPaymentWorkingDays": fact({
     value: 2,

@@ -1,6 +1,6 @@
 ---
-title: HR compliance audit checklist (50 points)
-description: A 50-point HR compliance check for Indian employers under the Labour Codes, covering registrations, wages, PF and ESI, TDS, POSH, safety, data privacy and exits.
+title: HR compliance audit checklist (57 points)
+description: A 57-point HR compliance check for Indian employers under the Labour Codes, covering registrations, wages, PF and ESI, TDS, contract labour, POSH, safety, data privacy and exits.
 kind: checklist
 stage: pay
 audiences: [hr, founders]
@@ -47,6 +47,12 @@ sources:
   - title: CERT-In directions on reporting cyber incidents (28 April 2022)
     url: https://www.cert-in.org.in/Directions70B.jsp
     publisher: CERT-In
+  - title: The Apprentices Act, 1961, and the Apprenticeship Rules (apprenticeship portal)
+    url: https://www.apprenticeshipindia.gov.in/
+    publisher: Ministry of Skill Development and Entrepreneurship
+  - title: SHe-Box, the sexual harassment electronic box
+    url: https://shebox.wcd.gov.in/
+    publisher: Ministry of Women and Child Development
 related:
   - handbooks/labour-law/09-compliance-checklists
   - handbooks/labour-law/10-penalties
@@ -120,6 +126,18 @@ The POSH Act applies to every workplace. Where there are fewer than 10 employees
 - [ ] POSH policy circulated, and the committee order and the penalties for sexual harassment displayed at the workplace
 - [ ] Awareness sessions for employees and training for committee members held at regular intervals
 - [ ] Committee's annual report for each calendar year sent to the employer and the District Officer
+- [ ] Employees told they can also complain through the government's SHe-Box portal, which sends complaints to the Internal Committee or the Local Committee
+
+## Contract labour, standing orders and other thresholds
+
+These duties start at a headcount. Count contract and agency workers as the Code you are checking says.
+
+- [ ] Contractors who supply 50 or more contract workers hold a licence under the OSH Code, and you checked it before work started
+- [ ] As principal employer, you check every month that contract workers are paid in full and on time, and get the welfare facilities the OSH Code requires; if a contractor doesn't pay, the principal employer can be made to pay
+- [ ] Contract workers are not used for core activities, except in the cases the OSH Code allows (work usually done through contractors in your industry, work that doesn't need full-time staff, or a sudden rise in work that must be finished in a set time)
+- [ ] Standing orders on conditions of service, discipline and misconduct adopted or certified, if an industrial establishment has 300 or more workers (Industrial Relations Code)
+- [ ] A crèche, or access to a shared one, if you have 50 or more employees, with women allowed four visits a day (Code on Social Security)
+- [ ] With 30 or more workers, apprentices engaged in the band the Apprentices Act, 1961 and its rules set (2.5% to 15% of the workforce, contract workers included), and the contracts registered on the apprenticeship portal
 
 ## Policies and grievances
 

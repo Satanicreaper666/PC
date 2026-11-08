@@ -12,7 +12,7 @@ tips:
   - "Hold it in the last week, in private, and have someone other than the person's manager run it. People are more open with a neutral interviewer."
   - "Tell the leaver what the record is for, who will see it and that taking part is voluntary. Accept 'prefer not to say' without pushing."
   - "Record facts and the leaver's own words. Avoid comments on character in the HR section; under the data protection law, people will be able to ask what you hold about them."
-  - "The value is in the pattern. Review themes across all leavers every quarter, and report back what you changed."
+  - "The value is in the pattern. Download each record as a CSV row and paste the rows into one sheet, then review reasons, regretted exits and where people go every quarter, and report back what you changed."
 fields:
   - { id: company, label: Company name, required: true, group: Company and employee }
   - { id: e_name, label: Employee name, required: true, group: Company and employee }
@@ -29,6 +29,8 @@ fields:
   - { id: reason_primary, label: Main reason for leaving, type: select, required: true, group: Reasons for leaving, options: ["Better role or career move elsewhere", "Higher pay elsewhere", "Lack of growth or promotion", "Relationship with manager", "Workload or work-life balance", "Culture or values", "Role not as expected", "Lack of recognition", "Relocation", "Health or family reasons", "Higher studies", "Retirement", "Contract or project ended", "Restructuring", "Prefer not to say", "Other"] }
   - { id: reason_secondary, label: Other reason, type: select, group: Reasons for leaving, options: ["Better role or career move elsewhere", "Higher pay elsewhere", "Lack of growth or promotion", "Relationship with manager", "Workload or work-life balance", "Culture or values", "Role not as expected", "Lack of recognition", "Relocation", "Health or family reasons", "Higher studies", "Retirement", "Contract or project ended", "Restructuring", "Other"] }
   - { id: reason_detail, label: The reason in their words, type: textarea, required: true, group: Reasons for leaving, help: "Write 'Declined' if they preferred not to say." }
+  - { id: destination, label: Where they are going, type: select, group: Reasons for leaving, options: ["A competitor in our industry", "A company in another industry", "A start-up", "Further studies", "Their own business or freelancing", "A career break", "Not known", "Prefer not to say"] }
+  - { id: pay_jump, label: Pay increase in the new role, type: select, group: Reasons for leaving, options: ["Same or less", "Under 10%", "10% to 20%", "20% to 30%", "30% to 50%", "More than 50%", "Not known", "Prefer not to say"], help: "Only if they choose to share it." }
   - { id: r_role, label: "Rating: clarity of role", type: select, required: true, group: Ratings (5 = very satisfied), options: ["5", "4", "3", "2", "1", "Prefer not to say"] }
   - { id: r_onboarding, label: "Rating: onboarding", type: select, required: true, group: Ratings (5 = very satisfied), options: ["5", "4", "3", "2", "1", "Prefer not to say"] }
   - { id: r_manager, label: "Rating: support from manager", type: select, required: true, group: Ratings (5 = very satisfied), options: ["5", "4", "3", "2", "1", "Prefer not to say"] }
@@ -49,6 +51,8 @@ fields:
   - { id: f_other, label: Anything else they want to say, type: textarea, group: Open feedback }
   - { id: recommend, label: Would you recommend us as a place to work, type: select, required: true, group: Open feedback, options: ["Yes", "Maybe", "No", "Prefer not to say"] }
   - { id: rejoin, label: Would you consider coming back, type: select, required: true, group: Open feedback, options: ["Yes", "Maybe", "No", "Prefer not to say"] }
+  - { id: regretted, label: Regretted or not, type: select, required: true, group: For HR, options: ["Regretted: we wanted to keep them", "Not regretted"], help: "Would the company have tried to keep this person? Agree it with the manager against set criteria, such as performance and critical skills, not after the interview." }
+  - { id: preventable, label: Could we have prevented it, type: select, required: true, group: For HR, options: ["Preventable: something we control", "Not preventable: relocation, studies, health, retirement or similar", "Not sure"] }
   - { id: rehire, label: Eligible for rehire, type: select, required: true, group: For HR, options: ["Yes", "Yes, for some roles", "No"] }
   - { id: rehire_reason, label: If not, the job-related reason, type: textarea, group: For HR, help: "Facts only, such as a proven misconduct finding. No opinions about character." }
   - { id: hr_summary, label: Key themes from the interview, type: textarea, required: true, group: For HR }
@@ -64,6 +68,8 @@ faq:
     a: Someone neutral, usually an HR business partner, not the leaver's own manager. If the reason for leaving is the manager, the leaver is unlikely to say so to them.
   - q: Is an exit interview compulsory for the employee?
     a: No. Offer it, explain how the information will be used, and respect a refusal. It should never be a condition for releasing dues or letters.
+  - q: What is regretted attrition?
+    a: Leavers the company would have tried to keep, usually strong performers or people with critical skills. Decide it with the manager against agreed criteria before the interview, so the label doesn't depend on what the leaver says. Regretted attrition, not total attrition, is the number a board should watch.
   - q: What is the difference between this form and the exit interview questionnaire?
     a: This form is the interviewer's record of a face-to-face conversation, with HR's assessment. The questionnaire is filled in by the leaver alone, can be anonymous, and works well before the interview or after they have left.
 keywords: [exit interview form, exit interview format, exit interview questions, employee exit interview template, exit feedback form]
@@ -99,6 +105,8 @@ The employee was told what this record is for, who will see it, and that answeri
 | Type of exit | {{separation_type}} |
 | Main reason | {{reason_primary}} |
 | Other reason | {{reason_secondary}} |
+| Where they are going | {{destination}} |
+| Pay increase in the new role | {{pay_jump}} |
 
 **In their words**
 
@@ -153,6 +161,8 @@ The employee was told what this record is for, who will see it, and that answeri
 
 | Detail | Answer |
 | --- | --- |
+| Regretted or not | {{regretted}} |
+| Could we have prevented it | {{preventable}} |
 | Eligible for rehire | {{rehire}} |
 | Reason, if not eligible | {{rehire_reason}} |
 

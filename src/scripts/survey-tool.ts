@@ -11,6 +11,7 @@
  */
 import { downloadCsv, fileStem } from "./csv.ts";
 import { isoDate, readJson, removeKey, writeJson } from "./store.ts";
+import { cuts, MIN_GROUP, readResponses, summarise, trend, type Cell, type Summary, type SurveyQuestion } from "../lib/survey/import.ts";
 
 type Band = { min: number; max: number; label: string; advice: string };
 type Answers = Record<string, number>;
@@ -257,4 +258,209 @@ function init(root: HTMLElement) {
   });
 
   renderTeam();
+  initImport(root, title, questions.map((x) => ({ id: x.id, text: x.text, dim: x.dim, rev: x.rev })), { min, max, labels: JSON.parse(root.dataset.labels ?? "[]") as string[] }, bands);
+}
+
+/* ---------- A team's responses from a Google Forms or Microsoft Forms file ---------- */
+
+function initImport(root: HTMLElement, title: string, questions: SurveyQuestion[], scale: { min: number; max: number; labels: string[] }, bands: Band[]) {
+  const q = <T extends Element = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+  const file = root.querySelector<HTMLInputElement>("[data-imp-file]");
+  const prev = root.querySelector<HTMLInputElement>("[data-imp-prev]");
+  if (!file || !prev) return;
+  const status = q("[data-imp-status]");
+  const box = q("[data-imp-results]");
+  const dims = Array.from(new Set(questions.map((x) => x.dim)));
+  const pct = (x: number) => (Number.isFinite(x) ? `${Math.round(x * 100)}%` : "–");
+  const one = (x: number) => (Number.isFinite(x) ? x.toFixed(2) : "–");
+  const bandOf = (v: number) => bands.find((b) => v >= b.min && v <= b.max) ?? bands[bands.length - 1];
+  let current: { summary: Summary; groups: ReturnType<typeof cuts>; before: Summary | null; fileName: string } | null = null;
+  let before: Summary | null = null;
+
+  async function read(f: File): Promise<{ summary: Summary; rows: ReturnType<typeof readResponses> }> {
+    const { readEmployeeFile, bestSheet } = await import("../components/analytics/load.ts");
+    const loaded = await readEmployeeFile(f, "survey responses");
+    const sheet = loaded.sheets[bestSheet(loaded.sheets)];
+    const rows = readResponses(sheet.rows as Cell[][], questions, scale);
+    return { summary: summarise(rows.rows, questions, scale), rows };
+  }
+
+  const cell = (text: string, cls?: string) => Object.assign(document.createElement("td"), { textContent: text, ...(cls ? { className: cls } : {}) });
+  const headRow = (cols: string[]) => {
+    const thead = document.createElement("thead");
+    const tr = document.createElement("tr");
+    cols.forEach((c) => tr.append(Object.assign(document.createElement("th"), { textContent: c, scope: "col" })));
+    thead.append(tr);
+    return thead;
+  };
+
+  function render() {
+    if (!current) return;
+    const { summary: s, groups, before: b } = current;
+    const band = bandOf(s.overall);
+    q("[data-imp-head]").textContent = `${s.n} responses. Average ${s.overall.toFixed(2)} out of ${scale.max}${band ? `: ${band.label}` : ""}`;
+    q("[data-imp-advice]").textContent = band?.advice ?? "";
+    const kpis: [string, string][] = [
+      ["Responses", String(s.n)],
+      ["Average", `${s.overall.toFixed(2)} / ${scale.max}`],
+      ["Favourable", pct(s.favourable)],
+      ...(s.enps ? ([["eNPS", `${s.enps.score > 0 ? "+" : ""}${s.enps.score}`]] as [string, string][]) : [])
+    ];
+    q("[data-imp-kpis]").replaceChildren(
+      ...kpis.map(([k, v]) => {
+        const d = document.createElement("div");
+        d.className = "kpi";
+        d.append(Object.assign(document.createElement("strong"), { textContent: v }), k);
+        return d;
+      })
+    );
+    const tr = b ? trend(s, b) : [];
+    const areas = q<HTMLTableElement>("[data-imp-areas]");
+    areas.replaceChildren(
+      headRow(["Area", "Average", "Favourable", ...(b ? ["Earlier round", "Change"] : [])]),
+      Object.assign(document.createElement("tbody"), {}),
+    );
+    const ab = areas.tBodies[0];
+    s.areas.forEach((a, i) => {
+      const row = document.createElement("tr");
+      row.append(Object.assign(document.createElement("th"), { textContent: a.dim, scope: "row" }), cell(one(a.avg), "n"), cell(pct(a.favourable), "n"));
+      if (b) {
+        const t = tr[i];
+        const ch = t.change;
+        row.append(cell(one(t.before), "n"), cell(Number.isFinite(ch) ? `${ch > 0 ? "+" : ""}${ch.toFixed(2)}` : "–", `n ${ch >= 0.25 ? "up" : ch <= -0.25 ? "down" : ""}`));
+      }
+      ab.append(row);
+    });
+    const items = q<HTMLTableElement>("[data-imp-items]");
+    items.replaceChildren(headRow(["Statement", "Area", "Average", "Favourable", "Unfavourable"]), document.createElement("tbody"));
+    [...s.items]
+      .filter((x) => x.n)
+      .sort((a, c) => a.avg - c.avg)
+      .forEach((x) => {
+        const row = document.createElement("tr");
+        const rev = questions.find((y) => y.id === x.id)?.rev;
+        row.append(cell(x.text + (rev ? " (reverse-worded, flipped)" : "")), cell(x.dim), cell(one(x.avg), "n"), cell(pct(x.favourable), "n"), cell(pct(x.unfavourable), "n"));
+        items.tBodies[0].append(row);
+      });
+    const cutsBox = q("[data-imp-cuts-box]");
+    cutsBox.hidden = !groups.groups.length;
+    if (groups.groups.length) {
+      const t = q<HTMLTableElement>("[data-imp-cuts]");
+      t.replaceChildren(headRow(["Group", "Responses", "Average", "Favourable", ...dims, ...(s.enps ? ["eNPS"] : [])]), document.createElement("tbody"));
+      for (const g of groups.groups) {
+        const row = document.createElement("tr");
+        row.append(
+          Object.assign(document.createElement("th"), { textContent: g.name, scope: "row" }),
+          cell(String(g.summary.n), "n"),
+          cell(one(g.summary.overall), "n"),
+          cell(pct(g.summary.favourable), "n"),
+          ...g.summary.areas.map((a) => cell(one(a.avg), "n")),
+          ...(s.enps ? [cell(g.summary.enps ? String(g.summary.enps.score) : "–", "n")] : [])
+        );
+        t.tBodies[0].append(row);
+      }
+    }
+    const notes = [
+      "Favourable means the top two points of the scale, after reverse-worded statements are flipped.",
+      groups.pooled ? `${groups.pooled} smaller groups are combined as "Other groups", so that no group of fewer than ${MIN_GROUP} people is shown or can be worked out from the others.` : "",
+      `Read from ${current.fileName} in this browser. Nothing was saved or uploaded; leave the page and it's gone.`
+    ];
+    q("[data-imp-note]").textContent = notes.filter(Boolean).join(" ");
+    box.hidden = false;
+  }
+
+  async function load() {
+    const f = file!.files?.[0];
+    if (!f) return;
+    status.textContent = "Reading the file…";
+    try {
+      const { summary, rows } = await read(f);
+      const found = Object.keys(rows.match.questions).length;
+      if (!found) {
+        box.hidden = true;
+        status.textContent = "None of this survey's statements were found in the file's first row. Check that the form used the same wording, or name each column with the statement's id (for example clarity_1).";
+        return;
+      }
+      if (summary.n < MIN_GROUP) {
+        box.hidden = true;
+        status.textContent = `Only ${summary.n} usable ${summary.n === 1 ? "response" : "responses"}. Results are shown for ${MIN_GROUP} or more, so that no one can be identified.`;
+        return;
+      }
+      current = { summary, groups: cuts(rows.rows, questions, scale), before, fileName: f.name };
+      render();
+      const bits = [
+        `Read ${summary.n} responses.`,
+        rows.match.missing.length ? `${rows.match.missing.length} ${rows.match.missing.length === 1 ? "statement wasn't" : "statements weren't"} found: ${rows.match.missing.map((m) => `“${m}”`).join(", ")}.` : "",
+        rows.skipped ? `${rows.skipped} ${rows.skipped === 1 ? "row was" : "rows were"} left out because fewer than half the statements were answered.` : "",
+        rows.unreadable ? `${rows.unreadable} ${rows.unreadable === 1 ? "answer" : "answers"} couldn't be read as a point on the ${scale.min} to ${scale.max} scale.` : "",
+        rows.match.group === undefined ? "No team or department column was found, so there are no cuts by group." : ""
+      ];
+      status.textContent = bits.filter(Boolean).join(" ");
+      box.focus();
+    } catch (err) {
+      box.hidden = true;
+      const { LoadError } = await import("../components/analytics/load.ts");
+      status.textContent = err instanceof LoadError ? err.message : "That file couldn't be read. Save it as CSV or Excel (.xlsx) and try again.";
+      if (!(err instanceof LoadError)) console.error(err);
+    }
+  }
+
+  file.addEventListener("change", load);
+  prev.addEventListener("change", async () => {
+    const f = prev.files?.[0];
+    if (!f) {
+      before = null;
+      if (current) {
+        current.before = null;
+        render();
+      }
+      return;
+    }
+    try {
+      const { summary } = await read(f);
+      before = summary.n >= MIN_GROUP ? summary : null;
+      status.textContent = before ? `Earlier round: ${summary.n} responses, average ${summary.overall.toFixed(2)}.` : `The earlier round has fewer than ${MIN_GROUP} usable responses, so it isn't compared.`;
+      if (current) {
+        current.before = before;
+        render();
+      }
+    } catch {
+      status.textContent = "The earlier round's file couldn't be read.";
+    }
+  });
+
+  q("[data-imp-csv]").addEventListener("click", () => {
+    if (!current) return;
+    const { summary: s, groups, before: b } = current;
+    const rows: (string | number)[][] = [
+      [`${title}: team results`],
+      ["Responses", s.n],
+      ["Average", Number(s.overall.toFixed(2))],
+      ["Favourable", pct(s.favourable)],
+      ...(s.enps ? [["eNPS", s.enps.score]] : []),
+      [],
+      ["Area", "Average", "Favourable", ...(b ? ["Earlier round", "Change"] : [])],
+      ...s.areas.map((a, i) => {
+        const t = b ? trend(s, b)[i] : null;
+        return [a.dim, Number(a.avg.toFixed(2)), pct(a.favourable), ...(t ? [Number(t.before.toFixed(2)), Number(t.change.toFixed(2))] : [])];
+      }),
+      [],
+      ["Statement", "Area", "Reverse-worded", "Responses", "Average", "Favourable", "Unfavourable"],
+      ...s.items.map((x) => [x.text, x.dim, questions.find((y) => y.id === x.id)?.rev ? "yes" : "no", x.n, Number(x.avg.toFixed(2)), pct(x.favourable), pct(x.unfavourable)]),
+      ...(groups.groups.length
+        ? [[], ["Group", "Responses", "Average", "Favourable", ...dims], ...groups.groups.map((g) => [g.name, g.summary.n, Number(g.summary.overall.toFixed(2)), pct(g.summary.favourable), ...g.summary.areas.map((a) => Number(a.avg.toFixed(2)))])]
+        : [])
+    ];
+    downloadCsv(`${fileStem(title)}-team-results-${isoDate()}.csv`, rows);
+  });
+
+  q("[data-imp-clear]").addEventListener("click", () => {
+    current = null;
+    before = null;
+    file.value = "";
+    prev.value = "";
+    box.hidden = true;
+    status.textContent = "Cleared. Nothing from the file was kept.";
+    file.focus();
+  });
 }

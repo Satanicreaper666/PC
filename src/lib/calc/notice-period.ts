@@ -11,7 +11,11 @@ import { addDays, addMonthsClamped, parseISO, toISO } from "./working-days.ts";
  *
  * No statute fixes resignation notice for private employees: the contract or
  * standing orders do. Weekends and holidays do not extend notice unless the
- * contract says so. Not modelled: buy-out amounts and leave set-off.
+ * contract says so.
+ *
+ * Buy-out amount (when a monthly pay is given): days actually bought out × monthly
+ * pay ÷ 30 (or 26). Which pay counts and the divisor come from the contract; this
+ * uses what the reader enters. Not modelled: leave set-off.
  */
 export type NoticeUnit = "days" | "months";
 export type NoticeConvention = "next_day" | "includes";
@@ -23,6 +27,10 @@ export type NoticeInput = {
   convention: NoticeConvention;
   buyoutDays?: number;
   waivedDays?: number;
+  /** Monthly pay the contract uses to price notice, for the buy-out amount. */
+  monthlyPay?: number;
+  /** A day's pay is monthly pay ÷ this (30 or 26). */
+  dayDivisor?: number;
 };
 
 export type NoticeResult = {
@@ -40,11 +48,16 @@ export type NoticeResult = {
   servedDays: number;
   /** The month arithmetic hit a shorter month (for example 31 Jan + 1 month → 28 Feb). */
   clamped: boolean;
+  /** Days actually bought out (buy-out comes off before waiver when the floor applies). */
+  boughtOutDays: number;
+  /** Rupees for the days bought out; 0 without a monthly pay. */
+  buyoutAmount: number;
+  dailyPay: number;
 };
 
 export function computeNotice(i: NoticeInput): NoticeResult {
   const r = parseISO(i.resignationDate);
-  const blank = { starts: "", fullLwd: "", lwd: "", shortenedBy: 0, servedDays: 0, clamped: false };
+  const blank = { starts: "", fullLwd: "", lwd: "", shortenedBy: 0, servedDays: 0, clamped: false, boughtOutDays: 0, buyoutAmount: 0, dailyPay: 0 };
   if (r === null) return { ...blank, status: "invalid", message: "Enter the date the resignation was given." };
   const n = Math.floor(i.n);
   if (!(n > 0)) return { ...blank, status: "invalid", message: "Enter the notice period from the contract, in days or months." };
@@ -65,13 +78,19 @@ export function computeNotice(i: NoticeInput): NoticeResult {
   const fullDay = parseISO(fullLwd)!;
   const lwdDay = Math.max(r, fullDay - cut);
   const startDay = parseISO(starts)!;
+  const shortenedBy = fullDay - lwdDay;
+  const boughtOutDays = Math.min(Math.max(0, Math.floor(i.buyoutDays ?? 0)), shortenedBy);
+  const dailyPay = (i.monthlyPay ?? 0) > 0 ? i.monthlyPay! / (i.dayDivisor && i.dayDivisor > 0 ? i.dayDivisor : 30) : 0;
   return {
     status: "ok",
     starts,
     fullLwd,
     lwd: toISO(lwdDay),
-    shortenedBy: fullDay - lwdDay,
+    shortenedBy,
     servedDays: Math.max(0, lwdDay - startDay + 1),
-    clamped
+    clamped,
+    boughtOutDays,
+    buyoutAmount: Math.round(dailyPay * boughtOutDays),
+    dailyPay
   };
 }

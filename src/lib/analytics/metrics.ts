@@ -23,7 +23,7 @@ export type Period = { id: string; label: string; start: DayNum; end: DayNum };
 /** Longest custom range the monthly charts can show legibly. */
 export const MAX_MONTHS = 36;
 /** Pay figures are not shown for smaller groups, so no one's salary can be read off a chart. */
-export const MIN_PAY_GROUP = 3;
+export const MIN_PAY_GROUP = 5;
 const YEAR_DAYS = 365.25;
 
 /* ---------- Who counts ---------- */

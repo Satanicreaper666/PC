@@ -33,6 +33,7 @@ fields:
   - { id: paternity_days, label: Paternity and partner leave (working days), type: number, required: true, group: Family leave, default: "10" }
   - { id: paternity_window, label: Paternity leave can be taken within, required: true, group: Family leave, default: "six months of the birth or adoption" }
   - { id: bereavement_days, label: Bereavement leave (working days), type: number, required: true, group: Family leave, default: "5" }
+  - { id: menstrual_days, label: Menstrual leave (days a year), type: number, group: Family leave, help: "Optional: leave it blank to leave the clause out. Karnataka's Menstrual Leave Policy, 2025 gives women {{fact:leave.menstrualKarnataka}}, one a month, in private establishments too. The High Court directed strict implementation in April 2026 while employers' challenges were pending, so check the current position." }
   - { id: compoff_days, label: Compensatory off must be taken within (days), type: number, required: true, group: Other rules, default: "60" }
   - { id: sandwich, label: Weekends and holidays inside a leave period, type: select, required: true, group: Other rules, options: ["are not counted as leave", "are counted as leave"], default: "are not counted as leave" }
 sources:
@@ -54,6 +55,15 @@ sources:
   - title: Maharashtra Shops and Establishments Act, 2017, section 18 (leave and holidays)
     url: https://lawgist.in/states/maharashtra/maharashtra-shops-and-establishments-regulation-of-employment-and-conditions-of-service-act-2017/18
     publisher: Lawgist
+  - title: Karnataka High Court directs strict implementation of menstrual leave (April 2026)
+    url: https://www.livelaw.in/high-court/karnataka-high-court/karnataka-high-court-directs-menstrual-leave-strict-implementation-530402
+    publisher: LiveLaw
+  - title: Menstrual leave in Karnataka, what the High Court judgment means for employers
+    url: https://www.mondaq.com/india/employee-rights-labour-relations/1788282/menstrual-leave-in-karnataka-what-the-karnataka-high-court-judgment-means-for-employers
+    publisher: Mondaq
+  - title: Representation of the People Act, 1951, section 135B (paid holiday on polling day)
+    url: https://www.indiacode.nic.in/handle/123456789/2096
+    publisher: India Code
   - title: Supreme Court strikes down age limit on maternity leave for adoptive mothers (17 March 2026)
     url: https://www.livelaw.in/amp/top-stories/supreme-court-quashes-law-denying-maternity-leave-to-adoptive-mother-if-adopted-child-is-aged-above-3-months-526711
     publisher: LiveLaw
@@ -72,6 +82,8 @@ faq:
     a: There is no national minimum for private employers. Casual and sick leave come from state Shops and Establishments Acts (for example, 12 days of sickness leave in Karnataka and 8 days of casual leave in Maharashtra), standing orders where they apply, and company policy.
   - q: Is paternity leave mandatory for private companies?
     a: No central law requires it, so the number of days is the employer's choice. Central government employees get 15 days, which some employers use as a benchmark.
+  - q: Do we have to give menstrual leave?
+    a: "Not under any national law. Karnataka's Menstrual Leave Policy, 2025 gives women {{fact:leave.menstrualKarnataka}}, one a month, including in private establishments. The High Court directed strict implementation in April 2026; employers' petitions against the policy were reported as pending in mid-2026, so check the current position. Other employers can offer it as company policy: fill in the menstrual leave field and the clause is added."
   - q: Does the Karnataka Shops and Establishments Act still apply to my company?
     a: An amendment in force from 4 September 2026 excludes establishments with 10 or more workers that are registered under the OSH Code. Experts differ on whether this removes them from the whole Act or only from registration, so until it is settled, keep giving at least the leave the Karnataka Act sets.
   - q: Who gets {{fact:maternity.weeks}} of maternity leave?
@@ -108,6 +120,7 @@ Leave is credited and counted for the leave year {{leave_year}}. If you join or 
 | Maternity leave | {{fact:maternity.weeks}}, or {{fact:maternity.weeksTwoChildren}} (section 9) | Not carried forward |
 | Paternity and partner leave | {{paternity_days}} working days | Not carried forward |
 | Bereavement leave | {{bereavement_days}} working days | Not carried forward |
+| Menstrual leave | {{menstrual_days}} days a year | Lapse at the end of the leave year |
 
 ### 5. Earned leave
 
@@ -133,10 +146,13 @@ Leave is credited and counted for the leave year {{leave_year}}. If you join or 
 - If your sick leave runs out, you can use earned leave, and then leave without pay.
 - If you are insured under ESI, you may also be able to claim ESI sickness benefit for a longer illness. HR will help you with the claim.
 
+**Menstrual leave.** If you menstruate, you can take up to {{menstrual_days}} days of paid menstrual leave a year, usually one day in a month. You don't need a medical certificate or any reason beyond saying it is menstrual leave. Tell your manager before your working day starts, or as soon as you can; your manager and HR keep it confidential. It is separate from sick leave and casual leave and doesn't reduce them. Unused days lapse at the end of the leave year and are not paid out.
+
 ### 8. Public holidays
 
 - {{company}} gives {{holidays}} paid public holidays a year, including the holidays the law of your state requires, plus {{optional_holidays}} optional holidays that you choose from a published list.
 - We publish the holiday list for the next leave year before it begins.
+- On a polling day for an election in your constituency, you get a paid holiday to vote, as section 135B of the Representation of the People Act, 1951 requires.
 - If you are asked to work on a public holiday or your weekly off, you get a compensatory day off, plus any extra pay the law requires for that work (see section 12).
 
 ### 9. Maternity leave

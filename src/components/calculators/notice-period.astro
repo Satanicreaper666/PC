@@ -33,16 +33,39 @@ import AsAt from "./parts/AsAt.astro";
       <Num name="buyout" label="Days bought out (optional)" suffix="days" placeholder="0" help="Notice paid for instead of served." />
       <Num name="waived" label="Days waived (optional)" suffix="days" placeholder="0" help="Notice the employer lets go." />
     </div>
+    <Pick
+      name="payer"
+      label="Who pays for the days bought out?"
+      options={[
+        { value: "employee", label: "The employee" },
+        { value: "employer", label: "The employer" }
+      ]}
+      help="The employee pays when they leave before serving the notice; it is recovered in the final settlement. The employer pays when it ends the notice early: that is notice pay in lieu."
+    />
+    <div class="two">
+      <Num name="pay" label="Monthly pay for notice (optional)" prefix="₹" placeholder="0" help="The pay the contract uses to price notice, often gross or basic pay." />
+      <Pick
+        name="div"
+        label="A day's pay is"
+        options={[
+          { value: "30", label: "÷ 30" },
+          { value: "26", label: "÷ 26" }
+        ]}
+      />
+    </div>
   </Fragment>
   <Fragment slot="headline">
     <span class="big" data-out="lwd">—</span>
     <span class="sub" data-out="sub"></span>
   </Fragment>
+  <Fragment slot="visual">
+    <a class="btn btn-secondary btn-sm ff-link" href="/toolkit/full-and-final-settlement-calculator/" data-ff-link hidden data-print="hide">Use these in the full and final settlement</a>
+  </Fragment>
 </CalcShell>
 <AsAt ids={["notice.retrenchmentNoticeMonths", "wages.separationPayDays"]} note="No law sets a general resignation notice period for private-sector employees. The contract, standing orders or a state Shops and Establishments Act decides it." />
 
 <script>
-  import { bindCalculator, type CalcStep } from "../../scripts/calc-kit";
+  import { bindCalculator, inr, type CalcStep } from "../../scripts/calc-kit";
   import { computeNotice } from "../../lib/calc/notice-period";
   import type { NoticeConvention, NoticeUnit } from "../../lib/calc/notice-period";
   import { longDate, parseISO, shortDate, weekdayName } from "../../lib/calc/working-days";
@@ -56,13 +79,28 @@ import AsAt from "./parts/AsAt.astro";
       unit,
       convention: v.str("convention", "next_day") as NoticeConvention,
       buyoutDays: v.num("buyout"),
-      waivedDays: v.num("waived")
+      waivedDays: v.num("waived"),
+      monthlyPay: v.num("pay"),
+      dayDivisor: v.str("div", "30") === "26" ? 26 : 30
     });
-    if (r.status !== "ok") return { outputs: { lwd: "—", sub: "" }, message: r.message };
+    const ffLink = document.querySelector<HTMLAnchorElement>("[data-ff-link]");
+    if (r.status !== "ok") {
+      if (ffLink) ffLink.hidden = true;
+      return { outputs: { lwd: "—", sub: "" }, message: r.message };
+    }
+    const payer = v.str("payer", "employee");
+    // Carry the last working day and the buy-out into the full and final calculator.
+    if (ffLink) {
+      const qs = new URLSearchParams({ exit: "resignation", lwd: r.lwd });
+      if (r.buyoutAmount > 0) qs.set(payer === "employer" ? "lieu" : "recovery", String(r.buyoutAmount));
+      ffLink.href = `/toolkit/full-and-final-settlement-calculator/?${qs}`;
+      ffLink.hidden = false;
+    }
     const wd = weekdayName(r.lwd);
     const notes = [
       "Weekends and holidays inside the notice period count as notice, unless the contract says otherwise.",
-      "Whether leave can be set off against notice, and how a buy-out is priced, depend on the contract and policy."
+      "Whether leave can be set off against notice, and which pay prices a buy-out, depend on the contract and policy. Recover only what the employee agreed to.",
+      "Retrenching a worker needs one month's notice or wages in lieu under the Industrial Relations Code, whatever the contract says."
     ];
     if (wd === "Saturday" || wd === "Sunday") notes.unshift(`The last day falls on a ${wd}. Agree the handover and exit formalities for the working day before.`);
     if (r.clamped) notes.unshift("The notice ends in a shorter month, so it ends on that month's last day.");
@@ -86,7 +124,10 @@ import AsAt from "./parts/AsAt.astro";
             { label: "Last working day", formula: `${shortDate(r.fullLwd)} − ${r.shortenedBy} days`, result: longDate(r.lwd) }
           ]
         : []),
-      { label: "Days of notice served", formula: `${shortDate(r.starts)} to ${shortDate(r.lwd)}, both days counted`, result: `${r.servedDays} days` }
+      { label: "Days of notice served", formula: `${shortDate(r.starts)} to ${shortDate(r.lwd)}, both days counted`, result: `${r.servedDays} days` },
+      ...(r.buyoutAmount > 0
+        ? [{ label: payer === "employer" ? "Notice pay in lieu" : "Buy-out to recover", formula: `${inr(v.num("pay"))} ÷ ${v.str("div", "30")} × ${r.boughtOutDays} days`, result: inr(r.buyoutAmount) }]
+        : [])
     ];
     const fullDays = parseISO(r.fullLwd)! - parseISO(given)!;
     const warnings =
@@ -105,7 +146,19 @@ import AsAt from "./parts/AsAt.astro";
         { label: "Notice ends", value: longDate(r.fullLwd), note: "Before any buy-out or waiver" },
         ...(r.shortenedBy ? [{ label: "Brought forward by", value: `${r.shortenedBy} days`, note: "Buy-out and waiver" }] : []),
         { label: "Last working day", value: longDate(r.lwd), strong: true },
-        { label: "Days of notice served", value: `${r.servedDays} days` }
+        { label: "Days of notice served", value: `${r.servedDays} days` },
+        ...(r.buyoutAmount > 0
+          ? [
+              {
+                label: payer === "employer" ? "Notice pay in lieu, paid by the employer" : "Buy-out, recovered from the employee",
+                value: inr(r.buyoutAmount),
+                note: `${r.boughtOutDays} days at ${inr(Math.round(r.dailyPay))} a day`,
+                strong: true
+              }
+            ]
+          : buyout > 0
+            ? [{ label: "Buy-out amount", value: "Enter the monthly pay", note: `${r.boughtOutDays} days bought out` }]
+            : [])
       ],
       notes
     };
@@ -113,6 +166,9 @@ import AsAt from "./parts/AsAt.astro";
 </script>
 
 <style>
+  .ff-link {
+    justify-self: start;
+  }
   .two {
     display: grid;
     grid-template-columns: 1fr 1fr;

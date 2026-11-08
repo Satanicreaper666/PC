@@ -7,7 +7,7 @@
  * - the people the reader has written about, to fill the next document about them (people.ts).
  * Export: copy, Word (with the letterhead), print or PDF.
  */
-import { draftTitles, ensureDraft, makeDraft, MAX_DRAFTS, parseStore, readDrafts, updateDrafts, draftsKey, type Draft, type DraftStore } from "./drafts.ts";
+import { draftTitles, ensureDraft, legacyKey, makeDraft, MAX_DRAFTS, parseStore, readDrafts, updateDrafts, draftsKey, type Draft, type DraftStore } from "./drafts.ts";
 import {
   PROFILE_FIELDS,
   forgetProfile,
@@ -28,7 +28,7 @@ import {
   type ProfileKey
 } from "./profile.ts";
 import { forgetPeople, loadPeople, matchOption, personLabel, planFill, readPerson, savePeople, upsertPerson, PEOPLE_KEY, type Person, type PersonSlots } from "./people.ts";
-import { readJson } from "./store.ts";
+import { readJson, removeKey } from "./store.ts";
 
 type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 type Tone = "ok" | "bad";
@@ -68,6 +68,18 @@ function init(root: HTMLElement) {
   }
 
   /* ---------- Drafts ---------- */
+  // Sensitive forms keep nothing on the device unless the reader ticks "Keep a draft".
+  // A draft already saved before stays, with the box ticked, so it can be removed.
+  const sensitive = root.dataset.sensitive === "1";
+  const keepBox = q<HTMLInputElement>("[data-keep-draft]");
+  if (keepBox) keepBox.checked = !!parseStore(readJson(draftsKey(tpl)));
+  const canStore = () => !sensitive || !!keepBox?.checked;
+  /** updateDrafts, or the same change in memory only when this form keeps nothing. */
+  function changeDrafts(change: (st: DraftStore) => void): { store: DraftStore; ok: boolean } {
+    if (canStore()) return updateDrafts(tpl, store, change);
+    change(store);
+    return { store, ok: true };
+  }
   let store: DraftStore = readDrafts(tpl);
   let draft: Draft = store.drafts.find((d) => d.id === store.active) ?? store.drafts[0];
   const draftSelect = q<HTMLSelectElement>("[data-draft-select]");
@@ -103,6 +115,12 @@ function init(root: HTMLElement) {
   function persist(): boolean {
     draft.values = values();
     draft.updated = Date.now();
+    if (!canStore()) {
+      ensureDraft(store, draft);
+      store.active = draft.id;
+      say(draftSaved, "Not kept on this device");
+      return true;
+    }
     const res = updateDrafts(tpl, store, (st) => {
       const d = ensureDraft(st, draft);
       Object.assign(d, { values: draft.values, updated: draft.updated, name: draft.name, personId: draft.personId });
@@ -145,7 +163,7 @@ function init(root: HTMLElement) {
     }
     store = fresh;
     load(target);
-    const res = updateDrafts(tpl, store, (st) => (st.active = id));
+    const res = changeDrafts((st) => (st.active = id));
     store = res.store;
     say(draftStatus, `Now editing “${titleOf(draft)}”.`);
   }
@@ -244,7 +262,7 @@ function init(root: HTMLElement) {
   q("[data-draft-delete]")?.addEventListener("click", () => {
     const gone = titleOf(draft);
     const goneId = draft.id;
-    const res = updateDrafts(tpl, store, (st) => {
+    const res = changeDrafts((st) => {
       st.drafts = st.drafts.filter((d) => d.id !== goneId);
       if (!st.drafts.length) st.drafts.push(makeDraft(null, {}));
       st.active = [...st.drafts].sort((a, b) => b.updated - a.updated)[0].id;
@@ -521,9 +539,9 @@ function init(root: HTMLElement) {
     if (people.some((p) => p.id === keep)) pickSelect.value = keep;
   }
 
-  /** Keep the person in this document for other documents: name, role, dates, pay. */
+  /** Keep the person in this document for other documents: name, role, dates, pay. Never from a sensitive form. */
   function capturePerson() {
-    if (!nameField) return;
+    if (!nameField || sensitive) return;
     const data = readPerson(values(), slots);
     if (!data.name) return;
     const res = upsertPerson(loadPeople(), data, { linkId: draft.personId, from: docTitle });
@@ -699,6 +717,15 @@ function init(root: HTMLElement) {
     }
   });
 
+  // Forms: the record as one CSV row with a header, so records from many people can be pasted into one sheet.
+  q("[data-tpl-csv]")?.addEventListener("click", async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    const { downloadCsv } = await import("./csv.ts");
+    const labelOf = (el: Control) => (el.closest("label")?.querySelector(".field-label")?.firstChild?.textContent ?? el.name).trim();
+    downloadCsv(`${exportFile()}.csv`, [inputs.map(labelOf), inputs.map((el) => el.value.trim())]);
+    flash(btn, "Downloaded");
+  });
+
   q("[data-tpl-print]")?.addEventListener("click", () => {
     // The browser names a saved PDF after the page title.
     const old = document.title;
@@ -741,8 +768,21 @@ function init(root: HTMLElement) {
     }
   });
 
+  keepBox?.addEventListener("change", () => {
+    if (keepBox.checked) {
+      const ok = persist();
+      say(draftStatus, ok ? "Your draft is kept on this device. Untick the box to remove it." : "The draft couldn't be kept: this browser's storage is full or turned off.", ok ? "ok" : "bad");
+    } else {
+      removeKey(draftsKey(tpl));
+      removeKey(legacyKey(tpl));
+      say(draftSaved, "Not kept on this device");
+      say(draftStatus, "Removed from this device. You can keep working; nothing is kept when you leave the page.");
+    }
+  });
+
   /* ---------- Start ---------- */
   load(draft);
+  if (sensitive && !canStore()) say(draftSaved, "Not kept on this device");
 }
 
 function defaultOf(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string {

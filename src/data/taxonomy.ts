@@ -27,8 +27,8 @@ export const STAGE_INFO: Record<Stage, { label: string; short: string; blurb: st
   },
   pay: {
     label: "Pay and comply",
-    short: "Pay",
-    blurb: "Salary, PF, ESI, professional tax, TDS, leave and the Labour Codes.",
+    short: "Comply",
+    blurb: "Salary, PF, ESI, professional tax, TDS, leave, POSH and the Labour Codes.",
     icon: "rupee"
   },
   exit: {

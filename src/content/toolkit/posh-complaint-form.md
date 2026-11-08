@@ -6,9 +6,10 @@ stage: pay
 audiences: [employees, hr]
 order: 95
 checked: 2026-11-02
+sensitive: true
 useWhen: You want to make a written complaint of sexual harassment at work to your organisation's Internal Committee, or you are an HR team offering employees a clear complaint format.
 tips:
-  - "Your draft is saved in this browser so you can come back to it. On a shared or office computer, download or print it when you're done, then press <strong>Clear all fields</strong>."
+  - "Nothing you type is saved unless you tick <strong>Keep a draft on this device</strong>. On a shared or office computer, leave it unticked, download or print the complaint when you're done, then close the page."
   - "The time limit is three months from the incident, or from the last incident if there was more than one. The Internal Committee can allow up to three more months if something stopped you complaining sooner."
   - "Write what happened in your own words. You don't need a lawyer or complete evidence to complain; the committee can ask you for more detail later. If you would like help writing it, you can ask a member of the committee."
   - "You can ask for protection while the inquiry runs, such as a transfer of either person, leave of up to three months, or stopping the other person from reviewing your work."

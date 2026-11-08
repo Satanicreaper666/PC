@@ -10,7 +10,7 @@ import { nameFieldOf, personSlots } from "../../scripts/people";
 export interface TemplateSource {
   id: string;
   body?: string;
-  data: Pick<Tool["data"], "title" | "kind" | "fields">;
+  data: Pick<Tool["data"], "title" | "kind" | "fields"> & { sensitive?: boolean };
 }
 interface Props {
   entry: TemplateSource;
@@ -28,9 +28,10 @@ const slots = personSlots(fields);
 const nameField = nameFieldOf(slots);
 const personGroup = nameField ? (fields.find((f) => f.id === nameField)?.group ?? "Details") : null;
 const autocomplete: Record<string, string> = { company: "organization", company_address: "street-address" };
+const sensitive = entry.data.sensitive === true;
 ---
 
-<div class="tpl" data-template={entry.id} data-title={entry.data.title} data-kind={entry.data.kind} data-voice={voice} data-people={JSON.stringify(slots)} data-name-field={nameField}>
+<div class="tpl" data-template={entry.id} data-title={entry.data.title} data-kind={entry.data.kind} data-voice={voice} data-people={JSON.stringify(slots)} data-name-field={nameField} data-sensitive={sensitive ? "1" : undefined}>
   <div class="drafts" role="group" aria-label="Drafts of this document" data-drafts data-print="hide">
     <div class="drafts-row">
       <label class="drafts-label" for="tpl-draft-select"><Icon name="file-text" size={16} /> Draft</label>
@@ -45,6 +46,16 @@ const autocomplete: Record<string, string> = { company: "organization", company_
       </div>
       <p class="drafts-saved" data-draft-saved></p>
     </div>
+    {
+      sensitive && (
+        <label class="keep-draft">
+          <input type="checkbox" data-keep-draft />
+          <span>
+            Keep a draft on this device <span class="muted">(leave unticked on a shared or office computer; nothing is kept when you leave the page)</span>
+          </span>
+        </label>
+      )
+    }
     <form class="panel" data-draft-form hidden>
       <div class="field">
         <label class="field-label" for="tpl-draft-name" data-draft-form-label>Name of the new draft</label>
@@ -69,7 +80,7 @@ const autocomplete: Record<string, string> = { company: "organization", company_
   <div class="fields" data-print="hide">
     <div class="fields-head">
       <p class="h">Fill in the details</p>
-      <p class="tiny muted">Your text stays in this browser. Nothing is sent anywhere.</p>
+      <p class="tiny muted">{sensitive ? "Nothing is sent anywhere, and nothing is kept on this device unless you tick the box above." : "Your text stays in this browser. Nothing is sent anywhere."}</p>
     </div>
 
     {
@@ -240,6 +251,14 @@ const autocomplete: Record<string, string> = { company: "organization", company_
       <button class="btn btn-sm" type="button" data-tpl-docx><Icon name="word" size={16} /><span data-label>Download Word</span></button>
       <button class="btn btn-secondary btn-sm" type="button" data-tpl-print><Icon name="printer" size={16} /><span data-label>Print or save PDF</span></button>
       <button class="btn btn-secondary btn-sm" type="button" data-tpl-copy><Icon name="copy" size={16} /><span data-label>Copy text</span></button>
+      {
+        entry.data.kind === "form" && !sensitive && (
+          <button class="btn btn-ghost btn-sm" type="button" data-tpl-csv title="One row with a column per field, to collect records in one sheet">
+            <Icon name="download" size={16} />
+            <span data-label>Download as a CSV row</span>
+          </button>
+        )
+      }
       <p class="export-status" role="status" aria-live="polite" data-tpl-export-status></p>
     </div>
     <div class="sheet" role="region" aria-label="Document preview">
@@ -729,5 +748,16 @@ const autocomplete: Record<string, string> = { company: "organization", company_
       border-bottom: 1px solid #000;
       color: transparent;
     }
+  }
+  .keep-draft {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    font-size: var(--fs-sm);
+    font-weight: 560;
+  }
+  .keep-draft input {
+    margin-top: 0.2rem;
+    accent-color: var(--neel-600);
   }
 </style>

@@ -7,6 +7,7 @@ audiences: [hr, founders, employees]
 order: 30
 code: PC-F-06
 checked: 2026-11-02
+sensitive: true
 useWhen: A role has genuine physical or safety demands, such as driving, lifting or working at height, and you need to confirm fitness after making a conditional offer.
 tips:
   - "Use it <strong>only after a conditional offer</strong>, and only for roles with real physical or safety demands. Most office roles don't need it."

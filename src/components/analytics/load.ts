@@ -13,10 +13,11 @@ export class LoadError extends Error {}
 
 const MAX_MB = 30;
 
-export async function readEmployeeFile(file: File): Promise<LoadedFile> {
+/** `what` names the file in messages: "employee list", "survey responses". */
+export async function readEmployeeFile(file: File, what = "employee list"): Promise<LoadedFile> {
   const ext = (file.name.split(".").pop() ?? "").toLowerCase();
   if (file.size > MAX_MB * 1024 * 1024) throw new LoadError(`This file is larger than ${MAX_MB} MB. Remove columns you don't need, or split it by year, and try again.`);
-  if (file.size === 0) throw new LoadError("This file is empty. Export the employee list again and choose the new file.");
+  if (file.size === 0) throw new LoadError(`This file is empty. Export the ${what} again and choose the new file.`);
   if (ext === "xls") throw new LoadError("Older Excel files (.xls) can't be read here. In Excel, choose Save as and pick Excel Workbook (.xlsx) or CSV, then try again.");
   if (ext === "xlsx" || ext === "xlsm") return { fileName: file.name, sheets: await readXlsx(file) };
   if (["csv", "txt", "tsv"].includes(ext) || file.type === "text/csv") return { fileName: file.name, sheets: [{ name: "", rows: await readCsv(file) }] };
