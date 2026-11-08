@@ -1,0 +1,91 @@
+---
+import CalcShell from "../calc/CalcShell.astro";
+import Num from "../calc/Num.astro";
+import Pick from "../calc/Pick.astro";
+import DateIn from "../calc/DateIn.astro";
+import AsAt from "./parts/AsAt.astro";
+import { stat } from "../../data/statutory";
+const ceiling = stat("bonus.wageCeiling").display;
+---
+
+<CalcShell id="statutory-bonus" resultLabel="Statutory bonus" inputsLabel="Employee and year">
+  <Fragment slot="inputs">
+    <Num name="wages" label="Monthly wages" prefix="₹" value="15,000" help={`Basic pay, DA and other pay the Code on Wages counts as wages. Bonus applies if this is ${ceiling} or less.`} />
+    <Num name="minwage" label="Monthly minimum wage for the job (optional)" prefix="₹" placeholder="0" help="Bonus is worked out on ₹7,000 a month or the minimum wage, whichever is higher." />
+    <div class="two">
+      <Num name="months" label="Months worked in the year" value="12" suffix="months" help="Fractions allowed, for example 7.5." />
+      <Num name="days" label="Days worked (optional)" suffix="days" placeholder="From the months" help="At least 30 to qualify." />
+    </div>
+    <Num name="rate" label="Bonus rate" value="8.33" suffix="%" help="8.33% is the minimum; up to 20% depending on the allocable surplus." />
+    <DateIn name="yearend" label="Accounting year ends on" value="2026-03-31" />
+    <Pick
+      name="dq"
+      label="Dismissed for fraud, violence at work, theft or sabotage, or convicted of sexual harassment?"
+      options={[
+        { value: "no", label: "No" },
+        { value: "yes", label: "Yes" }
+      ]}
+    />
+  </Fragment>
+  <Fragment slot="headline">
+    <span class="big" data-out="bonus">₹0</span>
+    <span class="sub" data-out="sub"></span>
+  </Fragment>
+</CalcShell>
+<AsAt ids={["bonus.wageCeiling", "bonus.calcCeiling", "bonus.minRate", "bonus.maxRate"]} note="The Centre notified the bonus ceilings for its own sphere; states notify their own, so check yours." />
+
+<script>
+  import { bindCalculator, inr, num } from "../../scripts/calc-kit";
+  import { computeBonus } from "../../lib/calc/statutory-bonus";
+  import { longDate } from "../../lib/calc/working-days";
+
+  bindCalculator("statutory-bonus", (v) => {
+    const daysRaw = v.raw("days").replace(/[,\s]/g, "");
+    const r = computeBonus({
+      wages: v.num("wages"),
+      minimumWage: v.num("minwage"),
+      months: v.num("months"),
+      daysWorked: daysRaw === "" ? undefined : v.num("days"),
+      ratePct: v.num("rate"),
+      disqualified: v.str("dq", "no") === "yes",
+      yearEnd: v.str("yearend") || undefined
+    });
+    if (r.status !== "ok") return { outputs: { bonus: "₹0", sub: "" }, message: r.message };
+    if (!r.eligible) return { outputs: { bonus: "₹0", sub: r.reason ?? "" }, lines: [{ label: "Statutory bonus", value: "Not due", note: r.reason }], notes: ["An employer can still pay a bonus or incentive under its own policy; it is then taxable salary like any other pay."] };
+    const months = v.num("months");
+    return {
+      outputs: { bonus: inr(r.bonus), sub: r.dueBy ? `Pay by ${longDate(r.dueBy)}, within eight months of the year's end.` : "" },
+      lines: [
+        { label: "Wages used for bonus", value: inr(r.monthlyBase), note: r.monthlyBase < v.num("wages") ? `The lower of wages and ${inr(r.calcCeiling)}` : "Actual wages, below the calculation ceiling" },
+        { label: "Bonus wages for the year", value: inr(r.base), note: `${inr(r.monthlyBase)} × ${num(months, 2)} months` },
+        { label: "Rate", value: `${num(r.rate, 2)}%` },
+        { label: "Statutory bonus", value: inr(r.bonus), strong: true },
+        ...(r.dueBy ? [{ label: "Pay by", value: longDate(r.dueBy), note: "Within eight months of the end of the accounting year" }] : [])
+      ],
+      working: [
+        { label: "Calculation ceiling", formula: `the higher of ₹7,000 and the minimum wage`, result: inr(r.calcCeiling) },
+        { label: "Bonus wages", formula: `the lower of ${inr(v.num("wages"))} and ${inr(r.calcCeiling)}, × ${num(months, 2)} months`, result: inr(r.base) },
+        { label: "Bonus", formula: `${inr(r.base)} × ${num(r.rate, 2)}%${r.bonus === 100 ? ", at least ₹100" : ""}`, result: inr(r.bonus) }
+      ],
+      notes: [
+        "A rate above the minimum depends on the establishment's allocable surplus for the year, which this calculator does not work out.",
+        "Bonus is taxable salary. For someone leaving, the full and final calculator can include it under other dues.",
+        "New establishments may be exempt for their first five accounting years in some cases; check before relying on that."
+      ]
+    };
+  });
+</script>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+  @media (max-width: 420px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

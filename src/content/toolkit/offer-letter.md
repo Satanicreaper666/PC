@@ -9,6 +9,7 @@ code: PC-F-07
 checked: 2026-11-02
 useWhen: You have chosen a candidate and want to make a written offer before they join.
 tips:
+  - "Don't add a non-compete that applies after the person leaves: section 27 of the Indian Contract Act makes it void. Confidentiality and a reasonable non-solicitation clause are the lawful way to protect the business."
   - "Keep the offer and the <a href=\"/toolkit/appointment-letter/\">appointment letter</a> consistent. The appointment letter, given on joining, is the one the OSH Code requires in a prescribed format."
   - "Check the pay structure against the Labour Codes' definition of wages: if excluded allowances such as HRA and conveyance add up to more than half of total pay, the excess counts as wages for PF, gratuity and other benefits."
   - "Work out the likely take-home pay before you send the offer, with the <a href=\"/toolkit/take-home-salary-calculator/\">take-home salary calculator</a>. Candidates compare offers on in-hand pay."
@@ -46,6 +47,10 @@ fields:
   - { id: notice, label: Notice period, required: true, placeholder: "30 days during probation and 60 days after confirmation", group: Terms }
   - { id: other_conditions, label: Any other condition of this offer, placeholder: "A valid driving licence for a light motor vehicle", group: Terms }
   - { id: accept_by, label: Accept by, type: date, required: true, group: Terms }
+  - { id: joining_bonus, label: Joining bonus, type: money, group: Joining bonus, help: "Optional. Leave empty if there is none." }
+  - { id: clawback, label: Repayable if you leave within, group: Joining bonus, placeholder: "12 months of joining, in proportion to the months not served", help: "Optional. Keep it proportionate: a full clawback for leaving in month 11 is hard to defend." }
+  - { id: outside_work, label: Outside work and conflicts of interest, type: textarea, group: Other terms, default: "While you work with us, please tell us before taking on any other paid work or business interest, so that we can check there is no conflict with your role. We will not refuse without a good reason." }
+  - { id: ip_clause, label: Work you create, type: textarea, group: Other terms, default: "Work you create in the course of your employment, including software, documents and designs, belongs to the company. Your appointment letter sets this out, along with your duty to keep company information confidential during and after employment." }
 sources:
   - { title: "The Occupational Safety, Health and Working Conditions Code, 2020", url: "https://www.indiacode.nic.in/bitstream/123456789/22041/1/2020-37.pdf", publisher: India Code }
   - { title: "Occupational Safety, Health and Working Conditions (Central) Rules, 2026, rule 6", url: "https://prsindia.org/files/bills_acts/bills_parliament/2026/Occupational_Safety_Rules,%202026.pdf", publisher: PRS Legislative Research }
@@ -115,6 +120,12 @@ This offer depends on:
 - {{other_conditions}}
 
 If a condition is not met, we will talk to you before deciding whether to withdraw the offer.
+
+**Joining bonus.** You will receive a joining bonus of {{joining_bonus}} with your first month's salary. It is repayable if you leave within {{clawback}}.
+
+**Outside work.** {{outside_work}}
+
+**Your work.** {{ip_clause}}
 
 ### 5. Accepting this offer
 

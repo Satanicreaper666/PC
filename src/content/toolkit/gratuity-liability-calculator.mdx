@@ -1,0 +1,34 @@
+---
+title: Gratuity liability for all employees
+description: Work out the company's gratuity liability at a date from your employee file, vested and not yet vested, by department, for the year-end provision and the CFO's questions.
+kind: app
+calculator: gratuity-liability
+glance:
+  inputs: ["Employee file (CSV or Excel)", "Date of joining", "Basic + DA", "Date of the liability"]
+  output: "Total liability, vested amount and a department split"
+  formula: "Each person: wages × 15 ÷ 26 × years counted, capped at the ceiling"
+stage: pay
+audiences: [hr, founders]
+order: 13
+checked: 2026-11-08
+useWhen: Finance needs the gratuity liability at the year end or for a budget, or you want to see what long service is costing before an actuarial valuation.
+tips:
+  - "Use the wages gratuity is worked out on (basic + DA, plus any excess of allowances over half of pay), not CTC."
+  - "This is the undiscounted amount if everyone left on the date. The accounts use an actuary's valuation (Ind AS 19 or AS 15), which allows for salary growth, attrition and discounting."
+  - "Fixed-term employees are vested after one year; everyone else after five completed years."
+related: [toolkit/gratuity-calculator, toolkit/hr-budget-builder, toolkit/full-and-final-settlement-calculator, handbooks/labour-law/04-social-security-and-benefits]
+faq:
+  - q: How is gratuity liability calculated for a company?
+    a: For each person on the rolls, work out the gratuity they would get if they left on the date, then add them up. Show separately the amount for people who have completed the minimum service (vested). For the accounts, an actuary values the liability allowing for future salary growth, attrition and discounting.
+keywords: [gratuity liability calculation, gratuity provision calculation excel, company gratuity liability, gratuity provision for all employees, ind as 19 gratuity estimate]
+---
+
+## How it is worked out
+
+For each person on the rolls on the date (people with a last working day are left out):
+
+1. **Service** runs from the date of joining to the chosen date. A part-year of more than six months counts as a full year for the amount.
+2. **Accrued gratuity** is monthly wages × <Fact id="gratuity.daysPerYear" short /> ÷ <Fact id="gratuity.divisor" /> × years counted, capped at <Fact id="gratuity.ceiling" short />.
+3. **Vested** if the person has completed <Fact id="gratuity.minYears" /> of service, or <Fact id="gratuity.fixedTermMinYears" /> for fixed-term employees. The rest is accrued but would be paid only on death or disablement, or once they reach the minimum.
+
+The [gratuity calculator](/toolkit/gratuity-calculator/) works out one person's gratuity in detail, with forfeiture and tax.

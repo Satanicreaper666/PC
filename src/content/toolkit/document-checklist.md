@@ -95,4 +95,5 @@ Bank details and health information are sensitive personal data under the IT Act
 
 - [ ] Store medical and health records separately from the personnel file
 - [ ] Limit access to HR and payroll, and keep paper files locked
-- [ ] Set a retention period for each type of document and delete records when it ends
+- [ ] Set a retention period for each type of document and delete records when it ends. A common starting point, to check with your lawyer: wage, attendance and leave registers and payroll records for at least as long as the Labour Codes and your state's rules require (often three to eight years); tax records for at least eight years after the tax year; PF, ESI and gratuity records while the person is employed and for several years after; candidate records of people you didn't hire for no more than six months, unless they agree to longer
+- [ ] Record the retention periods in the [employee privacy notice](/toolkit/employee-privacy-notice/), so employees know them

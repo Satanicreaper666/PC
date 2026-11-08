@@ -60,12 +60,14 @@ If you use a written questionnaire alongside the interview, send the [exit inter
 - [ ] Agree a handover plan with the manager: open work, deadlines, key contacts and where documents live
 - [ ] Move ownership of shared files, mailboxes, code repositories and tools to named colleagues
 - [ ] Introduce the successor or the manager to key clients and vendors
+- [ ] For a critical role, record what only this person knows (key decisions, passwords held in team vaults, supplier history) and walk the successor through it
 - [ ] Book an exit interview for the last week, run by someone other than the person's manager
 - [ ] Send the exit questionnaire, if you use one
 
 ## Final pay and statutory dues
 
-- [ ] Work out final wages: salary to the last working day, unused earned leave, any notice pay and approved reimbursements
+- [ ] Work out final wages: salary to the last working day, unused earned leave, any notice pay and approved reimbursements, with the [full and final settlement calculator](/toolkit/full-and-final-settlement-calculator/)
+- [ ] For a retrenched worker, pay notice pay (if notice wasn't given) and retrenchment compensation at the time of retrenchment, and the re-skilling fund contribution
 - [ ] Check gratuity eligibility: five years' continuous service in most cases, one year for fixed-term employees, and no minimum on death or disablement
 - [ ] Make deductions only where the contract and the law allow them, and show each one on the statement
 - [ ] Work out TDS on the final payment, allowing for any tax-exempt part of leave encashment or gratuity
@@ -77,6 +79,7 @@ If you use a written questionnaire alongside the interview, send the [exit inter
 - [ ] Remove company data from personal devices with the employee present, without opening their personal data
 - [ ] Switch off email, systems, VPN and building access at the end of the day
 - [ ] Hold the exit interview if it hasn't happened yet
+- [ ] Tell them when group health and life cover end, and how to continue or port the health policy if the insurer allows it
 - [ ] Thank them, and tell them who to contact with questions after they leave
 
 ## After the exit
@@ -91,3 +94,4 @@ Templates: [relieving letter](/toolkit/relieving-letter/) and [experience letter
 - [ ] Give them the salary TDS certificate for the year (Form 130 from tax year 2026-27) by 15 June after the year ends
 - [ ] Close their personnel file and keep records only as long as your retention policy allows
 - [ ] Add exit interview themes to the quarterly review of why people leave
+- [ ] For good leavers, add them to the alumni and rehire list, with their permission

@@ -441,3 +441,32 @@ Grouped by the lifecycle the site already uses. Priority: ★★★ build next, 
 - Content: all 56 files in `src/content/toolkit/`
 - Taxonomy: `src/data/taxonomy.ts`
 - Browser runs: inputs and outputs for the 21 calculators and apps were captured with Playwright. No console errors.
+
+---
+
+## Implementation status (8 November 2026)
+
+Work after this audit, on branch `claude/peoplecraft-site-fixes`, deployed to production. The toolkit grew from 56 to 80 tools.
+
+**Section 6 quick fixes: all ten done.** Survey wording, POSH and medical-declaration drafts opt-in (new `sensitive` flag), pay groups from 5, compliance items (contract labour, standing orders, crèche, apprentices, SHe-Box), menstrual leave clause with a sourced Karnataka fact, exit form fields, LIFO and re-employment, notice buy-out amount, "Comply" label, Gallup-like items reworded.
+
+**Section 2 top changes**
+
+| # | Change | Status |
+| --- | --- | --- |
+| 1 | Load your people once | Done for the new file-based tools: an opt-in, tab-only shared roster (sessionStorage) used by the increment cycle, talent review, pay equity and gratuity liability. People analytics, org chart and mail merge keep their own loaders. |
+| 2 | TDS estimate | Done: income tax calculator (old vs new, HRA, NPS, break-even), TDS in take-home and in F&F. |
+| 3 | CTC structure builder | Done as the take-home calculator's salary annexure (Word). |
+| 4 | F&F settlement statement | Done, plus retrenchment and closure compensation, severance and its tax, PF, ESI, PT and TDS (owner's request). |
+| 5 | Increment cycle | Done: increment cycle planner with per-person matrix, proration, promotion budget, fit to budget, totals by manager, revision letters CSV for mail merge. |
+| 6 | Disciplinary case kit | Done: charge-sheet, suspension order, inquiry notice, inquiry report, penalty order, process guide; retrenchment notice. |
+| 7 | Survey CSV import | Done: Google or Microsoft Forms files, favourability, eNPS, trend, cuts by group (5+) with pooling. |
+| 8 | Talent review kit | Done: talent review and calibration app. |
+| 9 | Compliance tracker | Done: checklists take an owner, due date and evidence note per item, and export due dates to a calendar. |
+| 10 | Policy library | Started: POSH, grievance redressal, whistleblower, DPDP employee privacy notice, hybrid work. Not yet: code of conduct, travel and expense, IT acceptable use. |
+
+**Section 3 platform upgrades:** 3.2 partly (increment cycle to mail merge; forms export a CSV row); 3.4 done (every calculator has a working paper with a Prepared / Reviewed / Approved block); 3.1 and 3.5 partly, as above.
+
+**Also done:** statutory bonus calculator; gratuity liability, forfeiture and tax split; promotion, transfer, probation extension and PIP outcome letters; background verification consent, no-dues clearance and panel debrief forms; offer letter clauses (joining bonus clawback, outside work, IP); pre-boarding, offboarding and retention-period items; HR calendar as an .ics file.
+
+**Not yet done:** HRMS header aliases tested against real exports; people analytics columns for regretted and exit reasons; exit analytics from the exit form's CSV rows; bulk EPF, ESI and PT; state holiday lists; HR metrics from the roster; HR budget phasing; recruiter capacity in the headcount plan; org chart vacancies and spans; POSH IC case kit; grievance form and register; board pack; reverse take-home (in-hand to CTC); the remaining policies; and a named employment lawyer's review (`reviewedBy`) of the legal templates, starting with the disciplinary kit, retrenchment notice and POSH policy.

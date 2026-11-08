@@ -1,0 +1,207 @@
+---
+/** Gratuity liability from an employee file. Logic: src/lib/calc/gratuity-liability.ts (tested). */
+import Icon from "../ui/Icon.astro";
+---
+
+<div class="gl" data-gl>
+  <section class="gl-step" aria-labelledby="gl-load">
+    <h2 class="gl-h" id="gl-load">Load the people on the rolls</h2>
+    <p class="gl-lede">A CSV or Excel file with the date of joining and monthly gratuity wages (basic + DA) for each person. Department, employment type and last working day are used if present.</p>
+    <div class="gl-row">
+      <label class="btn">
+        <Icon name="file-text" size={18} /> Choose a file
+        <input class="visually-hidden" type="file" accept=".csv,.txt,.xlsx,.xlsm,text/csv" data-gl-file />
+      </label>
+      <button class="btn btn-secondary" type="button" data-gl-shared hidden><Icon name="people" size={18} /> <span data-gl-shared-label>Use the file from another tool</span></button>
+      <button class="btn btn-secondary" type="button" data-gl-sample><Icon name="sparkle" size={18} /> Try with sample data</button>
+      <label class="field gl-date">
+        <span class="field-label">Liability as at</span>
+        <input class="control" type="date" value="2027-03-31" data-gl-date />
+      </label>
+    </div>
+    <p class="gl-status" role="status" aria-live="polite" data-gl-status></p>
+  </section>
+  <section class="gl-step gl-out" aria-labelledby="gl-res" data-gl-out hidden tabindex="-1">
+    <h2 class="gl-h" id="gl-res">Gratuity liability</h2>
+    <div class="gl-kpis" data-gl-kpis></div>
+    <div class="tw"><table class="gl-table" data-gl-dept></table></div>
+    <p class="tiny muted">
+      Undiscounted: each person's gratuity as if they left on the date, with no salary growth, attrition or discounting. Your actuary's valuation (Ind AS 19 or AS 15) will differ and is the figure for the accounts. Gratuity is capped at the ceiling for each person.
+    </p>
+    <div class="gl-row" data-print="hide">
+      <button class="btn btn-secondary" type="button" data-gl-csv><Icon name="download" size={18} /> Download each person (CSV)</button>
+      <button class="btn btn-ghost" type="button" data-print-page><Icon name="printer" size={18} /> Print</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { computeLiability, readLiability, type Cell, type Liability } from "../../lib/calc/gratuity-liability";
+  import { downloadCsv } from "../../scripts/csv";
+  import { sharedRoster } from "../../scripts/roster";
+
+  const root = document.querySelector<HTMLElement>("[data-gl]")!;
+  const q = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+  const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Math.round(n));
+  let table: Cell[][] | null = null;
+  let name = "";
+  let last: Liability | null = null;
+
+  const shared = sharedRoster();
+  if (shared) {
+    q("[data-gl-shared]").hidden = false;
+    q("[data-gl-shared-label]").textContent = `Use ${shared.fileName}`;
+  }
+
+  function render() {
+    if (!table) return;
+    const { people, found } = readLiability(table);
+    if (found.doj < 0 || found.wages < 0) {
+      q("[data-gl-status]").textContent = `${name}: no ${found.doj < 0 ? "date of joining" : "wages (basic + DA)"} column was found.`;
+      q("[data-gl-out]").hidden = true;
+      return;
+    }
+    const asOf = q<HTMLInputElement>("[data-gl-date]").value || "2027-03-31";
+    const r = computeLiability(people, asOf);
+    last = r;
+    const excluded = r.rows.length - r.counted;
+    q("[data-gl-status]").textContent = `Read ${people.length} people from ${name}.${excluded ? ` ${excluded} left out (already left, no date of joining or no wages).` : ""}`;
+    const kpi = (label: string, value: string) => {
+      const d = document.createElement("div");
+      d.className = "kpi";
+      d.append(Object.assign(document.createElement("strong"), { textContent: value }), label);
+      return d;
+    };
+    q("[data-gl-kpis]").replaceChildren(
+      kpi(`for ${r.counted} people`, inr(r.total)),
+      kpi(`vested: ${r.vestedPeople} people past the minimum service`, inr(r.vested)),
+      kpi("not yet vested", inr(r.total - r.vested)),
+      ...(r.capped ? [kpi("people at the ceiling", String(r.capped))] : [])
+    );
+    const t = q<HTMLTableElement>("[data-gl-dept]");
+    const head = document.createElement("thead");
+    head.innerHTML = '<tr><th scope="col">Department</th><th scope="col">People</th><th scope="col">Liability</th><th scope="col">Vested</th></tr>';
+    const body = document.createElement("tbody");
+    for (const d of r.byDept) {
+      const tr = document.createElement("tr");
+      [d.dept, String(d.people), inr(d.total), inr(d.vested)].forEach((c, i) => tr.append(Object.assign(document.createElement(i ? "td" : "th"), { textContent: c, className: i ? "n" : "" })));
+      body.append(tr);
+    }
+    t.replaceChildren(head, body);
+    q("[data-gl-out]").hidden = false;
+  }
+  function load(rows: Cell[][], n: string) {
+    table = rows;
+    name = n;
+    render();
+  }
+
+  q<HTMLInputElement>("[data-gl-date]").addEventListener("change", render);
+  q<HTMLInputElement>("[data-gl-file]").addEventListener("change", async (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+    const { readEmployeeFile, bestSheet, LoadError } = await import("../analytics/load");
+    try {
+      const loaded = await readEmployeeFile(file);
+      load(loaded.sheets[bestSheet(loaded.sheets)].rows as Cell[][], file.name);
+    } catch (err) {
+      q("[data-gl-status]").textContent = err instanceof LoadError ? err.message : "That file couldn't be read. Save it as CSV or Excel (.xlsx) and try again.";
+    }
+  });
+  q("[data-gl-shared]").addEventListener("click", () => {
+    const s = sharedRoster();
+    if (s) load(s.rows, s.fileName);
+  });
+  q("[data-gl-sample]").addEventListener("click", () => {
+    const rows: Cell[][] = [["Employee ID", "Employee name", "Department", "Date of joining", "Basic + DA", "Employment type"]];
+    const depts = ["Sales", "Engineering", "Finance", "Operations"];
+    for (let i = 0; i < 30; i++) rows.push([`E${101 + i}`, `Person ${i + 1}`, depts[i % 4], `01/${String(1 + (i % 12)).padStart(2, "0")}/${2008 + (i % 18)}`, String(25000 + ((i * 7919) % 90000)), i % 7 === 0 ? "Fixed-term" : "Permanent"]);
+    load(rows, "sample data");
+  });
+  q("[data-gl-csv]").addEventListener("click", () => {
+    if (!last) return;
+    downloadCsv("gratuity-liability.csv", [
+      ["Employee ID", "Name", "Department", "Date of joining", "Monthly wages", "Years counted", "Accrued gratuity", "Vested", "At the ceiling", "Left out"],
+      ...last.rows.map((r) => [r.id, r.name, r.dept, r.doj ?? "", Number.isFinite(r.wages) ? r.wages : "", r.excluded ? "" : r.counted, r.excluded ? "" : r.accrued, r.excluded ? "" : r.vested ? "yes" : "no", r.capped ? "yes" : "", r.excluded ?? ""])
+    ]);
+  });
+</script>
+
+<style>
+  .gl {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .gl-step {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--canvas);
+  }
+  .gl-out {
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+  }
+  .gl-h {
+    font-size: var(--fs-lg);
+  }
+  .gl-lede {
+    color: var(--ink-2);
+    max-width: 70ch;
+  }
+  .gl-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+    align-items: end;
+  }
+  .gl-date {
+    min-width: 12rem;
+  }
+  .gl-status:empty {
+    display: none;
+  }
+  .gl-status {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .gl-kpis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .gl-kpis :global(.kpi) {
+    padding: 0.55rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+  }
+  .gl-kpis :global(.kpi strong) {
+    display: block;
+    font-size: var(--fs-lg);
+    font-variant-numeric: tabular-nums;
+  }
+  .tw {
+    overflow-x: auto;
+  }
+  .gl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .gl-table :global(th),
+  .gl-table :global(td) {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+  }
+  .gl-table :global(td.n) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

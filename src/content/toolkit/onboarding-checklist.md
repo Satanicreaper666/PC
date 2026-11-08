@@ -25,6 +25,16 @@ keywords: [employee onboarding checklist, new hire onboarding checklist india, f
 draft: false
 ---
 
+## From acceptance to day 1 (pre-boarding)
+
+The weeks between the offer and day 1 are when most offer drop-outs happen. Keep in touch.
+
+- [ ] Send a welcome message within two days of acceptance, from the manager, not only HR (Manager)
+- [ ] Keep in touch every week or two until day 1: a call, team news, an invitation to a team lunch (Manager)
+- [ ] Answer questions about pay, the role and the joining date quickly, in writing (HR)
+- [ ] If the joiner is relocating, help with travel, temporary stay and local information (HR)
+- [ ] Watch for warning signs (slow replies, a pushed-back date) and call the joiner if you see them (HR)
+
 ## Before day 1
 
 Useful templates: the [employee joining form](/toolkit/employee-joining-form/), the [document checklist](/toolkit/document-checklist/) and the [appointment letter](/toolkit/appointment-letter/).

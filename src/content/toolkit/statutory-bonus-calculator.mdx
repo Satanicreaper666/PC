@@ -1,0 +1,49 @@
+---
+title: Statutory bonus calculator
+description: Check whether statutory bonus is due under the Code on Wages, and work it out on the {{fact:bonus.calcCeiling|short}} calculation ceiling at {{fact:bonus.minRate}} to {{fact:bonus.maxRate}}, with the payment deadline.
+kind: calculator
+calculator: statutory-bonus
+glance:
+  inputs: ["Monthly wages", "Minimum wage", "Months worked", "Bonus rate"]
+  output: "Statutory bonus and the date it is due"
+  formula: "Bonus = lower of wages and the ceiling × months × rate"
+stage: pay
+audiences: [hr, founders, employees]
+order: 16
+checked: 2026-11-08
+useWhen: You are paying the year's statutory bonus, settling it for someone who is leaving, or checking whether an employee is entitled to it.
+tips:
+  - "Bonus is due within <strong>eight months</strong> of the end of the accounting year: by 30 November for a year ending 31 March."
+  - "Use the wages the Code counts (basic, DA and the like), not gross salary, and check the minimum wage for the job: if it is above {{fact:bonus.calcCeiling}}, it becomes the calculation ceiling."
+  - "Pay the same rate to everyone eligible. A rate above {{fact:bonus.minRate}} follows the establishment's allocable surplus."
+sources:
+  - title: "The Code on Wages, 2019, Chapter IV (payment of bonus)"
+    url: https://www.indiacode.nic.in/bitstream/123456789/15793/1/aA2019-29.pdf
+    publisher: India Code
+  - title: "Centre notifies bonus eligibility and calculation ceilings under the Code on Wages (26 August 2026)"
+    url: https://www.scconline.com/blog/post/2026/08/26/bonus-rules-under-code-on-wages-eligibility-calculation/
+    publisher: SCC Online
+related: [toolkit/full-and-final-settlement-calculator, toolkit/annual-hr-calendar, toolkit/take-home-salary-calculator, handbooks/labour-law/02-wages-and-pay]
+faq:
+  - q: Who is eligible for statutory bonus?
+    a: "An employee whose wages are {{fact:bonus.wageCeiling}} or less and who worked at least 30 days in the accounting year, unless dismissed for fraud, riotous or violent behaviour at work, theft, misappropriation or sabotage of property, or convicted of sexual harassment."
+  - q: How is statutory bonus calculated?
+    a: "Take each month's wages, or {{fact:bonus.calcCeiling}} (or the minimum wage, if higher) if wages are more, add them up for the months worked, and apply the rate: at least {{fact:bonus.minRate}} and at most {{fact:bonus.maxRate}}. The minimum bonus is ₹100."
+  - q: Is statutory bonus paid to someone who leaves mid-year?
+    a: Yes, in proportion to the months worked, if they meet the conditions. Many employers pay it with the full and final settlement rather than waiting for the annual payout.
+keywords: [statutory bonus calculator, bonus calculation code on wages, payment of bonus calculation 2026, bonus 8.33 calculation, bonus eligibility 21000]
+---
+
+import { fx } from "../../data/statutory";
+
+## How it is worked out
+
+<Figure title="Statutory bonus" caption="The ceiling caps the wages used, not who is eligible; eligibility uses the wage ceiling.">
+  <Formula
+    result={{ value: "Bonus" }}
+    parts={[{ value: "Lower of wages and the calculation ceiling", label: "each month" }, { op: "×" }, { value: "Months worked" }, { op: "×" }, { value: "Rate", label: `${fx("bonus.minRate")} to ${fx("bonus.maxRate")}` }]}
+    example={`Example: wages of ₹15,000 a month, a full year, at the minimum rate: ${fx("bonus.calcCeiling", "short")} × 12 × ${fx("bonus.minRate")} = ₹6,997.`}
+  />
+</Figure>
+
+The central sphere's ceilings were notified on 25 August 2026, with effect from 21 November 2025. States notify their own for establishments in their sphere, so check yours before you pay.
