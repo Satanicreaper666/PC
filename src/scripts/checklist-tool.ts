@@ -1,6 +1,7 @@
 /**
  * Checklists: tick items off, see each section's progress, and, when the reader
- * asks, give each item an owner and a due date. Overdue items get a pink
+ * asks, give each item an owner, a due date and where the evidence is kept, and
+ * download the due dates as a calendar file. Overdue items get a pink
  * highlighter (a deadline at risk). Download as CSV or print with ticks and owners.
  *
  * Storage:
@@ -11,7 +12,8 @@
 import { downloadCsv, fileStem } from "./csv.ts";
 import { isoDate, readJson, writeJson } from "./store.ts";
 
-type PlanEntry = { o?: string; d?: string };
+/** o = owner, d = due date, e = where the evidence is kept. */
+type PlanEntry = { o?: string; d?: string; e?: string };
 type Plan = { show?: boolean; items: Record<string, PlanEntry> };
 type Item = {
   i: number;
@@ -25,6 +27,7 @@ type Item = {
   meta: HTMLElement;
   owner?: HTMLInputElement;
   due?: HTMLInputElement;
+  evidence?: HTMLInputElement;
   odTag?: HTMLElement;
 };
 
@@ -139,6 +142,7 @@ function init(root: HTMLElement) {
     };
     it.owner = mk("Owner", "text", entry(it).o ?? "", it.hint ? `e.g. ${it.hint}` : "Name");
     it.due = mk("Due", "date", entry(it).d ?? "");
+    it.evidence = mk("Evidence", "text", entry(it).e ?? "", "Where the proof is kept");
     it.odTag = document.createElement("mark");
     it.odTag.className = "hl hl-pink od-tag";
     it.odTag.textContent = "Overdue";
@@ -148,7 +152,8 @@ function init(root: HTMLElement) {
     const save = () => {
       const o = it.owner!.value.trim();
       const d = it.due!.value;
-      if (o || d) plan.items[it.key] = { ...(o ? { o } : {}), ...(d ? { d } : {}) };
+      const ev = it.evidence!.value.trim();
+      if (o || d || ev) plan.items[it.key] = { ...(o ? { o } : {}), ...(d ? { d } : {}), ...(ev ? { e: ev } : {}) };
       else delete plan.items[it.key];
       savePlan();
       render();
@@ -156,6 +161,7 @@ function init(root: HTMLElement) {
     it.owner.addEventListener("input", save);
     it.due.addEventListener("input", save);
     it.due.addEventListener("change", save);
+    it.evidence.addEventListener("input", save);
   }
 
   const hasPlan = () => Object.keys(plan.items).length > 0;
@@ -248,13 +254,39 @@ function init(root: HTMLElement) {
   });
 
   root.querySelector("[data-cl-csv]")?.addEventListener("click", () => {
-    const rows: string[][] = [["Item", "Section", "Done", "Owner", "Due date"]];
+    const rows: string[][] = [["Item", "Section", "Done", "Owner", "Due date", "Evidence"]];
     for (const it of items) {
       const e = entry(it);
-      rows.push([it.text, sectionNames[it.section] ?? "", it.box.checked ? "Yes" : "No", e.o ?? "", e.d ?? ""]);
+      rows.push([it.text, sectionNames[it.section] ?? "", it.box.checked ? "Yes" : "No", e.o ?? "", e.d ?? "", e.e ?? ""]);
     }
     downloadCsv(`${fileStem(title)}-${isoDate()}.csv`, rows);
     status.textContent = `Downloaded ${items.length} items as a CSV file, for Excel or Google Sheets.`;
+  });
+
+  // Items with a due date, as calendar events with a reminder, for Google Calendar or Outlook.
+  root.querySelector("[data-cl-ics]")?.addEventListener("click", async () => {
+    const dated = items.filter((it) => entry(it).d && !it.box.checked);
+    if (!dated.length) {
+      status.textContent = "Add a due date to at least one open item first (Add owners and dates).";
+      return;
+    }
+    const [{ toIcs }, { downloadBlob }] = await Promise.all([import("../lib/ics/ics.ts"), import("./csv.ts")]);
+    const ics = toIcs(
+      title,
+      dated.map((it) => {
+        const e = entry(it);
+        return {
+          uid: `${id}-${it.key.replace(/[^a-z0-9]+/gi, "-").slice(0, 60)}`,
+          date: e.d!,
+          title: it.text.length > 90 ? `${it.text.slice(0, 87)}…` : it.text,
+          description: [`${title}: ${sectionNames[it.section] ?? ""}`, e.o ? `Owner: ${e.o}` : "", e.e ? `Evidence: ${e.e}` : "", location.href].filter(Boolean).join("\n"),
+          remindDays: 5
+        };
+      }),
+      new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "")
+    );
+    downloadBlob(`${fileStem(title)}-due-dates.ics`, new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+    status.textContent = `Downloaded ${dated.length} due ${dated.length === 1 ? "date" : "dates"} as a calendar file, with reminders five days before.`;
   });
 
   window.addEventListener("beforeprint", render);
@@ -267,6 +299,7 @@ function init(root: HTMLElement) {
     for (const it of items) {
       if (it.owner) it.owner.value = entry(it).o ?? "";
       if (it.due) it.due.value = entry(it).d ?? "";
+      if (it.evidence) it.evidence.value = entry(it).e ?? "";
     }
     render();
   });

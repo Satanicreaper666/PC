@@ -9,7 +9,7 @@
     "build": "astro build && pagefind --site dist --output-subdir pagefind && node scripts/csp-meta.mjs dist",
     "preview": "astro preview",
     "check:links": "node scripts/check-links.mjs dist",
-    "test": "node --test src/lib/calc/*.test.ts src/lib/analytics/*.test.ts src/lib/orgchart/*.test.ts src/lib/mailmerge/*.test.ts src/lib/survey/*.test.ts src/lib/ics/*.test.ts src/lib/increment/*.test.ts src/lib/*.test.ts src/scripts/*.test.ts",
+    "test": "node --test src/lib/calc/*.test.ts src/lib/analytics/*.test.ts src/lib/orgchart/*.test.ts src/lib/mailmerge/*.test.ts src/lib/survey/*.test.ts src/lib/ics/*.test.ts src/lib/increment/*.test.ts src/lib/talent/*.test.ts src/lib/*.test.ts src/scripts/*.test.ts",
     "assets": "node scripts/make-assets.cjs",
     "check:facts": "node scripts/check-facts.mjs"
   },

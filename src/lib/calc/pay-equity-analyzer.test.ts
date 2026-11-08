@@ -121,3 +121,24 @@ test("CSV export guards against formulas", () => {
   const csv = toCsv([{ role: "=cmd", gender: "woman", pay: 100 }]);
   assert.equal(csv, "Role,Gender,Annual pay\n'=cmd,Woman,100");
 });
+
+import { costToClose } from "./pay-equity-analyzer.ts";
+
+test("cost to close: women below the men's median in their role, raised to it", () => {
+  const rows = [
+    { role: "Engineer", gender: "man" as const, pay: 1000000 },
+    { role: "Engineer", gender: "man" as const, pay: 1200000 },
+    { role: "Engineer", gender: "man" as const, pay: 1400000 },
+    { role: "Engineer", gender: "woman" as const, pay: 1000000 },
+    { role: "Engineer", gender: "woman" as const, pay: 1300000 },
+    { role: "Analyst", gender: "woman" as const, pay: 500000 }
+  ];
+  const c = costToClose(rows);
+  assert.equal(c.roles.length, 1);
+  assert.equal(c.roles[0].target, 1200000);
+  assert.equal(c.roles[0].below, 1);
+  assert.equal(c.cost, 200000);
+  assert.equal(c.women, 1);
+  assert.equal(c.roles[0].small, true);
+  assert.ok(Math.abs(c.share - 200000 / 6400000) < 1e-12);
+});

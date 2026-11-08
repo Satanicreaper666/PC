@@ -1,0 +1,216 @@
+---
+/**
+ * Talent review: the nine-box for a whole organisation from an employee file,
+ * with calibration by manager, a fairness check and a succession list.
+ * Logic: src/lib/talent/review.ts (tested). Page behaviour: src/components/talent/app.ts.
+ */
+import Icon from "../ui/Icon.astro";
+import { BOXES } from "../../lib/calc/nine-box-talent-mapper";
+const order = [3, 2, 1].flatMap((pot) => [1, 2, 3].map((perf) => BOXES.find((b) => b.potential === pot && b.performance === perf)!));
+---
+
+<div class="tr" data-tr>
+  <section class="tr-step" aria-labelledby="tr-load-title">
+    <h2 class="tr-h" id="tr-load-title">Load the people to review</h2>
+    <p class="tr-lede">
+      A CSV or Excel file with a performance rating and a potential rating for each person. Manager, department, gender, date of joining, a critical-role column and a flight-risk column add the calibration, fairness and succession checks.
+    </p>
+    <div class="tr-actions">
+      <label class="btn">
+        <Icon name="file-text" size={18} /> Choose a file
+        <input class="visually-hidden" type="file" accept=".csv,.txt,.xlsx,.xlsm,text/csv" data-tr-file />
+      </label>
+      <button class="btn btn-secondary" type="button" data-tr-sample><Icon name="sparkle" size={18} /> Try with sample data</button>
+      <button class="btn btn-secondary" type="button" data-tr-shared hidden><Icon name="people" size={18} /> <span data-tr-shared-label>Use the file from another tool</span></button>
+      <button class="btn btn-ghost btn-sm" type="button" data-tr-template><Icon name="download" size={16} /> Blank template (CSV)</button>
+    </div>
+    <div class="tr-grid">
+      <label class="field">
+        <span class="field-label">Performance ratings are on a</span>
+        <select class="control" data-tr-perf>
+          <option value="5">1 to 5 scale (5 is best)</option>
+          <option value="3">1 to 3 scale (3 is high)</option>
+        </select>
+      </label>
+      <label class="field">
+        <span class="field-label">Potential ratings are on a</span>
+        <select class="control" data-tr-pot>
+          <option value="3">1 to 3 scale, or low / moderate / high</option>
+          <option value="5">1 to 5 scale</option>
+        </select>
+      </label>
+    </div>
+    <p class="tr-status" role="status" aria-live="polite" data-tr-status></p>
+  </section>
+
+  <section class="tr-step tr-out" aria-labelledby="tr-grid-title" data-tr-out hidden tabindex="-1">
+    <h2 class="tr-h" id="tr-grid-title">The grid</h2>
+    <p class="tr-lede" data-tr-summary></p>
+    <div class="tr-nine" role="table" aria-label="Nine-box grid: potential from top (high) to bottom (low), performance from left (low) to right (high)">
+      {
+        order.map((b) => (
+          <div class:list={["tr-cell", `tone-${b.tone}`]} role="cell" data-tr-box={`${b.performance}-${b.potential}`}>
+            <p class="tr-cell-t">{b.title}</p>
+            <p class="tr-cell-n" data-n />
+            <ul class="tr-names" data-names />
+          </div>
+        ))
+      }
+    </div>
+    <p class="tiny muted">Performance runs left (low) to right (high); potential runs bottom (low) to top (high).</p>
+
+    <h3 class="tr-h3">Distribution</h3>
+    <ul class="tr-list" data-tr-dist></ul>
+
+    <h3 class="tr-h3">Calibration by manager</h3>
+    <p class="tiny muted">Each manager's average performance level against the company's. Teams of five or more half a level or more away are flagged for discussion: the difference may be real, or ratings may need calibrating.</p>
+    <div class="tw"><table class="tr-table" data-tr-mgr></table></div>
+
+    <h3 class="tr-h3">Fairness check</h3>
+    <ul class="tr-list" data-tr-fair></ul>
+
+    <h3 class="tr-h3">Succession and retention</h3>
+    <div class="tw"><table class="tr-table" data-tr-succ></table></div>
+    <ul class="tr-list" data-tr-risk></ul>
+
+    <div class="tr-actions" data-print="hide">
+      <button class="btn btn-secondary" type="button" data-tr-csv><Icon name="download" size={18} /> Download placements (CSV)</button>
+      <button class="btn btn-ghost" type="button" data-print-page><Icon name="printer" size={18} /> Print the review pack</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  import "../talent/app";
+</script>
+
+<style>
+  .tr {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .tr-step {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--canvas);
+  }
+  .tr-out {
+    background: var(--paper);
+    box-shadow: var(--shadow-lift);
+  }
+  .tr-h {
+    font-size: var(--fs-lg);
+  }
+  .tr-h3 {
+    font-size: var(--fs-md);
+    margin-top: 0.5rem;
+  }
+  .tr-lede {
+    color: var(--ink-2);
+    max-width: 72ch;
+  }
+  .tr-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+  }
+  .tr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 0.75rem 1rem;
+    max-width: 40rem;
+  }
+  .tr-status {
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+  .tr-status:empty {
+    display: none;
+  }
+  .tr-nine {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  .tr-cell {
+    min-height: 7rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--canvas);
+    font-size: var(--fs-sm);
+  }
+  .tr-cell.tone-accent {
+    background: var(--neel-50);
+    border-color: var(--neel-200);
+  }
+  .tr-cell.tone-bad {
+    background: #fdf1f2;
+  }
+  .tr-cell.tone-good {
+    background: #eff8f2;
+  }
+  .tr-cell-t {
+    font-weight: 650;
+  }
+  .tr-cell-n {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .tr-names {
+    margin-top: 0.3rem;
+    padding-left: 1rem;
+    font-size: var(--fs-xs);
+  }
+  .tr-list {
+    display: grid;
+    gap: 0.35rem;
+    padding-left: 1.2rem;
+    font-size: var(--fs-sm);
+  }
+  .tr-list :global(.flag) {
+    color: var(--bad, #b42318);
+    font-weight: 600;
+  }
+  .tw {
+    overflow-x: auto;
+  }
+  .tr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .tr-table :global(th),
+  .tr-table :global(td) {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    white-space: nowrap;
+  }
+  .tr-table :global(td.n) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .tr-table :global(thead th) {
+    font-size: var(--fs-xs);
+    color: var(--ink-2);
+  }
+  .tr-table :global(.flag) {
+    color: var(--bad, #b42318);
+    font-weight: 600;
+  }
+  @media (max-width: 560px) {
+    .tr-cell {
+      min-height: 5rem;
+      padding: 0.45rem;
+    }
+    .tr-names {
+      display: none;
+    }
+  }
+</style>

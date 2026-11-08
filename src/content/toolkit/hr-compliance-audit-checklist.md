@@ -9,6 +9,7 @@ checked: 2026-11-02
 useWhen: You want to check your company's HR compliance in one sitting, before an inspection or audit, or when you take over an HR function.
 tips:
   - "Work through it with evidence in front of you: challans, registers, letters and committee orders. A tick should mean you could show the proof."
+  - "Press <strong>Add owners and dates</strong> to turn the list into a tracker: each item gets an owner, a due date and a note of where the evidence is kept. <strong>Due dates to calendar</strong> puts them in Google Calendar or Outlook with reminders."
   - "Run it twice a year. Most of these items change when headcount crosses a threshold (10, 20 or 50 people) or when you open an office in a new state."
 sources:
   - title: Government announces implementation of four Labour Codes (21 November 2025)

@@ -16,6 +16,7 @@ const html = renderChecklist(entry.body ?? "");
     <div class="cl-actions">
       <button class="btn btn-secondary btn-sm" type="button" data-cl-plan><Icon name="calendar" size={16} /> <span data-label>Add owners and dates</span></button>
       <button class="btn btn-secondary btn-sm" type="button" data-cl-csv><Icon name="download" size={16} /> Download as CSV</button>
+      <button class="btn btn-secondary btn-sm" type="button" data-cl-ics><Icon name="calendar" size={16} /> Due dates to calendar</button>
       <button class="btn btn-secondary btn-sm" type="button" data-print-page><Icon name="printer" size={16} /> Print</button>
       <button class="btn btn-ghost btn-sm" type="button" data-cl-reset><Icon name="refresh" size={16} /> Untick all</button>
     </div>
@@ -23,7 +24,7 @@ const html = renderChecklist(entry.body ?? "");
   </div>
   <p class="print-head" data-cl-print-head></p>
   <div class="cl-body" data-cl-body set:html={html} />
-  <p class="tiny muted" data-print="hide">Ticks, owners and due dates are saved in this browser only, so you can come back to the list.</p>
+  <p class="tiny muted" data-print="hide">Ticks, owners, due dates and evidence notes are saved in this browser only, so you can come back to the list.</p>
 </div>
 
 <script>

@@ -252,3 +252,37 @@ export const EXAMPLE_ROWS: PayRow[] = [
   { role: "Engineering manager", gender: "woman", pay: 3000000 },
   ...[2900000, 3200000, 3400000].map((pay) => ({ role: "Engineering manager", gender: "man" as Gender, pay }))
 ];
+
+/* ---------- Cost to close ---------- */
+
+export type CloseRole = { role: string; women: number; below: number; target: number; cost: number; small: boolean };
+export type CostToClose = { roles: CloseRole[]; women: number; cost: number; payroll: number; share: number };
+
+/**
+ * What it would cost a year to bring every woman paid below the men's median in her
+ * role up to that median. Only roles with both women and men count. A starting figure
+ * for a remediation budget: each case still needs a look at experience, performance
+ * and location before any pay changes.
+ */
+export function costToClose(rows: PayRow[], minGroup = MIN_GROUP): CostToClose {
+  const groups = new Map<string, { role: string; w: number[]; m: number[] }>();
+  for (const r of rows) {
+    const key = r.role.toLowerCase();
+    if (!groups.has(key)) groups.set(key, { role: r.role, w: [], m: [] });
+    const g = groups.get(key)!;
+    if (r.gender === "woman") g.w.push(r.pay);
+    else if (r.gender === "man") g.m.push(r.pay);
+  }
+  const roles: CloseRole[] = [];
+  for (const g of groups.values()) {
+    if (!g.w.length || !g.m.length) continue;
+    const target = median(g.m);
+    const lows = g.w.filter((p) => p < target);
+    const cost = lows.reduce((a, p) => a + (target - p), 0);
+    if (cost > 0) roles.push({ role: g.role, women: g.w.length, below: lows.length, target, cost, small: g.w.length < minGroup || g.m.length < minGroup });
+  }
+  roles.sort((a, b) => b.cost - a.cost);
+  const payroll = rows.reduce((a, r) => a + r.pay, 0);
+  const cost = roles.reduce((a, r) => a + r.cost, 0);
+  return { roles, women: roles.reduce((a, r) => a + r.below, 0), cost, payroll, share: payroll > 0 ? cost / payroll : 0 };
+}

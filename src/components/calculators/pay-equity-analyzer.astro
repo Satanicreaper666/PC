@@ -14,6 +14,20 @@ import { MIN_GROUP } from "../../lib/calc/pay-equity-analyzer";
         <span class="field-help" id="pe-paste-help">Copy three columns from Excel or Google Sheets, or type them with commas. Pay can be written as 12,50,000 or 12.5 lakh. Leave names out; they aren't needed.</span>
       </div>
       <button class="btn btn-secondary" type="button" data-paste-add><Icon name="plus" size={18} /> Add these rows</button>
+      <div class="file-row">
+        <label class="btn btn-secondary btn-sm">
+          <Icon name="file-text" size={16} /> Load an employee file
+          <input class="visually-hidden" type="file" accept=".csv,.txt,.xlsx,.xlsm,text/csv" data-pe-file />
+        </label>
+        <button class="btn btn-secondary btn-sm" type="button" data-pe-shared hidden><Icon name="people" size={16} /> <span data-pe-shared-label>Use the file from another tool</span></button>
+        <label class="pe-by">
+          <span>Compare people by</span>
+          <select class="control" data-pe-by>
+            <option value="grade">Grade</option>
+            <option value="designation">Designation</option>
+          </select>
+        </label>
+      </div>
       <div class="msg" data-paste-msg role="status" hidden></div>
 
       <form class="one" data-one novalidate aria-labelledby="pe-one-title">
@@ -112,6 +126,20 @@ import { MIN_GROUP } from "../../lib/calc/pay-equity-analyzer";
         <tbody data-role-rows></tbody>
       </table>
     </div>
+    <div class="close" data-close hidden>
+      <h3 class="t">Cost to close the gaps</h3>
+      <p class="muted small" data-close-sum></p>
+      <div class="tw" role="region" tabindex="0" aria-label="Cost to close by role">
+        <table class="rt">
+          <caption class="visually-hidden">For each role: women paid below the men's median, the median, and the yearly cost to raise them to it</caption>
+          <thead>
+            <tr><th scope="col">Role</th><th scope="col">Women below</th><th scope="col">Men's median</th><th scope="col">Cost a year</th><th scope="col">Read with care</th></tr>
+          </thead>
+          <tbody data-close-rows></tbody>
+        </table>
+      </div>
+      <p class="tiny muted">Raises every woman paid below the men's median in her role to that median. A starting budget, not a decision: look at each case's experience, performance and location first. Employer PF and other on-costs come on top.</p>
+    </div>
     <details class="rows">
       <summary>Your rows <span data-row-count></span></summary>
       <div class="tw" role="region" tabindex="0" aria-label="Your rows">
@@ -129,7 +157,8 @@ import { MIN_GROUP } from "../../lib/calc/pay-equity-analyzer";
 </div>
 
 <script>
-  import { analyse, parseRows, parsePay, cleanRole, toCsv, GENDER_LABEL, EXAMPLE_ROWS, MIN_GROUP, type PayRow, type Gender, type Analysis } from "../../lib/calc/pay-equity-analyzer";
+  import { analyse, costToClose, parseRows, parsePay, cleanRole, normaliseGender, toCsv, GENDER_LABEL, EXAMPLE_ROWS, MIN_GROUP, type PayRow, type Gender, type Analysis } from "../../lib/calc/pay-equity-analyzer";
+  import { sharedRoster } from "../../scripts/roster";
 
   const KEY = "peoplecraft:pay-equity:v1";
   const SHOW_ROWS = 300;
@@ -210,6 +239,7 @@ import { MIN_GROUP } from "../../lib/calc/pay-equity-analyzer";
     $("[data-caution-text]").replaceChildren(...caution.map((c) => Object.assign(document.createElement("p"), { textContent: c })));
 
     renderQuartiles(a);
+    renderClose();
   }
 
   function renderQuartiles(a: Analysis) {
@@ -259,6 +289,99 @@ import { MIN_GROUP } from "../../lib/calc/pay-equity-analyzer";
     const share = a.counts.women / (a.counts.women + a.counts.men);
     $("[data-q-note]").textContent = `Women are ${Math.round(share * 100)}% of the people compared. If their share falls in the higher-paid quarters, the unadjusted gap is mostly about who holds which roles; the like-for-like gap shows pay for the same role.`;
   }
+
+  function renderClose() {
+    const c = costToClose(rows);
+    $("[data-close]").hidden = c.roles.length === 0;
+    if (!c.roles.length) return;
+    $("[data-close-sum]").textContent = `${plural(c.women, "woman is", "women are")} paid below the men's median in their role. Raising them to it would cost ${inr(Math.round(c.cost))} a year, ${(c.share * 100).toFixed(2)}% of the payroll entered.`;
+    $("[data-close-rows]").replaceChildren(
+      ...c.roles.map((r) => {
+        const tr = document.createElement("tr");
+        const cells = [r.role, String(r.below), inr(Math.round(r.target)), inr(Math.round(r.cost)), r.small ? `Fewer than ${MIN_GROUP} women or men` : ""];
+        cells.forEach((t, i) => tr.append(Object.assign(document.createElement(i === 0 ? "th" : "td"), { textContent: t })));
+        return tr;
+      })
+    );
+  }
+
+  // Load an employee file: the role (grade or designation), gender and salary columns.
+  type Cell = string | number | boolean | null;
+  let fileTable: Cell[][] | null = null;
+  const norm = (x: unknown) => String(x ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  function rowsFromTable(t: Cell[][]): { rows: PayRow[]; message: string } {
+    const h = t.findIndex((r) => r.some((c) => c !== null && c !== ""));
+    const head = (t[h] ?? []).map(norm);
+    const find = (syns: string[]) => {
+      for (const sy of syns) {
+        const i = head.findIndex((x) => x === sy);
+        if (i >= 0) return i;
+      }
+      for (const sy of syns) {
+        const i = head.findIndex((x) => x.includes(sy));
+        if (i >= 0) return i;
+      }
+      return -1;
+    };
+    const by = $<HTMLSelectElement>("[data-pe-by]").value;
+    const roleCol = by === "grade" ? find(["grade", "level", "band", "job grade"]) : find(["designation", "job title", "title", "role"]);
+    const genderCol = find(["gender", "sex"]);
+    const payCol = find(["annual ctc", "ctc", "annual salary", "fixed pay", "salary", "gross annual", "pay"]);
+    if (roleCol < 0 || genderCol < 0 || payCol < 0) {
+      const miss = [roleCol < 0 ? by : "", genderCol < 0 ? "gender" : "", payCol < 0 ? "salary" : ""].filter(Boolean).join(", ");
+      return { rows: [], message: `No ${miss} column was found. Name the columns as in your HRMS export (for example Grade, Gender, Annual CTC).` };
+    }
+    const out: PayRow[] = [];
+    let skipped = 0;
+    for (const r of t.slice(h + 1)) {
+      if (!r.some((c) => c !== null && c !== "")) continue;
+      const pay = typeof r[payCol] === "number" ? (r[payCol] as number) : parsePay(String(r[payCol] ?? ""));
+      const role = cleanRole(String(r[roleCol] ?? ""));
+      if (!pay || !role) {
+        skipped++;
+        continue;
+      }
+      out.push({ role, gender: normaliseGender(String(r[genderCol] ?? "")), pay });
+    }
+    return { rows: out, message: `Loaded ${plural(out.length, "person", "people")}, compared by ${by}.${skipped ? ` ${skipped} rows without a ${by} or salary were left out.` : ""} Names and IDs aren't used.` };
+  }
+  function loadTable(t: Cell[][]) {
+    fileTable = t;
+    const res = rowsFromTable(t);
+    const msg = $("[data-paste-msg]");
+    msg.hidden = false;
+    msg.textContent = res.message;
+    if (!res.rows.length) return;
+    rows = res.rows;
+    commit();
+  }
+  const shared = sharedRoster();
+  if (shared) {
+    $("[data-pe-shared]").hidden = false;
+    $("[data-pe-shared-label]").textContent = `Use ${shared.fileName}`;
+  }
+  $("[data-pe-shared]").addEventListener("click", () => {
+    const s2 = sharedRoster();
+    if (s2) loadTable(s2.rows);
+  });
+  $("[data-pe-by]").addEventListener("change", () => {
+    if (fileTable) loadTable(fileTable);
+  });
+  $<HTMLInputElement>("[data-pe-file]").addEventListener("change", async (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+    const { readEmployeeFile, bestSheet, LoadError } = await import("../analytics/load");
+    try {
+      const loaded = await readEmployeeFile(file);
+      loadTable(loaded.sheets[bestSheet(loaded.sheets)].rows as Cell[][]);
+    } catch (err) {
+      const msg = $("[data-paste-msg]");
+      msg.hidden = false;
+      msg.textContent = err instanceof LoadError ? err.message : "That file couldn't be read. Save it as CSV or Excel (.xlsx) and try again.";
+    }
+  });
 
   function renderRoles(a: Analysis) {
     const td = (text: string, cls = "") => Object.assign(document.createElement("td"), { textContent: text, className: cls });
@@ -802,5 +925,28 @@ import { MIN_GROUP } from "../../lib/calc/pay-equity-analyzer";
     .pe-top {
       grid-template-columns: 1fr;
     }
+  }
+  .file-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    margin-top: 0.6rem;
+  }
+  .pe-by {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-sm);
+  }
+  .pe-by .control {
+    width: auto;
+    min-height: 2.1rem;
+    padding-block: 0.2rem;
+  }
+  .close {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
   }
 </style>

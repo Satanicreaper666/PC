@@ -33,20 +33,34 @@ import AsAt from "./parts/AsAt.astro";
         { value: "disablement", label: "Disablement" }
       ]}
     />
+    <p class="group">Forfeiture and tax (optional)</p>
+    <Pick
+      name="forfeit"
+      label="Forfeiture after termination for misconduct"
+      style="select"
+      options={[
+        { value: "none", label: "None" },
+        { value: "loss", label: "Damage or loss to the employer's property: up to the loss" },
+        { value: "conduct", label: "Violent or riotous conduct, or an offence of moral turpitude at work: some or all" }
+      ]}
+      help="Only when services were terminated for that misconduct, by a reasoned order after a fair inquiry."
+    />
+    <Num name="forfeitamt" label="Amount forfeited" prefix="₹" placeholder="0" help="The proved loss, or the part the order forfeits." />
+    <Num name="used" label="Tax-free gratuity already used with earlier employers" prefix="₹" placeholder="0" help="The lifetime tax-free limit is shared across employers." />
   </Fragment>
   <Fragment slot="headline">
     <span class="big" data-out="amount">₹0</span>
     <span class="sub" data-out="status"></span>
   </Fragment>
 </CalcShell>
-<AsAt ids={["gratuity.daysPerYear", "gratuity.divisor", "gratuity.minYears", "gratuity.fixedTermMinYears", "gratuity.partYearMonths", "gratuity.ceiling", "gratuity.paymentDays"]} />
+<AsAt ids={["gratuity.daysPerYear", "gratuity.divisor", "gratuity.minYears", "gratuity.fixedTermMinYears", "gratuity.partYearMonths", "gratuity.ceiling", "gratuity.paymentDays", "gratuity.taxExemptionLimit"]} />
 
 <script>
   import { bindCalculator, inr, num, type CalcStep } from "../../scripts/calc-kit";
   import { computeGratuity, gratuityRules, roundRupee } from "../../lib/calc/gratuity";
   import type { EmploymentType, GratuityReason } from "../../lib/calc/gratuity";
   import { addMonthsClamped, longDate, parseISO, shortDate } from "../../lib/calc/working-days";
-  import { stat } from "../../data/statutory";
+  import { stat, statNum } from "../../data/statutory";
   const rules = gratuityRules();
   const rupees = (n: number) => inr(roundRupee(n));
   const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
@@ -102,10 +116,32 @@ import AsAt from "./parts/AsAt.astro";
     if (lwd < codesFrom)
       warnings.push(`The last working day is before ${shortDate(codesFrom)}, when the Labour Codes came into force. This calculator applies the Codes; the Payment of Gratuity Act, 1972 applied before then.`);
 
+    // Forfeiture (Code on Social Security s.53(6)) and the income-tax split.
+    const forfeit = v.str("forfeit", "none");
+    const forfeited = forfeit === "none" ? 0 : Math.min(roundRupee(r.amount), Math.max(0, v.num("forfeitamt")));
+    const payable = roundRupee(r.amount) - forfeited;
+    if (forfeit !== "none" && reason !== "termination")
+      warnings.push("Gratuity can be forfeited only when services are terminated for the misconduct the Code names. For this exit, nothing can be forfeited, so check the reason.");
+    if (forfeit !== "none" && !(v.num("forfeitamt") > 0)) warnings.push("Forfeiture is chosen but no amount is entered: enter the proved loss, or the part the order forfeits.");
+    const taxLimit = Math.max(0, statNum("gratuity.taxExemptionLimit") - Math.max(0, v.num("used")));
+    const taxFree = reason === "death" ? payable : Math.min(payable, taxLimit);
+    const taxable = payable - taxFree;
+    if (forfeited > 0) {
+      working.push({ label: "Forfeited", formula: forfeit === "loss" ? "Up to the damage or loss caused" : "Part or all, for the misconduct proved", result: `− ${inr(forfeited)}`, note: "Code on Social Security, 2020 s.53(6)" });
+      working.push({ label: "Gratuity after forfeiture", formula: `${rupees(r.amount)} − ${inr(forfeited)}`, result: inr(payable) });
+    }
+    if (payable > 0)
+      working.push({
+        label: "Tax-free part",
+        formula: reason === "death" ? "Paid to the legal heirs: not their salary" : `the lower of ${inr(payable)} and ${inr(taxLimit)} of the lifetime limit left`,
+        result: inr(taxFree),
+        note: taxable > 0 ? `${inr(taxable)} is taxable salary` : undefined
+      });
+
     return {
       working,
       warnings,
-      outputs: { amount: rupees(r.amount), status: r.reasonText },
+      outputs: { amount: inr(payable), status: forfeited > 0 ? `${r.reasonText} ${inr(forfeited)} forfeited.` : r.reasonText },
       lines: [
         { label: "Service", value: `${plural(s.years, "year")}, ${plural(s.months, "month")}, ${plural(s.days, "day")}` },
         { label: "One day's wages", value: rupees(v.num("wages") / rules.divisor), note: `${inr(v.num("wages"))} ÷ ${rules.divisor}` },
@@ -116,7 +152,14 @@ import AsAt from "./parts/AsAt.astro";
           note: r.countedYears > s.years ? `The final ${plural(s.months, "month")} count as a full year` : undefined
         },
         ...(r.capped ? [{ label: "Before the ceiling", value: rupees(r.uncapped), note: `Capped at ${inr(rules.ceiling)}` }] : []),
-        { label: "Gratuity payable", value: rupees(r.amount), strong: true },
+        ...(forfeited > 0 ? [{ label: "Gratuity before forfeiture", value: rupees(r.amount) }, { label: "Forfeited", value: `− ${inr(forfeited)}`, tone: "bad" as const, note: "Code on Social Security, 2020 s.53(6)" }] : []),
+        { label: "Gratuity payable", value: inr(payable), strong: true },
+        ...(payable > 0
+          ? [
+              { label: "Tax-free", value: inr(taxFree), note: reason === "death" ? "Paid to the legal heirs" : "Within the lifetime limit (reported)", key: "taxfree" },
+              { label: "Taxable as salary", value: inr(taxable), note: taxable > 0 ? "Payroll deducts TDS on this part" : "Nothing taxable", key: "taxable" }
+            ]
+          : []),
         ...(r.payBy ? [{ label: "Pay by", value: longDate(r.payBy), note: `Within ${rules.paymentDays} days of the last working day` }] : [])
       ],
       bars: [
@@ -126,13 +169,22 @@ import AsAt from "./parts/AsAt.astro";
       notes: [
         `Eligibility counts completed years only. The more-than-${rules.partYearMonths}-months rule rounds the amount, never the eligibility.`,
         "Death or disablement removes the minimum-service condition; the amount is still based on the years served.",
-        "Your employer can pay more under a contract, award or policy. Income tax is not worked out here."
+        "Your employer can pay more under a contract, award or policy; anything above the tax-free limit is taxable salary.",
+        "The tax-free limit was carried over from the Income-tax Act, 1961; confirm it with your tax adviser. The full and final calculator works out the TDS on the whole settlement."
       ]
     };
   });
 </script>
 
 <style>
+  .group {
+    margin-top: 0.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-sm);
+    font-weight: 680;
+    color: var(--neel-800);
+  }
   .two {
     display: grid;
     grid-template-columns: 1fr 1fr;
